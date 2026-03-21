@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTNPlanner - Edisi Wali Kelas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0d6efd;
+            --primary-dark: #0a58ca;
+            --accent-orange: #fd7e14;
+            --accent-gradient: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+            --blue-gradient: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+            --bg-color: #f4f7f6;
+            
+            --color-daftar: #0d6efd;
+            --color-ujian: #ffc107;
+            --color-pengumuman: #198754;
+        }
+
+        body { background-color: var(--bg-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-bottom: 80px; }
+
+        /* Loader */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.95); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        /* Navbar */
+        .navbar-custom { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.08);
+            display: flex; justify-content: space-around; padding: 0.5rem 0; z-index: 1030; border-radius: 20px 20px 0 0;
+        }
+        .bottom-nav-item {
+            text-align: center; color: #6c757d; text-decoration: none; flex-grow: 1; padding: 0.5rem 0; transition: all 0.3s;
+            border-radius: 15px; margin: 0 2px;
+        }
+        .bottom-nav-item:hover { background-color: #f8f9fa; }
+        .bottom-nav-item.active { color: var(--primary-blue); font-weight: 600; }
+        .bottom-nav-item i { display: block; font-size: 1.25rem; margin-bottom: 2px; }
+        .bottom-nav-item span { font-size: 0.65rem; }
+
+        /* Cards */
+        .katalog-card, .univ-card, .siswa-card {
+            background: #ffffff; border: none; border-radius: 16px; transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(13, 110, 253, 0.05);
+            overflow: hidden; height: 100%; display: flex; flex-direction: column; cursor: pointer;
+        }
+        .katalog-card:hover, .univ-card:hover, .siswa-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(253, 126, 20, 0.12); border: 1px solid rgba(13, 110, 253, 0.1); }
+        .card-logo { width: 45px; height: 45px; object-fit: contain; background: #fff; border-radius: 8px; padding: 2px; border: 1px solid #eee; }
+        .univ-card .card-logo { width: 60px; height: 60px; margin: 0 auto 10px; }
+        .price-tag { font-size: 1.15rem; font-weight: 700; color: var(--accent-orange); }
+
+        .badge-jalur { font-weight: 500; font-size: 0.75rem; }
+
+        .btn-gradient { background: var(--accent-gradient); color: white; border: none; border-radius: 12px; font-weight: 600; padding: 0.6rem 1.5rem; transition: all 0.3s;}
+        .btn-gradient:hover { background: linear-gradient(135deg, #e86e04 0%, #e0a800 100%); color: white; transform: scale(1.02); }
+        
+        /* Freeze Gantt Chart */
+        .gantt-wrapper { overflow-x: auto; background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .gantt-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
+        .gantt-table th, .gantt-table td { padding: 10px; border-bottom: 1px solid #eee; position: relative; }
+        
+        .gantt-sticky-col { 
+            position: sticky; left: 0; background: white; z-index: 10; width: 180px; min-width: 180px; 
+            border-right: 2px solid #eee; box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+        }
+        .gantt-table thead th { position: sticky; top: 0; background: #f8f9fa; z-index: 11; font-size: 0.75rem; text-align: center; }
+        .gantt-table thead .gantt-sticky-col { z-index: 12; text-align: left; }
+
+        .gantt-track-cell { width: 800px; padding: 10px 0 !important; }
+        .gantt-track { position: relative; height: 20px; background: #f0f3f5; border-radius: 10px; width: 100%; }
+        .gantt-segment {
+            position: absolute; height: 100%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 0.6rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .gantt-segment.daftar { background-color: var(--color-daftar); border-radius: 10px 0 0 10px; }
+        .gantt-segment.ujian { background-color: var(--color-ujian); color: #000; }
+        .gantt-segment.pengumuman { background-color: var(--color-pengumuman); border-radius: 0 10px 10px 0; }
+
+        /* Google Calendar Style */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; background: #eee; border: 1px solid #eee;}
+        .calendar-header { font-weight: bold; padding: 8px 0; background: #f8f9fa; font-size: 0.8rem; }
+        .calendar-day { background: white; padding: 5px 2px; cursor: pointer; position: relative; min-height: 90px; display: flex; flex-direction: column; align-items: stretch;}
+        .calendar-day:hover { background: #f0f7ff; }
+        .calendar-day.today { background: #fff3cd; }
+        .calendar-day.empty { background: #f8f9fa; cursor: default; }
+        .cal-event-bar { 
+            font-size: 0.65rem; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; color: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .list-timeline-item { border-left: 3px solid var(--primary-blue); padding-left: 1rem; margin-bottom: 1rem; background: white; padding: 1rem; border-radius: 0 10px 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+
+        .view-section { display: none; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Prodi Selection */
+        .table-prodi tbody tr { cursor: pointer; }
+        .table-prodi tbody tr:hover { background-color: #f8f9fa; }
+        .order-badge { font-size: 0.7rem; margin-left: 5px; }
+
+        /* Home Timeline Card Interactivity */
+        .agenda-card { cursor: pointer; transition: all 0.2s; }
+        .agenda-card:hover { transform: translateX(5px); border-left-color: var(--accent-orange) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.08) !important; }
+        .student-badge { pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h5 class="fw-bold text-primary">Memuat Katalog PTN...</h5>
+        <p class="text-muted small">Menghubungkan ke Database</p>
+    </div>
+
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-light navbar-custom sticky-top py-2">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand fw-bold text-primary mb-0" href="#" onclick="switchView('home')">
+                <i class="fas fa-chalkboard-teacher me-2 text-warning"></i>PTN<span class="text-dark">WaliKelas</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-4" id="mainContainer" style="display: none;">
+        
+        <!-- ==================== VIEW: HOME ==================== -->
+        <section id="home-view" class="view-section active">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h4 class="fw-bold mb-0">Dashboard Wali Kelas</h4>
+                    <p class="text-muted mb-0" id="currentDateTime">Memuat waktu...</p>
+                </div>
+            </div>
+
+            <!-- Countdown Box -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary text-white" style="background: var(--blue-gradient) !important;">
+                <div class="card-body p-4 text-center">
+                    <h6 class="opacity-75 mb-1">Agenda Siswa Terdekat</h6>
+                    <h4 class="fw-bold mb-3" id="homeNextAgendaTitle">Belum ada agenda</h4>
+                    <div class="d-flex justify-content-center gap-3" id="homeCountdown">
+                        <div class="bg-white text-primary rounded-3 p-2" style="min-width: 60px;">
+                            <h3 class="fw-bold mb-0">-</h3><small>Hari</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Pendaftaran Buka Saat Ini -->
+                <div class="col-md-6">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-door-open text-success me-2"></i>Pendaftaran Sedang Buka</h6>
+                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                        <div class="card-body" id="homeOpenRegistrations">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Siswa (List with Clickable Cards) -->
+                <div class="col-md-6">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-calendar-alt text-primary me-2"></i>Timeline Siswa Pilihan</h6>
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body overflow-auto" style="max-height: 400px;" id="homeStudentTimeline">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW: BY UNIV ==================== -->
+        <section id="univ-view" class="view-section">
+            <h4 class="fw-bold mb-3"><i class="fas fa-university text-primary me-2"></i>Eksplorasi per Universitas</h4>
+            <div class="input-group mb-4">
+                <span class="input-group-text bg-white border-end-0 rounded-start-pill"><i class="fas fa-search text-muted"></i></span>
+                <input class="form-control border-start-0 rounded-end-pill shadow-none" type="search" id="searchUniv" placeholder="Cari nama universitas..." onkeyup="renderUnivList()">
+            </div>
+            <div class="row g-3" id="univGridContainer">
+                <!-- Generated by JS -->
+            </div>
+        </section>
+
+        <!-- ==================== VIEW: SISWA ==================== -->
+        <section id="siswa-view" class="view-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0"><i class="fas fa-users text-primary me-2"></i>Daftar Siswa</h4>
+                <button class="btn btn-primary rounded-pill btn-sm" onclick="showAddStudentModal()">
+                    <i class="fas fa-plus me-1"></i> Tambah
+                </button>
+            </div>
+            
+            <div class="input-group mb-4">
+                <span class="input-group-text bg-white border-end-0 rounded-start-pill"><i class="fas fa-search text-muted"></i></span>
+                <input class="form-control border-start-0 rounded-end-pill shadow-none" type="search" id="searchSiswa" placeholder="Cari nama siswa..." onkeyup="renderSiswaList()">
+            </div>
+
+            <div class="row g-3" id="siswaGridContainer"></div>
+        </section>
+
+        <!-- ==================== VIEW: DETAIL SISWA ==================== -->
+        <section id="siswa-detail-view" class="view-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="goBack()">
+                    <i class="fas fa-arrow-left me-1"></i> Kembali
+                </button>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary text-white" style="background: var(--blue-gradient) !important;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="fw-bold mb-1" id="sdName">Nama Siswa</h4>
+                            <p class="mb-2 opacity-75" id="sdClassSchool">Kelas | Sekolah</p>
+                            <div class="small opacity-75">
+                                <div><i class="fas fa-envelope me-2"></i><span id="sdEmail"></span></div>
+                                <div><i class="fas fa-id-card me-2"></i>Akun TO: <span id="sdAkunTO" class="fw-semibold"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="nav nav-pills nav-fill mb-4 bg-white p-1 rounded-pill shadow-sm">
+                <li class="nav-item"><button class="nav-link active rounded-pill" data-bs-toggle="pill" data-bs-target="#sd-tab-daftar" type="button">Jalur Pilihan</button></li>
+                <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="pill" data-bs-target="#sd-tab-timeline" type="button" onclick="renderStudentTimeline()">Timeline</button></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="sd-tab-daftar">
+                    <div id="sdItemsContainer"></div>
+                    <div class="card border-0 shadow bg-dark text-white rounded-4 mt-4 sticky-bottom" style="bottom: 80px;">
+                        <div class="card-body d-flex justify-content-between align-items-center p-3">
+                            <span class="fw-semibold">Total Estimasi Biaya:</span>
+                            <h4 class="fw-bold mb-0 text-warning" id="sdTotalBiaya">Rp 0</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="sd-tab-timeline">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body" id="sdTimelineContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW: KATALOG ==================== -->
+        <section id="catalog-view" class="view-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0"><i class="fas fa-th-large text-primary me-2"></i>Katalog Jalur</h4>
+            </div>
+            <div class="d-flex gap-2 overflow-auto pb-3 mb-2" style="white-space: nowrap;">
+                <button class="btn btn-primary rounded-pill px-4 shadow-sm btn-filter" onclick="filterCatalog('Semua')">Semua</button>
+                <button class="btn btn-outline-primary rounded-pill px-4 bg-white btn-filter" onclick="filterCatalog('Mandiri')">Mandiri</button>
+                <button class="btn btn-outline-primary rounded-pill px-4 bg-white btn-filter" onclick="filterCatalog('Nasional')">Nasional</button>
+                <button class="btn btn-outline-primary rounded-pill px-4 bg-white btn-filter" onclick="filterCatalog('IUP/KKI')">IUP/KKI</button>
+            </div>
+            <div class="row g-3" id="katalogContainer"></div>
+        </section>
+
+        <!-- ==================== VIEW: DETAIL JALUR & CHECKOUT ==================== -->
+        <section id="detail-view" class="view-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="goBack()"><i class="fas fa-arrow-left me-1"></i> Kembali</button>
+                <span class="badge bg-warning text-dark" id="detailModeBadge" style="display: none;"><i class="fas fa-edit me-1"></i>Mode Edit Jurusan Siswa</span>
+            </div>
+            <div id="detailContent"></div>
+        </section>
+
+        <!-- ==================== VIEW: TIMELINE ALL ==================== -->
+        <section id="timeline-view" class="view-section">
+            <h4 class="fw-bold mb-3"><i class="fas fa-calendar-alt text-primary me-2"></i>Jadwal Keseluruhan</h4>
+            <ul class="nav nav-pills nav-fill mb-4 bg-white p-1 rounded-pill shadow-sm" role="tablist">
+                <li class="nav-item"><button class="nav-link active rounded-pill" data-bs-toggle="pill" data-bs-target="#tab-gantt" type="button">Gantt Chart</button></li>
+                <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="pill" data-bs-target="#tab-cal" type="button" onclick="renderCalendar()">Kalender</button></li>
+                <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="pill" data-bs-target="#tab-list-all" type="button">Daftar</button></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab-gantt">
+                    <div class="mb-3 text-center small">
+                        <span class="badge" style="background:var(--color-daftar)">Pendaftaran</span>
+                        <span class="badge text-dark" style="background:var(--color-ujian)">Ujian</span>
+                        <span class="badge" style="background:var(--color-pengumuman)">Pengumuman</span>
+                    </div>
+                    <div id="ganttContainer"></div>
+                </div>
+                <div class="tab-pane fade" id="tab-cal">
+                    <div class="card border-0 shadow-sm rounded-4 p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <button class="btn btn-sm btn-light" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                            <h6 class="fw-bold mb-0" id="calMonthYear">Bulan Tahun</h6>
+                            <button class="btn btn-sm btn-light" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="calendar-header">Min</div><div class="calendar-header">Sen</div><div class="calendar-header">Sel</div>
+                            <div class="calendar-header">Rab</div><div class="calendar-header">Kam</div><div class="calendar-header">Jum</div><div class="calendar-header">Sab</div>
+                        </div>
+                        <div class="calendar-grid mt-1" id="calendarDays"></div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-list-all">
+                    <div id="listTimelineAllContainer"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="#" class="bottom-nav-item active" id="nav-home" onclick="switchView('home'); return false;">
+            <i class="fas fa-home"></i><span>Home</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="nav-univ" onclick="switchView('univ'); return false;">
+            <i class="fas fa-university"></i><span>By Univ</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="nav-siswa" onclick="switchView('siswa'); return false;">
+            <i class="fas fa-users"></i><span>Siswa</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="nav-catalog" onclick="switchView('catalog'); return false;">
+            <i class="fas fa-th-large"></i><span>Katalog</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="nav-timeline" onclick="switchView('timeline'); return false;">
+            <i class="fas fa-calendar-day"></i><span>Timeline</span>
+        </a>
+    </nav>
+
+    <!-- Modals -->
+    <!-- Modal Add Student -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Tambah Data Siswa</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <form id="formAddStudent">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="inpNama" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Nama Panggilan</label>
+                            <input type="text" class="form-control" id="inpPanggilan" required>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label small text-muted">Kelas</label>
+                                <input type="text" class="form-control" id="inpKelas" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small text-muted">Asal Sekolah</label>
+                                <input type="text" class="form-control" id="inpSekolah" value="SMA N 1" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Email Siswa</label>
+                            <input type="email" class="form-control" id="inpEmail" placeholder="contoh@gmail.com">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small text-muted">Nama Akun TO (Try Out)</label>
+                            <input type="text" class="form-control" id="inpAkunTO" placeholder="usernameTO">
+                        </div>
+                        <button type="button" class="btn btn-primary w-100 rounded-pill py-2" onclick="saveNewStudent()">Simpan Data Siswa</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Home Agenda Students List -->
+    <div class="modal fade" id="agendaStudentsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 bg-light rounded-top-4 pb-3">
+                    <div class="w-100">
+                        <h6 class="modal-title fw-bold text-primary mb-1" id="asmTitle">Nama Agenda</h6>
+                        <small class="text-muted"><i class="far fa-calendar-alt me-1"></i><span id="asmDate"></span></small>
+                    </div>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <ul class="list-group list-group-flush" id="asmList">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
+                <div class="modal-footer border-0 bg-light rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Calendar Event -->
+    <div class="modal fade" id="calEventModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 bg-light rounded-top-4 pb-3">
+                    <h6 class="modal-title fw-bold text-primary mb-0" id="calEventDate">Tanggal</h6>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3" id="calEventList">
+                    <!-- Injected via JS -->
+                </div>
+                <div class="modal-footer border-0 bg-light rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // API CONFIGURATION
+        const API_URL = "https://script.google.com/macros/s/AKfycbw8SXm5GP4iSuO5bg4L0n00NcBLosuHsFpn2m6zVg4RGZFiH70nWrl9ZH5mSZjYQqDc/exec";
+
+        // State Global (Kosong di awal, akan diisi dari API dan LocalStorage)
+        let dataKatalog = [];
+        let students = JSON.parse(localStorage.getItem('wali_students_db')) || [];
+        
+        let viewHistory = ['home'];
+        let currentStudentId = null; 
+        let currentDetailProdiSelection = [];
+        let editItemIndex = -1; 
+        let editStudentId = null; 
+
+        // Utilities
+        const formatRupiah = (angka) => angka === 0 ? "Gratis" : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+        const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : "-";
+        
+        // --- API DATA FETCH & SYNC LOGIC ---
+        
+        // 1. Fetch Katalog saat web dibuka
+        const initData = async () => {
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                
+                if(result.status === "success" && result.data) {
+                    // Tambahkan "index" (ID unik katalog) berdasarkan urutan array untuk logic referensi
+                    dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
+                } else {
+                    alert("Gagal memuat katalog: Format data API tidak sesuai.");
+                }
+            } catch (error) {
+                console.error("Error fetching API:", error);
+                alert("Gagal terhubung ke database (API Error). Memuat mode offline jika tersedia.");
+            } finally {
+                // Hilangkan loading screen, tampilkan aplikasi
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+                switchView('home');
+            }
+        };
+
+        // 2. Sync (POST) data siswa ke Google Sheets setiap ada perubahan
+        const syncStudentToDB = async (studentData) => {
+            // Selalu simpan ke localStorage agar tidak hilang saat reload
+            localStorage.setItem('wali_students_db', JSON.stringify(students));
+            
+            // Kirim ke Google Sheets via API
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, // Menghindari isu CORS Preflight
+                    body: JSON.stringify(studentData)
+                });
+                console.log("Data berhasil dikirim ke Google Sheets.");
+            } catch (error) {
+                console.error("Gagal sinkronisasi API POST:", error);
+            }
+        };
+
+
+        // --- View Management ---
+        const switchView = (viewId, addToHistory = true) => {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`${viewId}-view`).classList.add('active');
+            document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
+            const navBtn = document.getElementById(`nav-${viewId}`);
+            if(navBtn) navBtn.classList.add('active');
+
+            if(addToHistory && viewHistory[viewHistory.length-1] !== viewId) viewHistory.push(viewId);
+
+            if(viewId === 'home') renderHome();
+            if(viewId === 'univ') renderUnivList();
+            if(viewId === 'siswa') renderSiswaList();
+            if(viewId === 'catalog') renderCatalogUI();
+            if(viewId === 'timeline') renderTimelineAll();
+            window.scrollTo(0, 0);
+        };
+        const goBack = () => { if(viewHistory.length > 1) { viewHistory.pop(); switchView(viewHistory[viewHistory.length - 1], false); } else { switchView('home'); } };
+
+        // --- Siswa Logic ---
+        const showAddStudentModal = () => new bootstrap.Modal(document.getElementById('addStudentModal')).show();
+        
+        const saveNewStudent = () => {
+            const nama = document.getElementById('inpNama').value;
+            const panggilan = document.getElementById('inpPanggilan').value;
+            const kelas = document.getElementById('inpKelas').value;
+            const sekolah = document.getElementById('inpSekolah').value;
+            const email = document.getElementById('inpEmail').value || '-';
+            const akunTO = document.getElementById('inpAkunTO').value || '-';
+            
+            if(!nama || !panggilan || !kelas) return alert("Lengkapi data penting (Nama, Panggilan, Kelas).");
+            
+            const newStudent = { id: Date.now(), nama, panggilan, kelas, sekolah, email, akunTO, items: [] };
+            students.push(newStudent);
+            
+            // Trigger API Sync
+            syncStudentToDB(newStudent);
+
+            bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide();
+            document.getElementById('formAddStudent').reset();
+            renderSiswaList();
+        };
+
+        const renderSiswaList = () => {
+            const query = (document.getElementById('searchSiswa')?.value || '').toLowerCase();
+            const container = document.getElementById('siswaGridContainer');
+            container.innerHTML = '';
+            
+            const filtered = students.filter(s => s.nama.toLowerCase().includes(query) || s.panggilan.toLowerCase().includes(query));
+            if(filtered.length===0) return container.innerHTML = '<div class="col-12 text-center text-muted">Tidak ada siswa.</div>';
+
+            filtered.forEach(s => {
+                container.innerHTML += `
+                    <div class="col-12 col-md-6">
+                        <div class="card siswa-card p-3" onclick="openStudentDetail(${s.id})">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-user-circle me-2"></i>${s.nama}</h6>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>${s.kelas}</span>
+                                <span><i class="fas fa-shopping-cart me-1"></i>${s.items.length} Jalur</span>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        };
+
+        // --- Detail Siswa ---
+        const openStudentDetail = (id) => {
+            currentStudentId = id;
+            const s = students.find(x => x.id === id);
+            document.getElementById('sdName').innerText = s.nama;
+            document.getElementById('sdClassSchool').innerText = `${s.kelas} | ${s.sekolah}`;
+            document.getElementById('sdEmail').innerText = s.email;
+            document.getElementById('sdAkunTO').innerText = s.akunTO;
+            renderStudentItems();
+            switchView('siswa-detail');
+        };
+
+        const renderStudentItems = () => {
+            const s = students.find(x => x.id === currentStudentId);
+            const container = document.getElementById('sdItemsContainer');
+            let total = 0;
+
+            if(s.items.length === 0) {
+                container.innerHTML = `<div class="text-center py-4 text-muted"><p>Siswa belum didaftarkan ke jalur manapun.</p><button class="btn btn-outline-primary rounded-pill btn-sm" onclick="switchView('catalog')">Cari Jalur</button></div>`;
+            } else {
+                let html = '';
+                s.items.forEach((p, idx) => {
+                    // Cek ketersediaan biaya
+                    const biayaNum = Number(p.jalur.biaya) || 0;
+                    total += biayaNum;
+
+                    const bDaftar = p.statusDaftar ? `<button class="btn btn-success status-btn me-1 small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'daftar')"><i class="fas fa-check"></i> Daftar</button>` : `<button class="btn btn-outline-primary status-btn me-1 small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'daftar')">Konfirmasi Daftar</button>`;
+                    const bUjian = !p.jalur.ujian1_start ? '' : (p.statusUjian ? `<button class="btn btn-success status-btn small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'ujian')"><i class="fas fa-check"></i> Ujian</button>` : `<button class="btn btn-outline-warning text-dark status-btn small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'ujian')">Konfirmasi Ujian</button>`);
+                    
+                    html += `
+                        <div class="card mb-3 rounded-4 shadow-sm border-0 bg-white">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="fw-bold mb-0 text-primary">${p.jalur.nama_jalur || p.jalur.akronim}</h6>
+                                    <div>
+                                        <button class="btn btn-sm btn-light text-primary me-1" onclick="editStudentItem(${s.id}, ${idx})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-light text-danger" onclick="deleteStudentItem(${s.id}, ${idx})"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div class="small mb-2">${p.prodiTerpilih.map((pr, i) => `<span class="badge bg-secondary border me-1"><span class="text-warning">${i+1}.</span> ${pr}</span>`).join('')}</div>
+                                <div class="d-flex justify-content-between pt-2 border-top align-items-center">
+                                    <div>${bDaftar}${bUjian}</div>
+                                    <span class="text-warning fw-bold small">${formatRupiah(biayaNum)}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                container.innerHTML = html;
+            }
+            document.getElementById('sdTotalBiaya').innerText = formatRupiah(total);
+        };
+
+        const toggleStudentStatus = (sId, idx, type) => {
+            const s = students.find(x => x.id === sId);
+            if(type === 'daftar') s.items[idx].statusDaftar = !s.items[idx].statusDaftar;
+            if(type === 'ujian') s.items[idx].statusUjian = !s.items[idx].statusUjian;
+            
+            syncStudentToDB(s); // Sync Update ke API
+            renderStudentItems();
+        };
+
+        const deleteStudentItem = (sId, idx) => {
+            if(confirm("Hapus jalur ini dari siswa?")) { 
+                const s = students.find(x => x.id === sId);
+                s.items.splice(idx,1); 
+                syncStudentToDB(s); // Sync Update ke API
+                renderStudentItems(); 
+            }
+        };
+
+        const editStudentItem = (sId, idx) => {
+            const s = students.find(x => x.id === sId);
+            const item = s.items[idx];
+            // Temukan index dataKatalog berdasarkan univ_code atau nama_jalur (Krn dari API index bisa berbeda)
+            const catIndex = dataKatalog.findIndex(d => d.nama_jalur === item.jalur.nama_jalur);
+            if(catIndex > -1) {
+                openDetail(catIndex, true, sId, idx);
+            } else {
+                alert("Data jalur ini tidak ditemukan di katalog saat ini.");
+            }
+        };
+
+        const renderStudentTimeline = () => {
+            const s = students.find(x => x.id === currentStudentId);
+            let events = getTimelineEvents(s.items.map(it => it.jalur));
+            document.getElementById('sdTimelineContainer').innerHTML = generateTimelineListHTML(events);
+        };
+
+        // --- Home View ---
+        setInterval(() => {
+            const now = new Date();
+            const el = document.getElementById('currentDateTime');
+            if(el) el.innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'}) + ' | ' + now.toLocaleTimeString('id-ID');
+        }, 1000);
+
+        const renderHome = () => {
+            const now = new Date(); 
+            
+            // Collect all student events
+            let allStudentJalurs = [];
+            students.forEach(s => {
+                s.items.forEach(it => { allStudentJalurs.push({...it.jalur, _siswa: s}); });
+            });
+            
+            // 1. Countdown Nearest
+            let nextEvent = null;
+            if(allStudentJalurs.length > 0) {
+                let evts = [];
+                allStudentJalurs.forEach(j => {
+                    if(j.pendaftaran_end) evts.push({ type: 'Tutup Daftar', date: new Date(j.pendaftaran_end), j: j, s: j._siswa});
+                    if(j.ujian1_start) evts.push({ type: 'Ujian', date: new Date(j.ujian1_start), j: j, s: j._siswa});
+                    if(j.pengumuman1) evts.push({ type: 'Pengumuman', date: new Date(j.pengumuman1), j: j, s: j._siswa});
+                });
+                evts = evts.filter(e => e.date >= now).sort((a,b) => a.date - b.date);
+                if(evts.length > 0) nextEvent = evts[0];
+            }
+
+            const cdBox = document.getElementById('homeCountdown');
+            const titleBox = document.getElementById('homeNextAgendaTitle');
+            if(nextEvent) {
+                titleBox.innerHTML = `${nextEvent.j.akronim || nextEvent.j.nama_jalur} - ${nextEvent.type}`;
+                const diffTime = Math.abs(nextEvent.date - now);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                cdBox.innerHTML = `
+                    <div class="bg-white text-primary rounded-3 p-2" style="min-width: 60px;"><h3 class="fw-bold mb-0">${diffDays}</h3><small>Hari</small></div>
+                    <div class="align-self-center text-white text-start lh-1"><small class="d-block opacity-75">Menuju tanggal</small><span class="fw-bold">${formatDate(nextEvent.date)}</span></div>`;
+            } else {
+                titleBox.innerHTML = "Belum ada agenda terdekat";
+                cdBox.innerHTML = `-`;
+            }
+
+            // 2. Open Registrations (Cards)
+            const openPaths = dataKatalog.filter(d => d.pendaftaran_start && d.pendaftaran_end && new Date(d.pendaftaran_start) <= now && new Date(d.pendaftaran_end) >= now);
+            let openHtml = '';
+            if(openPaths.length === 0) openHtml = '<p class="text-muted small">Tidak ada pendaftaran yang sedang buka.</p>';
+            openPaths.forEach(path => {
+                openHtml += `
+                    <div class="mb-3 border-bottom pb-2">
+                        <div class="d-flex align-items-center mb-1"><img src="${path.logo_link || 'https://via.placeholder.com/20'}" style="width:20px;height:20px;object-fit:contain" class="me-2"><h6 class="fw-bold mb-0 text-dark small">${path.nama_jalur}</h6></div>
+                        <div class="text-danger mb-1" style="font-size:0.65rem">Tutup: ${formatDate(path.pendaftaran_end)}</div>
+                    </div>`;
+            });
+            document.getElementById('homeOpenRegistrations').innerHTML = openHtml;
+
+            // 3. Timeline Siswa (Clickable Cards)
+            let allEvents = [];
+            allStudentJalurs.forEach(j => {
+                if(j.pendaftaran_start) allEvents.push({d: new Date(j.pendaftaran_start), t: 'Buka Daftar', c: 'text-primary', bg: 'border-primary', j: j, s: j._siswa});
+                if(j.pendaftaran_end) allEvents.push({d: new Date(j.pendaftaran_end), t: 'Tutup Daftar', c: 'text-danger', bg: 'border-danger', j: j, s: j._siswa});
+                if(j.ujian1_start) allEvents.push({d: new Date(j.ujian1_start), t: 'Ujian', c: 'text-warning', bg: 'border-warning', j: j, s: j._siswa});
+            });
+            allEvents = allEvents.filter(e => e.d >= now).sort((a,b) => a.d - b.d);
+
+            let tlHtml = allEvents.length === 0 ? '<p class="text-muted small">Tidak ada agenda.</p>' : '';
+            let grouped = {};
+            
+            // Group identical events on the same date for different students
+            allEvents.forEach(e => {
+                const key = e.d.getTime() + '_' + e.t + '_' + e.j.index;
+                if(!grouped[key]) { grouped[key] = { date: e.d, type: e.t, j: e.j, color: e.c, bg: e.bg, students: [] }; }
+                // Hindari duplikat siswa jika dia daftar prodi berbeda di jalur yang sama
+                if(!grouped[key].students.find(s => s.id === e.s.id)) {
+                    grouped[key].students.push(e.s);
+                }
+            });
+
+            // Flatten grouped
+            let flatGrouped = Object.values(grouped).sort((a,b) => a.date - b.date).slice(0, 10);
+            let currentMonthGroup = '';
+
+            flatGrouped.forEach(ev => {
+                const mStr = ev.date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                if(mStr !== currentMonthGroup) {
+                    tlHtml += `<h6 class="fw-bold mt-3 mb-2 border-bottom pb-1 text-secondary" style="font-size:0.85rem">${mStr}</h6>`;
+                    currentMonthGroup = mStr;
+                }
+                
+                const safeStudentsStr = encodeURIComponent(JSON.stringify(ev.students));
+                
+                tlHtml += `
+                    <div class="card agenda-card border-0 border-start border-4 ${ev.bg} shadow-sm mb-2 rounded-end-3 bg-light" onclick="openAgendaStudentsModal('${ev.type}', '${ev.j.nama_jalur}', '${ev.date.toISOString()}', '${safeStudentsStr}')">
+                        <div class="card-body py-2 px-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div><small class="${ev.color} fw-bold d-block mb-1" style="font-size:0.7rem;">${ev.type}</small><span class="fw-semibold d-block" style="font-size:0.85rem">${ev.j.nama_jalur}</span></div>
+                                <div class="text-end"><span class="badge bg-white text-dark border"><i class="far fa-calendar-alt me-1"></i>${ev.date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span></div>
+                            </div>
+                            <div class="mt-1">${ev.students.map(st => `<span class="badge bg-secondary student-badge me-1">${st.panggilan}</span>`).join('')}</div>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('homeStudentTimeline').innerHTML = tlHtml;
+        };
+
+        const openAgendaStudentsModal = (type, jalurNama, dateISO, safeStudentsStr) => {
+            const studentsArr = JSON.parse(decodeURIComponent(safeStudentsStr));
+            document.getElementById('asmTitle').innerText = `${type} - ${jalurNama}`;
+            document.getElementById('asmDate').innerText = formatDate(dateISO);
+            
+            let html = '';
+            studentsArr.forEach(s => {
+                html += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <h6 class="fw-bold mb-0">${s.nama}</h6>
+                            <small class="text-muted d-block">${s.kelas} | ${s.sekolah}</small>
+                            <div class="small opacity-75 mt-1">
+                                <span class="d-block"><i class="fas fa-envelope me-1"></i>${s.email}</span>
+                                <span class="d-block"><i class="fas fa-id-card me-1"></i>${s.akunTO}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="bootstrap.Modal.getInstance(document.getElementById('agendaStudentsModal')).hide(); setTimeout(()=>openStudentDetail(${s.id}), 300)">Lihat</button>
+                    </li>`;
+            });
+            document.getElementById('asmList').innerHTML = html;
+            new bootstrap.Modal(document.getElementById('agendaStudentsModal')).show();
+        };
+
+        // --- By Univ View ---
+        const renderUnivList = () => {
+            const query = (document.getElementById('searchUniv')?.value || '').toLowerCase();
+            const container = document.getElementById('univGridContainer');
+            container.innerHTML = '';
+            let univs = []; let seen = new Set();
+            dataKatalog.forEach(d => {
+                if(!seen.has(d.univ_code)) { seen.add(d.univ_code); univs.push({code: d.univ_code, nama: d.universitas, akronim: d.akronim, logo: d.logo_link}); }
+            });
+
+            const filtered = univs.filter(u => u.nama.toLowerCase().includes(query) || (u.akronim && u.akronim.toLowerCase().includes(query)));
+            filtered.forEach(u => {
+                container.innerHTML += `
+                    <div class="col-6">
+                        <div class="card univ-card p-3 text-center" onclick="filterCatalogByUniv('${u.code}')">
+                            <img src="${u.logo || 'https://via.placeholder.com/60'}" class="card-logo mx-auto">
+                            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${u.akronim || 'UNIV'}</h6>
+                            <small class="text-muted" style="font-size: 0.7rem;">${u.nama}</small>
+                        </div>
+                    </div>`;
+            });
+        };
+
+        // --- Catalog & Detail Checkout Logic ---
+        let currentCatalogFilter = { type: 'Semua', univCode: null };
+        const filterCatalog = (type) => { currentCatalogFilter.type = type; currentCatalogFilter.univCode = null; renderCatalogUI(); };
+        const filterCatalogByUniv = (univCode) => { currentCatalogFilter.univCode = univCode; switchView('catalog'); renderCatalogUI(); };
+
+        const renderCatalogUI = () => {
+            const container = document.getElementById('katalogContainer');
+            container.innerHTML = '';
+
+            let filteredData = dataKatalog;
+            if(currentCatalogFilter.univCode) {
+                filteredData = dataKatalog.filter(d => d.univ_code === currentCatalogFilter.univCode);
+                document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.replace('btn-primary', 'btn-outline-primary'));
+            } else {
+                if(currentCatalogFilter.type !== 'Semua') filteredData = dataKatalog.filter(d => d.jalur === currentCatalogFilter.type);
+                document.querySelectorAll('.btn-filter').forEach(btn => {
+                    if(btn.innerText === currentCatalogFilter.type) { btn.classList.replace('btn-outline-primary', 'btn-primary'); }
+                    else { btn.classList.replace('btn-primary', 'btn-outline-primary'); }
+                });
+            }
+
+            if(filteredData.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted py-4">Jalur tidak ditemukan / API belum memuat data.</div>';
+                return;
+            }
+
+            filteredData.forEach((item, index) => {
+                let badgeClass = item.jalur === 'Mandiri' ? 'bg-warning text-dark' : (item.jalur === 'Nasional' ? 'bg-primary text-white' : 'bg-danger text-white');
+                let biayaNum = Number(item.biaya) || 0;
+                let biayaMaxxNum = Number(item.biaya_maxx) || biayaNum;
+                let hargaTeks = biayaNum === biayaMaxxNum ? formatRupiah(biayaNum) : `${formatRupiah(biayaNum)} - ${formatRupiah(biayaMaxxNum)}`;
+
+                // Handle missing index by passing array position
+                container.innerHTML += `
+                    <div class="col-12 col-md-6 d-flex align-items-stretch">
+                        <div class="card katalog-card w-100 p-3" onclick="openDetail(${index})">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="${item.logo_link || 'https://via.placeholder.com/45'}" class="card-logo me-3">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1"><h6 class="fw-bold mb-0 text-dark">${item.akronim || ''}</h6><span class="badge badge-jalur ${badgeClass}">${item.jalur || ''}</span></div>
+                                    <h5 class="card-title fw-bold text-primary mb-0" style="font-size: 1.1rem;">${item.nama_jalur}</h5>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 mb-3">
+                                <span class="badge bg-light text-secondary border"><i class="fas fa-file-alt me-1"></i>${item.tipe_ujian || '-'}</span>
+                                <span class="badge bg-light text-secondary border"><i class="fas fa-desktop me-1"></i>${item.skema || '-'}</span>
+                            </div>
+                            <div class="bg-light rounded p-2 mb-3 small flex-grow-1">
+                                <div class="row g-1">
+                                    <div class="col-6 text-muted">Buka: <span class="text-success fw-semibold">${formatDate(item.pendaftaran_start)}</span></div>
+                                    <div class="col-6 text-muted">Tutup: <span class="text-danger fw-semibold">${formatDate(item.pendaftaran_end)}</span></div>
+                                </div>
+                            </div>
+                            <hr class="mt-auto mb-2 opacity-25">
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div><small class="text-muted d-block" style="font-size: 0.75rem;">Biaya Pendaftaran</small><div class="price-tag">${hargaTeks}</div></div>
+                                <i class="fas fa-chevron-right text-primary opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        };
+
+        const openDetail = (dataIndex, isEdit = false, stuId = null, stuItemIdx = null) => {
+            // Karena dataKatalog bisa di filter, kita harus memastikan index yang dipassing benar. 
+            // Kita gunakan raw index dari array dataKatalog utama.
+            const item = dataKatalog[dataIndex];
+            if(!item) return;
+
+            editStudentId = isEdit ? stuId : null;
+            editItemIndex = isEdit ? stuItemIdx : -1;
+            
+            currentDetailProdiSelection = [];
+            if(isEdit) {
+                const s = students.find(x => x.id === stuId);
+                currentDetailProdiSelection = [...s.items[stuItemIdx].prodiTerpilih];
+            }
+
+            document.getElementById('detailModeBadge').style.display = isEdit ? 'inline-block' : 'none';
+
+            let prodiTableRows = '';
+            // Handle prodi_list jika kosong dari API
+            const prodiList = item.prodi_list || [];
+            
+            prodiList.forEach((prodi, i) => {
+                const isChecked = currentDetailProdiSelection.includes(prodi);
+                const orderIndex = isChecked ? currentDetailProdiSelection.indexOf(prodi) + 1 : '';
+                const badgeHtml = isChecked ? `<span class="badge bg-primary rounded-circle order-badge" id="badge_${dataIndex}_${i}">${orderIndex}</span>` : `<span class="badge bg-primary rounded-circle order-badge" id="badge_${dataIndex}_${i}" style="display:none;"></span>`;
+                const dayaTampung = Math.floor(Math.random() * 40) + 20; const peminat = Math.floor(Math.random() * 1000) + 200;
+
+                prodiTableRows += `
+                    <tr onclick="toggleProdi('${prodi}', ${item.prodi_select || 2}, ${dataIndex}, ${i})">
+                        <td class="text-center" style="width: 50px;"><input class="form-check-input prodi-checkbox" type="checkbox" value="${prodi}" id="cb_${dataIndex}_${i}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleProdi('${prodi}', ${item.prodi_select || 2}, ${dataIndex}, ${i})"></td>
+                        <td><label class="form-check-label w-100 mb-0 fw-semibold" style="cursor:pointer">${prodi} ${badgeHtml}</label></td>
+                        <td class="text-center">${dayaTampung}</td><td class="text-center">${peminat}</td>
+                    </tr>`;
+            });
+            if(prodiList.length === 0) prodiTableRows = `<tr><td colspan="4" class="text-center text-muted py-3">Data Program Studi Belum Tersedia</td></tr>`;
+
+            let timelineHTML = `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Masa Pendaftaran</h6><small class="text-muted">${formatDate(item.pendaftaran_start)} - ${formatDate(item.pendaftaran_end)}</small></div>`;
+            if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian/Seleksi Tahap 1</h6><small class="text-muted">${formatDate(item.ujian1_start)}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
+            if(item.pengumuman1) timelineHTML += `<div class="list-timeline-item border-success"><h6 class="fw-bold mb-0 text-success">Pengumuman Hasil</h6><small class="text-muted">${formatDate(item.pengumuman1)}</small><p class="small mb-0 mt-1">${item.pengumuman1_keterangan || ''}</p></div>`;
+
+            const syaratHtml = item.syarat ? item.syarat.replace(/\n/g, '<br>') : '-';
+            const materiHtml = item.materi_ujian ? item.materi_ujian.map(m => `<span class="badge bg-secondary me-1">${m}</span>`).join('') : '-';
+
+            // Student options for new checkout
+            let studentOpts = '<option value="">-- Pilih Siswa yang Akan Didaftarkan --</option>';
+            students.forEach(s => { studentOpts += `<option value="${s.id}">${s.nama} (${s.kelas})</option>`; });
+            
+            const actionSection = isEdit ? `
+                <div class="alert alert-warning"><i class="fas fa-edit me-2"></i>Anda sedang mengedit pilihan jurusan untuk <strong>${students.find(x=>x.id===stuId).nama}</strong>.</div>
+                <button class="btn btn-gradient w-100 py-3 fs-5" onclick="checkoutPath(${dataIndex})"><i class="fas fa-save me-2"></i>Simpan Perubahan Jurusan</button>
+            ` : `
+                <h6 class="fw-bold text-primary mb-2">Tambahkan ke Akun Siswa:</h6>
+                <select class="form-select rounded-pill mb-4 border-primary" id="selectStudentCheckout" style="height: 50px;">${studentOpts}</select>
+                <button class="btn btn-gradient w-100 py-3 fs-5" onclick="checkoutPath(${dataIndex})"><i class="fas fa-shopping-cart me-2"></i>Checkout & Simpan ke Siswa</button>
+            `;
+
+            let biayaNum = Number(item.biaya) || 0;
+
+            document.getElementById('detailContent').innerHTML = `
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4"><img src="${item.logo_link || 'https://via.placeholder.com/60'}" class="card-logo me-3" style="width:60px;height:60px"><div><h4 class="fw-bold mb-0">${item.nama_jalur}</h4><p class="text-muted mb-0">${item.universitas || ''} (${item.akronim || ''})</p></div></div>
+                        <div class="row g-4">
+                            <div class="col-md-7">
+                                <h6 class="fw-bold text-primary border-bottom pb-2">Informasi Umum</h6><p>${item.keterangan || '-'}</p>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6"><div class="p-2 bg-light rounded small"><span class="text-muted d-block">Tipe:</span> <strong>${item.tipe_ujian || '-'}</strong></div></div>
+                                    <div class="col-6"><div class="p-2 bg-light rounded small"><span class="text-muted d-block">Skema:</span> <strong>${item.skema || '-'}</strong></div></div>
+                                </div>
+                                <h6 class="fw-bold text-primary border-bottom pb-2 mt-4">Persyaratan</h6><p class="small text-muted mb-0">${syaratHtml}</p>
+                                <div class="mt-3"><small class="text-muted d-block mb-1">Materi Ujian:</small>${materiHtml}</div>
+                            </div>
+                            <div class="col-md-5">
+                                <h6 class="fw-bold text-primary border-bottom pb-2">Jadwal Penting</h6><div class="mt-3">${timelineHTML}</div>
+                                <div class="p-3 bg-light rounded mt-3"><small class="text-muted d-block mb-1">Biaya Pendaftaran</small><h4 class="text-warning fw-bold mb-0">${biayaNum === 0 ? 'Gratis' : formatRupiah(biayaNum)}</h4></div>
+                                ${item.web ? `<a href="${item.web}" target="_blank" class="btn btn-outline-primary w-100 rounded-pill mt-3"><i class="fas fa-globe me-1"></i> Web Resmi</a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-list-ul text-primary me-2"></i>Daftar Program Studi</h5>
+                        <div class="alert alert-info border-0 bg-primary bg-opacity-10 py-2"><i class="fas fa-info-circle text-primary me-2"></i>Maksimal memilih <strong>${item.prodi_select || '-'} Prodi</strong>. Urutan klik menentukan prioritas.</div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered table-prodi align-middle">
+                                <thead class="table-light"><tr><th class="text-center">Pilih</th><th>Nama Program Studi</th><th class="text-center">Daya Tampung</th><th class="text-center">Peminat Th Lalu</th></tr></thead>
+                                <tbody>${prodiTableRows}</tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4 p-3 bg-light rounded-4 border">
+                            ${actionSection}
+                        </div>
+                    </div>
+                </div>`;
+            switchView('detail');
+        };
+
+        const toggleProdi = (pr, max, dIdx, i) => {
+            const cb = document.getElementById(`cb_${dIdx}_${i}`);
+            const badge = document.getElementById(`badge_${dIdx}_${i}`);
+            const idx = currentDetailProdiSelection.indexOf(pr);
+            if(idx > -1) {
+                currentDetailProdiSelection.splice(idx, 1); cb.checked = false; badge.style.display = 'none';
+            } else {
+                if(currentDetailProdiSelection.length >= max) return cb.checked = false;
+                currentDetailProdiSelection.push(pr); cb.checked = true; badge.style.display = 'inline-block';
+            }
+            // Update other badges
+            (dataKatalog[dIdx].prodi_list || []).forEach((p, j) => {
+                const b = document.getElementById(`badge_${dIdx}_${j}`);
+                const pos = currentDetailProdiSelection.indexOf(p);
+                if(b) { if(pos > -1) { b.innerText = pos + 1; b.style.display = 'inline-block'; } else { b.style.display = 'none'; } }
+            });
+        };
+
+        const checkoutPath = (dataIndex) => {
+            const item = dataKatalog[dataIndex];
+            if(currentDetailProdiSelection.length === 0) return alert("Pilih minimal 1 prodi.");
+            
+            if(editStudentId !== null) {
+                // Save Edit
+                const s = students.find(x => x.id === editStudentId);
+                s.items[editItemIndex].prodiTerpilih = [...currentDetailProdiSelection];
+                syncStudentToDB(s); // Sync API POST
+                alert("Perubahan jurusan untuk " + s.nama + " berhasil disimpan!");
+            } else {
+                // New Checkout
+                const sId = document.getElementById('selectStudentCheckout').value;
+                if(!sId) return alert("Silakan pilih siswa dari dropdown.");
+
+                const s = students.find(x => x.id == sId);
+                // Cek menggunakan nama_jalur agar unik meskipun index API acak
+                if(s.items.find(x => x.jalur.nama_jalur === item.nama_jalur)) return alert("Siswa ini sudah didaftarkan pada jalur tersebut.");
+
+                s.items.push({ jalur: item, prodiTerpilih: [...currentDetailProdiSelection], statusDaftar: false, statusUjian: false });
+                syncStudentToDB(s); // Sync API POST
+                alert(`Berhasil ditambahkan ke data ${s.panggilan}!`);
+            }
+            goBack();
+        };
+
+        // --- All Timeline (List, Gantt, Calendar) ---
+        const getTimelineEvents = (sourceArray) => {
+            let events = [];
+            sourceArray.forEach(item => {
+                if(item.pendaftaran_start) {
+                    events.push({ type: 'Buka Daftar', date: new Date(item.pendaftaran_start), item: item, color: 'text-primary', bg: 'border-primary' });
+                    events.push({ type: 'Tutup Daftar', date: new Date(item.pendaftaran_end), item: item, color: 'text-danger', bg: 'border-danger' });
+                }
+                if(item.ujian1_start) events.push({ type: 'Ujian', date: new Date(item.ujian1_start), item: item, color: 'text-warning', bg: 'border-warning' });
+                if(item.pengumuman1) events.push({ type: 'Pengumuman', date: new Date(item.pengumuman1), item: item, color: 'text-success', bg: 'border-success' });
+            });
+            return events.sort((a, b) => a.date - b.date);
+        };
+
+        const generateTimelineListHTML = (events) => {
+            if(events.length === 0) return '<p class="text-muted text-center py-3">Tidak ada agenda.</p>';
+            let html = '', currentMonth = '';
+            events.forEach(ev => {
+                const mStr = ev.date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                if(mStr !== currentMonth) {
+                    html += `<h6 class="fw-bold mt-3 mb-2 border-bottom pb-1 text-secondary" style="font-size:0.85rem">${mStr}</h6>`;
+                    currentMonth = mStr;
+                }
+                html += `
+                    <div class="card border-0 border-start border-4 ${ev.bg} shadow-sm mb-2 rounded-end-3 bg-light">
+                        <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
+                            <div><small class="${ev.color} fw-bold d-block mb-1" style="font-size:0.7rem;">${ev.type}</small><span class="fw-semibold d-block" style="font-size:0.85rem">${ev.item.nama_jalur} (${ev.item.akronim || ''})</span></div>
+                            <div class="text-end"><span class="badge bg-white text-dark border"><i class="far fa-calendar-alt me-1"></i>${ev.date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span></div>
+                        </div>
+                    </div>`;
+            });
+            return html;
+        };
+
+        let currentMonth = new Date().getMonth(); 
+        let currentYear = new Date().getFullYear();
+
+        const renderTimelineAll = () => {
+            // 1. Render List View
+            document.getElementById('listTimelineAllContainer').innerHTML = generateTimelineListHTML(getTimelineEvents(dataKatalog));
+
+            // 2. Render Gantt
+            let minDate = new Date(); let maxDate = new Date(); maxDate.setMonth(maxDate.getMonth() + 3);
+            if (dataKatalog.length > 0) {
+                minDate = new Date('2099-01-01'); maxDate = new Date('2000-01-01');
+                dataKatalog.forEach(item => {
+                    if(item.pendaftaran_start) {
+                        const s = new Date(item.pendaftaran_start); const e = new Date(item.pengumuman1 || item.pendaftaran_end);
+                        if(s < minDate) minDate = s; if(e > maxDate) maxDate = e;
+                    }
+                });
+            }
+            
+            minDate.setDate(minDate.getDate() - 5); maxDate.setDate(maxDate.getDate() + 5);
+            const totalDuration = maxDate - minDate;
+
+            let headerHtml = '<tr><th class="gantt-sticky-col">Nama Jalur</th>';
+            let cur = new Date(minDate);
+            while(cur <= maxDate) {
+                if(cur.getDate() === 1 || cur.getDate() === 15) headerHtml += `<th style="min-width:40px">${cur.getDate()}/${cur.getMonth()+1}</th>`;
+                else headerHtml += `<th style="min-width:10px"></th>`;
+                cur.setDate(cur.getDate() + 5); 
+            }
+            headerHtml += '</tr>';
+
+            let bodyHtml = '';
+            dataKatalog.forEach(item => {
+                if(!item.pendaftaran_start) return;
+                const getSeg = (d1, d2, cls) => {
+                    if(!d1) return '';
+                    let s = new Date(d1); let e = d2 ? new Date(d2) : s;
+                    let left = ((s - minDate) / totalDuration) * 100;
+                    let width = Math.max(((e - s) / totalDuration) * 100, 1.5);
+                    return `<div class="gantt-segment ${cls}" style="left:${left}%; width:${width}%;" title="${formatDate(s)}"></div>`;
+                };
+                bodyHtml += `
+                    <tr>
+                        <td class="gantt-sticky-col fw-bold small text-primary" title="${item.nama_jalur}">${item.akronim || item.nama_jalur.substring(0,15)}</td>
+                        <td colspan="100" class="gantt-track-cell">
+                            <div class="gantt-track">
+                                ${getSeg(item.pendaftaran_start, item.pendaftaran_end, 'daftar')}
+                                ${getSeg(item.ujian1_start, item.ujian1_end, 'ujian')}
+                                ${getSeg(item.pengumuman1, item.pengumuman1, 'pengumuman')}
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('ganttContainer').innerHTML = `<div class="gantt-wrapper"><table class="gantt-table"><thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody></table></div>`;
+
+            // 3. Render Calendar
+            renderCalendar();
+        };
+
+        const changeMonth = (dir) => {
+            currentMonth += dir;
+            if(currentMonth > 11) { currentMonth = 0; currentYear++; }
+            if(currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar();
+        };
+
+        const renderCalendar = () => {
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const eMonthYear = document.getElementById('calMonthYear');
+            if(eMonthYear) eMonthYear.innerText = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            let calHtml = '';
+            for(let i=0; i<firstDay; i++) calHtml += '<div class="calendar-day empty"></div>';
+            
+            const today = new Date();
+            for(let i=1; i<=daysInMonth; i++) {
+                const curDate = new Date(currentYear, currentMonth, i);
+                let isToday = (today.getDate()===i && today.getMonth()===currentMonth && today.getFullYear()===currentYear) ? 'today' : '';
+                
+                let eventsHtml = '';
+                dataKatalog.forEach(j => {
+                    const checkRange = (ds, de, t, c) => {
+                        if(!ds) return;
+                        let s = new Date(ds); s.setHours(0,0,0,0);
+                        let e = de ? new Date(de) : s; e.setHours(23,59,59,999);
+                        if(curDate >= s && curDate <= e) {
+                            eventsHtml += `<div class="cal-event-bar ${c}" title="${t}: ${j.nama_jalur}">${j.akronim || j.nama_jalur}</div>`;
+                        }
+                    };
+                    checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary');
+                    checkRange(j.ujian1_start, j.ujian1_end, 'Ujian', 'bg-warning text-dark');
+                    checkRange(j.pengumuman1, j.pengumuman1, 'Pengumuman', 'bg-success');
+                });
+                
+                calHtml += `
+                    <div class="calendar-day ${isToday}" onclick="openCalEvent(${i})">
+                        <span class="fw-bold mb-1" style="font-size:0.8rem">${i}</span>
+                        <div class="w-100 d-flex flex-column gap-1 overflow-hidden px-1">${eventsHtml}</div>
+                    </div>`;
+            }
+            const eCalDays = document.getElementById('calendarDays');
+            if(eCalDays) eCalDays.innerHTML = calHtml;
+        };
+
+        const openCalEvent = (day) => {
+            const curDate = new Date(currentYear, currentMonth, day);
+            const eCalDate = document.getElementById('calEventDate');
+            if(eCalDate) eCalDate.innerText = formatDate(curDate);
+            
+            let html = '';
+            dataKatalog.forEach(j => {
+                const checkRange = (ds, de, t, c) => {
+                    if(!ds) return;
+                    let s = new Date(ds); s.setHours(0,0,0,0);
+                    let e = de ? new Date(de) : s; e.setHours(23,59,59,999);
+                    if(curDate >= s && curDate <= e) {
+                        html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-${c.split('-')[1]}"><span class="badge ${c} me-2">${t}</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
+                    }
+                };
+                checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary');
+                checkRange(j.ujian1_start, j.ujian1_end, 'Ujian', 'bg-warning text-dark');
+                checkRange(j.pengumuman1, j.pengumuman1, 'Pengumuman', 'bg-success');
+            });
+
+            if(html === '') html = '<p class="text-muted text-center small">Tidak ada agenda.</p>';
+            
+            const eCalList = document.getElementById('calEventList');
+            if(eCalList) eCalList.innerHTML = html;
+            
+            const calModalEl = document.getElementById('calEventModal');
+            if(calModalEl) {
+                new bootstrap.Modal(calModalEl).show();
+            }
+        };
+
+        // Init: Jangan panggil switchView('home') langsung, tapi panggil initData yang akan fetch lalu switchView.
+        document.addEventListener('DOMContentLoaded', () => { 
+            initData(); 
+        });
+    </script>
+</body>
+</html>
