@@ -67,7 +67,7 @@
         .gantt-table th, .gantt-table td { padding: 10px; border-bottom: 1px solid #eee; position: relative; }
         
         .gantt-sticky-col { 
-            position: sticky; left: 0; background: white; z-index: 10; width: 180px; min-width: 180px; 
+            position: sticky; left: 0; background: white; z-index: 10; width: 220px; min-width: 220px; 
             border-right: 2px solid #eee; box-shadow: 2px 0 5px rgba(0,0,0,0.02);
         }
         .gantt-table thead th { position: sticky; top: 0; background: #f8f9fa; z-index: 11; font-size: 0.75rem; text-align: center; }
@@ -86,14 +86,14 @@
         /* Google Calendar Style */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; background: #eee; border: 1px solid #eee;}
         .calendar-header { font-weight: bold; padding: 8px 0; background: #f8f9fa; font-size: 0.8rem; }
-        .calendar-day { background: white; padding: 5px 2px; cursor: pointer; position: relative; min-height: 90px; display: flex; flex-direction: column; align-items: stretch;}
+        .calendar-day { background: white; padding: 5px 2px; cursor: pointer; position: relative; min-height: 100px; display: flex; flex-direction: column; align-items: stretch;}
         .calendar-day:hover { background: #f0f7ff; }
         .calendar-day.today { background: #fff3cd; }
         .calendar-day.empty { background: #f8f9fa; cursor: default; }
         .cal-event-bar { 
-            font-size: 0.65rem; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; 
+            font-size: 0.65rem; padding: 3px 5px; margin-bottom: 3px; border-radius: 4px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; color: white;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer;
         }
 
         .list-timeline-item { border-left: 3px solid var(--primary-blue); padding-left: 1rem; margin-bottom: 1rem; background: white; padding: 1rem; border-radius: 0 10px 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
@@ -120,7 +120,7 @@
         <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <h5 class="fw-bold text-primary">Memuat Katalog PTN...</h5>
+        <h5 class="fw-bold text-primary">Memuat Data...</h5>
         <p class="text-muted small">Menghubungkan ke Database</p>
     </div>
 
@@ -160,9 +160,9 @@
 
             <div class="row g-4">
                 <!-- Pendaftaran Buka Saat Ini -->
-                <div class="col-md-6">
+                <div class="col-12 col-lg-6">
                     <h6 class="fw-bold mb-3"><i class="fas fa-door-open text-success me-2"></i>Pendaftaran Sedang Buka</h6>
-                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                    <div class="card border-0 shadow-sm rounded-4 bg-white mb-3">
                         <div class="card-body" id="homeOpenRegistrations">
                             <!-- Injected by JS -->
                         </div>
@@ -170,9 +170,9 @@
                 </div>
 
                 <!-- Timeline Siswa (List with Clickable Cards) -->
-                <div class="col-md-6">
+                <div class="col-12 col-lg-6">
                     <h6 class="fw-bold mb-3"><i class="fas fa-calendar-alt text-primary me-2"></i>Timeline Siswa Pilihan</h6>
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card border-0 shadow-sm rounded-4 mb-3">
                         <div class="card-body overflow-auto" style="max-height: 400px;" id="homeStudentTimeline">
                             <!-- Injected by JS -->
                         </div>
@@ -303,11 +303,18 @@
                             <h6 class="fw-bold mb-0" id="calMonthYear">Bulan Tahun</h6>
                             <button class="btn btn-sm btn-light" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
                         </div>
-                        <div class="calendar-grid">
-                            <div class="calendar-header">Min</div><div class="calendar-header">Sen</div><div class="calendar-header">Sel</div>
-                            <div class="calendar-header">Rab</div><div class="calendar-header">Kam</div><div class="calendar-header">Jum</div><div class="calendar-header">Sab</div>
+                        
+                        <!-- Scrollable Wrapper for Calendar Mobile View -->
+                        <div class="table-responsive border rounded-3 pb-1">
+                            <div style="min-width: 700px;">
+                                <div class="calendar-grid">
+                                    <div class="calendar-header">Min</div><div class="calendar-header">Sen</div><div class="calendar-header">Sel</div>
+                                    <div class="calendar-header">Rab</div><div class="calendar-header">Kam</div><div class="calendar-header">Jum</div><div class="calendar-header">Sab</div>
+                                </div>
+                                <div class="calendar-grid mt-1" id="calendarDays"></div>
+                            </div>
                         </div>
-                        <div class="calendar-grid mt-1" id="calendarDays"></div>
+
                     </div>
                 </div>
                 <div class="tab-pane fade" id="tab-list-all">
@@ -444,23 +451,27 @@
         
         // --- API DATA FETCH & SYNC LOGIC ---
         
-        // 1. Fetch Katalog saat web dibuka
+        // 1. Fetch Katalog dan data Siswa saat web dibuka
         const initData = async () => {
             try {
                 const response = await fetch(API_URL);
                 const result = await response.json();
                 
-                if(result.status === "success" && result.data) {
-                    // Tambahkan "index" (ID unik katalog) berdasarkan urutan array untuk logic referensi
-                    dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
+                if(result.status === "success") {
+                    if(result.data) {
+                        dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
+                    }
+                    if(result.students) {
+                        students = result.students;
+                        localStorage.setItem('wali_students_db', JSON.stringify(students));
+                    }
                 } else {
-                    alert("Gagal memuat katalog: Format data API tidak sesuai.");
+                    console.warn("Gagal memuat API dengan sempurna.");
                 }
             } catch (error) {
                 console.error("Error fetching API:", error);
-                alert("Gagal terhubung ke database (API Error). Memuat mode offline jika tersedia.");
+                // Biarkan berjalan dengan data dummy/local jika API gagal
             } finally {
-                // Hilangkan loading screen, tampilkan aplikasi
                 document.getElementById('loadingOverlay').style.display = 'none';
                 document.getElementById('mainContainer').style.display = 'block';
                 switchView('home');
@@ -469,14 +480,11 @@
 
         // 2. Sync (POST) data siswa ke Google Sheets setiap ada perubahan
         const syncStudentToDB = async (studentData) => {
-            // Selalu simpan ke localStorage agar tidak hilang saat reload
             localStorage.setItem('wali_students_db', JSON.stringify(students));
-            
-            // Kirim ke Google Sheets via API
             try {
                 await fetch(API_URL, {
                     method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" }, // Menghindari isu CORS Preflight
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
                     body: JSON.stringify(studentData)
                 });
                 console.log("Data berhasil dikirim ke Google Sheets.");
@@ -521,7 +529,6 @@
             const newStudent = { id: Date.now(), nama, panggilan, kelas, sekolah, email, akunTO, items: [] };
             students.push(newStudent);
             
-            // Trigger API Sync
             syncStudentToDB(newStudent);
 
             bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide();
@@ -575,7 +582,6 @@
             } else {
                 let html = '';
                 s.items.forEach((p, idx) => {
-                    // Cek ketersediaan biaya
                     const biayaNum = Number(p.jalur.biaya) || 0;
                     total += biayaNum;
 
@@ -610,7 +616,7 @@
             if(type === 'daftar') s.items[idx].statusDaftar = !s.items[idx].statusDaftar;
             if(type === 'ujian') s.items[idx].statusUjian = !s.items[idx].statusUjian;
             
-            syncStudentToDB(s); // Sync Update ke API
+            syncStudentToDB(s);
             renderStudentItems();
         };
 
@@ -618,7 +624,7 @@
             if(confirm("Hapus jalur ini dari siswa?")) { 
                 const s = students.find(x => x.id === sId);
                 s.items.splice(idx,1); 
-                syncStudentToDB(s); // Sync Update ke API
+                syncStudentToDB(s); 
                 renderStudentItems(); 
             }
         };
@@ -626,8 +632,8 @@
         const editStudentItem = (sId, idx) => {
             const s = students.find(x => x.id === sId);
             const item = s.items[idx];
-            // Temukan index dataKatalog berdasarkan univ_code atau nama_jalur (Krn dari API index bisa berbeda)
-            const catIndex = dataKatalog.findIndex(d => d.nama_jalur === item.jalur.nama_jalur);
+            // Temukan dengan index asli agar tetap bisa diedit meski sedang difilter
+            const catIndex = dataKatalog.findIndex(d => d.index === item.jalur.index);
             if(catIndex > -1) {
                 openDetail(catIndex, true, sId, idx);
             } else {
@@ -651,7 +657,6 @@
         const renderHome = () => {
             const now = new Date(); 
             
-            // Collect all student events
             let allStudentJalurs = [];
             students.forEach(s => {
                 s.items.forEach(it => { allStudentJalurs.push({...it.jalur, _siswa: s}); });
@@ -673,7 +678,7 @@
             const cdBox = document.getElementById('homeCountdown');
             const titleBox = document.getElementById('homeNextAgendaTitle');
             if(nextEvent) {
-                titleBox.innerHTML = `${nextEvent.j.akronim || nextEvent.j.nama_jalur} - ${nextEvent.type}`;
+                titleBox.innerHTML = `${nextEvent.j.nama_jalur || nextEvent.j.akronim} - ${nextEvent.type}`;
                 const diffTime = Math.abs(nextEvent.date - now);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 cdBox.innerHTML = `
@@ -709,17 +714,12 @@
             let tlHtml = allEvents.length === 0 ? '<p class="text-muted small">Tidak ada agenda.</p>' : '';
             let grouped = {};
             
-            // Group identical events on the same date for different students
             allEvents.forEach(e => {
                 const key = e.d.getTime() + '_' + e.t + '_' + e.j.index;
                 if(!grouped[key]) { grouped[key] = { date: e.d, type: e.t, j: e.j, color: e.c, bg: e.bg, students: [] }; }
-                // Hindari duplikat siswa jika dia daftar prodi berbeda di jalur yang sama
-                if(!grouped[key].students.find(s => s.id === e.s.id)) {
-                    grouped[key].students.push(e.s);
-                }
+                if(!grouped[key].students.find(s => s.id === e.s.id)) { grouped[key].students.push(e.s); }
             });
 
-            // Flatten grouped
             let flatGrouped = Object.values(grouped).sort((a,b) => a.date - b.date).slice(0, 10);
             let currentMonthGroup = '';
 
@@ -819,16 +819,16 @@
                 return;
             }
 
-            filteredData.forEach((item, index) => {
+            filteredData.forEach((item) => {
                 let badgeClass = item.jalur === 'Mandiri' ? 'bg-warning text-dark' : (item.jalur === 'Nasional' ? 'bg-primary text-white' : 'bg-danger text-white');
                 let biayaNum = Number(item.biaya) || 0;
                 let biayaMaxxNum = Number(item.biaya_maxx) || biayaNum;
                 let hargaTeks = biayaNum === biayaMaxxNum ? formatRupiah(biayaNum) : `${formatRupiah(biayaNum)} - ${formatRupiah(biayaMaxxNum)}`;
 
-                // Handle missing index by passing array position
+                // Gunakan openDetailByItemId yang mencocokkan index asli
                 container.innerHTML += `
                     <div class="col-12 col-md-6 d-flex align-items-stretch">
-                        <div class="card katalog-card w-100 p-3" onclick="openDetail(${index})">
+                        <div class="card katalog-card w-100 p-3" onclick="openDetailByItemId(${item.index})">
                             <div class="d-flex align-items-center mb-3">
                                 <img src="${item.logo_link || 'https://via.placeholder.com/45'}" class="card-logo me-3">
                                 <div>
@@ -856,9 +856,12 @@
             });
         };
 
+        const openDetailByItemId = (itemId) => {
+            const dataIndex = dataKatalog.findIndex(d => d.index === itemId);
+            if(dataIndex > -1) openDetail(dataIndex);
+        };
+
         const openDetail = (dataIndex, isEdit = false, stuId = null, stuItemIdx = null) => {
-            // Karena dataKatalog bisa di filter, kita harus memastikan index yang dipassing benar. 
-            // Kita gunakan raw index dari array dataKatalog utama.
             const item = dataKatalog[dataIndex];
             if(!item) return;
 
@@ -874,27 +877,38 @@
             document.getElementById('detailModeBadge').style.display = isEdit ? 'inline-block' : 'none';
 
             let prodiTableRows = '';
-            // Handle prodi_list jika kosong dari API
             const prodiList = item.prodi_list || [];
             
+            // Cek ketersediaan daya_tampung di database (jika undefined/kosong, sembunyikan kolom)
+            const hasDayaTampung = !!item.daya_tampung;
+            const thDayaTampung = hasDayaTampung ? `<th class="text-center">Daya Tampung</th><th class="text-center">Peminat Th Lalu</th>` : '';
+
             prodiList.forEach((prodi, i) => {
                 const isChecked = currentDetailProdiSelection.includes(prodi);
                 const orderIndex = isChecked ? currentDetailProdiSelection.indexOf(prodi) + 1 : '';
                 const badgeHtml = isChecked ? `<span class="badge bg-primary rounded-circle order-badge" id="badge_${dataIndex}_${i}">${orderIndex}</span>` : `<span class="badge bg-primary rounded-circle order-badge" id="badge_${dataIndex}_${i}" style="display:none;"></span>`;
-                const dayaTampung = Math.floor(Math.random() * 40) + 20; const peminat = Math.floor(Math.random() * 1000) + 200;
+                
+                // Gunakan daya_tampung jika ada, jika tidak, sembunyikan kolom td
+                const tdDayaTampung = hasDayaTampung ? `<td class="text-center">${item.daya_tampung || '-'}</td><td class="text-center">-</td>` : '';
 
                 prodiTableRows += `
                     <tr onclick="toggleProdi('${prodi}', ${item.prodi_select || 2}, ${dataIndex}, ${i})">
                         <td class="text-center" style="width: 50px;"><input class="form-check-input prodi-checkbox" type="checkbox" value="${prodi}" id="cb_${dataIndex}_${i}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleProdi('${prodi}', ${item.prodi_select || 2}, ${dataIndex}, ${i})"></td>
                         <td><label class="form-check-label w-100 mb-0 fw-semibold" style="cursor:pointer">${prodi} ${badgeHtml}</label></td>
-                        <td class="text-center">${dayaTampung}</td><td class="text-center">${peminat}</td>
+                        ${tdDayaTampung}
                     </tr>`;
             });
-            if(prodiList.length === 0) prodiTableRows = `<tr><td colspan="4" class="text-center text-muted py-3">Data Program Studi Belum Tersedia</td></tr>`;
+            if(prodiList.length === 0) prodiTableRows = `<tr><td colspan="${hasDayaTampung?4:2}" class="text-center text-muted py-3">Data Program Studi Belum Tersedia</td></tr>`;
 
             let timelineHTML = `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Masa Pendaftaran</h6><small class="text-muted">${formatDate(item.pendaftaran_start)} - ${formatDate(item.pendaftaran_end)}</small></div>`;
-            if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian/Seleksi Tahap 1</h6><small class="text-muted">${formatDate(item.ujian1_start)}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
-            if(item.pengumuman1) timelineHTML += `<div class="list-timeline-item border-success"><h6 class="fw-bold mb-0 text-success">Pengumuman Hasil</h6><small class="text-muted">${formatDate(item.pengumuman1)}</small><p class="small mb-0 mt-1">${item.pengumuman1_keterangan || ''}</p></div>`;
+            
+            // Tahap 1
+            if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian/Seleksi Tahap 1</h6><small class="text-muted">${formatDate(item.ujian1_start)} ${item.ujian1_end && item.ujian1_end !== item.ujian1_start ? 's/d ' + formatDate(item.ujian1_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
+            if(item.pengumuman1) timelineHTML += `<div class="list-timeline-item ${!item.pengumuman2 ? 'border-success' : ''}"><h6 class="fw-bold mb-0 ${!item.pengumuman2 ? 'text-success' : ''}">Pengumuman Tahap 1</h6><small class="text-muted">${formatDate(item.pengumuman1)}</small><p class="small mb-0 mt-1">${item.pengumuman1_keterangan || ''}</p></div>`;
+            
+            // Tahap 2
+            if(item.ujian2_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian/Seleksi Tahap 2</h6><small class="text-muted">${formatDate(item.ujian2_start)} ${item.ujian2_end && item.ujian2_end !== item.ujian2_start ? 's/d ' + formatDate(item.ujian2_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian2_keterangan || ''}</p></div>`;
+            if(item.pengumuman2) timelineHTML += `<div class="list-timeline-item border-success"><h6 class="fw-bold mb-0 text-success">Pengumuman Tahap 2</h6><small class="text-muted">${formatDate(item.pengumuman2)}</small><p class="small mb-0 mt-1">${item.pengumuman2_keterangan || ''}</p></div>`;
 
             const syaratHtml = item.syarat ? item.syarat.replace(/\n/g, '<br>') : '-';
             const materiHtml = item.materi_ujian ? item.materi_ujian.map(m => `<span class="badge bg-secondary me-1">${m}</span>`).join('') : '-';
@@ -904,12 +918,12 @@
             students.forEach(s => { studentOpts += `<option value="${s.id}">${s.nama} (${s.kelas})</option>`; });
             
             const actionSection = isEdit ? `
-                <div class="alert alert-warning"><i class="fas fa-edit me-2"></i>Anda sedang mengedit pilihan jurusan untuk <strong>${students.find(x=>x.id===stuId).nama}</strong>.</div>
-                <button class="btn btn-gradient w-100 py-3 fs-5" onclick="checkoutPath(${dataIndex})"><i class="fas fa-save me-2"></i>Simpan Perubahan Jurusan</button>
+                <div class="alert alert-warning"><i class="fas fa-edit me-2"></i>Mengedit jurusan untuk <strong>${students.find(x=>x.id===stuId).nama}</strong>.</div>
+                <button class="btn btn-gradient w-100 py-3 fs-5" onclick="checkoutPath(${dataIndex})"><i class="fas fa-save me-2"></i>Simpan Perubahan</button>
             ` : `
                 <h6 class="fw-bold text-primary mb-2">Tambahkan ke Akun Siswa:</h6>
                 <select class="form-select rounded-pill mb-4 border-primary" id="selectStudentCheckout" style="height: 50px;">${studentOpts}</select>
-                <button class="btn btn-gradient w-100 py-3 fs-5" onclick="checkoutPath(${dataIndex})"><i class="fas fa-shopping-cart me-2"></i>Checkout & Simpan ke Siswa</button>
+                <button class="btn btn-gradient w-100 py-3 fs-5" onclick="checkoutPath(${dataIndex})"><i class="fas fa-shopping-cart me-2"></i>Simpan ke Siswa</button>
             `;
 
             let biayaNum = Number(item.biaya) || 0;
@@ -941,9 +955,11 @@
                     <div class="card-body p-4">
                         <h5 class="fw-bold mb-3"><i class="fas fa-list-ul text-primary me-2"></i>Daftar Program Studi</h5>
                         <div class="alert alert-info border-0 bg-primary bg-opacity-10 py-2"><i class="fas fa-info-circle text-primary me-2"></i>Maksimal memilih <strong>${item.prodi_select || '-'} Prodi</strong>. Urutan klik menentukan prioritas.</div>
-                        <div class="table-responsive">
-                            <table class="table table-hover table-bordered table-prodi align-middle">
-                                <thead class="table-light"><tr><th class="text-center">Pilih</th><th>Nama Program Studi</th><th class="text-center">Daya Tampung</th><th class="text-center">Peminat Th Lalu</th></tr></thead>
+                        <div class="table-responsive border rounded-3" style="max-height: 350px; overflow-y: auto;">
+                            <table class="table table-hover table-bordered table-prodi align-middle mb-0">
+                                <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                                    <tr><th class="text-center">Pilih</th><th>Nama Program Studi</th>${thDayaTampung}</tr>
+                                </thead>
                                 <tbody>${prodiTableRows}</tbody>
                             </table>
                         </div>
@@ -989,7 +1005,6 @@
                 if(!sId) return alert("Silakan pilih siswa dari dropdown.");
 
                 const s = students.find(x => x.id == sId);
-                // Cek menggunakan nama_jalur agar unik meskipun index API acak
                 if(s.items.find(x => x.jalur.nama_jalur === item.nama_jalur)) return alert("Siswa ini sudah didaftarkan pada jalur tersebut.");
 
                 s.items.push({ jalur: item, prodiTerpilih: [...currentDetailProdiSelection], statusDaftar: false, statusUjian: false });
@@ -1007,8 +1022,10 @@
                     events.push({ type: 'Buka Daftar', date: new Date(item.pendaftaran_start), item: item, color: 'text-primary', bg: 'border-primary' });
                     events.push({ type: 'Tutup Daftar', date: new Date(item.pendaftaran_end), item: item, color: 'text-danger', bg: 'border-danger' });
                 }
-                if(item.ujian1_start) events.push({ type: 'Ujian', date: new Date(item.ujian1_start), item: item, color: 'text-warning', bg: 'border-warning' });
-                if(item.pengumuman1) events.push({ type: 'Pengumuman', date: new Date(item.pengumuman1), item: item, color: 'text-success', bg: 'border-success' });
+                if(item.ujian1_start) events.push({ type: 'Ujian 1', date: new Date(item.ujian1_start), item: item, color: 'text-warning', bg: 'border-warning' });
+                if(item.pengumuman1) events.push({ type: 'Pengumuman 1', date: new Date(item.pengumuman1), item: item, color: 'text-success', bg: 'border-success' });
+                if(item.ujian2_start) events.push({ type: 'Ujian 2', date: new Date(item.ujian2_start), item: item, color: 'text-warning', bg: 'border-warning' });
+                if(item.pengumuman2) events.push({ type: 'Pengumuman 2', date: new Date(item.pengumuman2), item: item, color: 'text-success', bg: 'border-success' });
             });
             return events.sort((a, b) => a.date - b.date);
         };
@@ -1025,7 +1042,7 @@
                 html += `
                     <div class="card border-0 border-start border-4 ${ev.bg} shadow-sm mb-2 rounded-end-3 bg-light">
                         <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
-                            <div><small class="${ev.color} fw-bold d-block mb-1" style="font-size:0.7rem;">${ev.type}</small><span class="fw-semibold d-block" style="font-size:0.85rem">${ev.item.nama_jalur} (${ev.item.akronim || ''})</span></div>
+                            <div><small class="${ev.color} fw-bold d-block mb-1" style="font-size:0.7rem;">${ev.type}</small><span class="fw-semibold d-block" style="font-size:0.85rem">${ev.item.nama_jalur}</span></div>
                             <div class="text-end"><span class="badge bg-white text-dark border"><i class="far fa-calendar-alt me-1"></i>${ev.date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span></div>
                         </div>
                     </div>`;
@@ -1046,7 +1063,8 @@
                 minDate = new Date('2099-01-01'); maxDate = new Date('2000-01-01');
                 dataKatalog.forEach(item => {
                     if(item.pendaftaran_start) {
-                        const s = new Date(item.pendaftaran_start); const e = new Date(item.pengumuman1 || item.pendaftaran_end);
+                        const s = new Date(item.pendaftaran_start); 
+                        const e = new Date(item.pengumuman2 || item.pengumuman1 || item.pendaftaran_end);
                         if(s < minDate) minDate = s; if(e > maxDate) maxDate = e;
                     }
                 });
@@ -1076,12 +1094,16 @@
                 };
                 bodyHtml += `
                     <tr>
-                        <td class="gantt-sticky-col fw-bold small text-primary" title="${item.nama_jalur}">${item.akronim || item.nama_jalur.substring(0,15)}</td>
+                        <td class="gantt-sticky-col fw-bold small text-primary" title="${item.nama_jalur}">
+                            <div style="width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.nama_jalur}</div>
+                        </td>
                         <td colspan="100" class="gantt-track-cell">
                             <div class="gantt-track">
                                 ${getSeg(item.pendaftaran_start, item.pendaftaran_end, 'daftar')}
                                 ${getSeg(item.ujian1_start, item.ujian1_end, 'ujian')}
                                 ${getSeg(item.pengumuman1, item.pengumuman1, 'pengumuman')}
+                                ${getSeg(item.ujian2_start, item.ujian2_end, 'ujian')}
+                                ${getSeg(item.pengumuman2, item.pengumuman2, 'pengumuman')}
                             </div>
                         </td>
                     </tr>`;
@@ -1122,12 +1144,14 @@
                         let s = new Date(ds); s.setHours(0,0,0,0);
                         let e = de ? new Date(de) : s; e.setHours(23,59,59,999);
                         if(curDate >= s && curDate <= e) {
-                            eventsHtml += `<div class="cal-event-bar ${c}" title="${t}: ${j.nama_jalur}">${j.akronim || j.nama_jalur}</div>`;
+                            eventsHtml += `<div class="cal-event-bar ${c}" title="${t}: ${j.nama_jalur}">${j.nama_jalur}</div>`;
                         }
                     };
                     checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary');
-                    checkRange(j.ujian1_start, j.ujian1_end, 'Ujian', 'bg-warning text-dark');
-                    checkRange(j.pengumuman1, j.pengumuman1, 'Pengumuman', 'bg-success');
+                    checkRange(j.ujian1_start, j.ujian1_end, 'Ujian 1', 'bg-warning text-dark');
+                    checkRange(j.pengumuman1, j.pengumuman1, 'Pengumuman 1', 'bg-success');
+                    checkRange(j.ujian2_start, j.ujian2_end, 'Ujian 2', 'bg-warning text-dark');
+                    checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman 2', 'bg-success');
                 });
                 
                 calHtml += `
@@ -1152,12 +1176,14 @@
                     let s = new Date(ds); s.setHours(0,0,0,0);
                     let e = de ? new Date(de) : s; e.setHours(23,59,59,999);
                     if(curDate >= s && curDate <= e) {
-                        html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-${c.split('-')[1]}"><span class="badge ${c} me-2">${t}</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
+                        html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-${c.split('-')[1] || c.split(' ')[0].replace('bg-','')}"><span class="badge ${c} me-2">${t}</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
                     }
                 };
                 checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary');
-                checkRange(j.ujian1_start, j.ujian1_end, 'Ujian', 'bg-warning text-dark');
-                checkRange(j.pengumuman1, j.pengumuman1, 'Pengumuman', 'bg-success');
+                checkRange(j.ujian1_start, j.ujian1_end, 'Ujian 1', 'bg-warning text-dark');
+                checkRange(j.pengumuman1, j.pengumuman1, 'Pengumuman 1', 'bg-success');
+                checkRange(j.ujian2_start, j.ujian2_end, 'Ujian 2', 'bg-warning text-dark');
+                checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman 2', 'bg-success');
             });
 
             if(html === '') html = '<p class="text-muted text-center small">Tidak ada agenda.</p>';
@@ -1171,7 +1197,7 @@
             }
         };
 
-        // Init: Jangan panggil switchView('home') langsung, tapi panggil initData yang akan fetch lalu switchView.
+        // Init Data via API
         document.addEventListener('DOMContentLoaded', () => { 
             initData(); 
         });
