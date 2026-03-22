@@ -74,7 +74,7 @@
 
         /* Google Calendar Style */
         .calendar-scroll-wrapper { overflow-x: auto; background: white; border-radius: 15px; border: 1px solid #eee; }
-        .calendar-inner-container { min-width: 800px; /* Force width to enable horizontal scroll on mobile */ }
+        .calendar-inner-container { min-width: 800px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; text-align: center; background: #eee; }
         .calendar-header { font-weight: bold; padding: 8px 0; background: #f8f9fa; font-size: 0.8rem; }
         .calendar-day { background: white; padding: 5px 2px; cursor: pointer; position: relative; min-height: 100px; display: flex; flex-direction: column; align-items: stretch;}
@@ -96,6 +96,12 @@
         /* Custom UI for Analytic Bars */
         .analytic-bar-bg { background: #e9ecef; border-radius: 5px; height: 8px; width: 100%; overflow: hidden; margin-top: 5px; }
         .analytic-bar-fill { background: var(--primary-blue); height: 100%; border-radius: 5px; }
+
+        /* Scrollbars Customization */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
     </style>
     <!-- SweetAlert2 for Custom Alerts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -149,12 +155,12 @@
                 <!-- Kolom Kiri: Pendaftaran & Ujian -->
                 <div class="col-12 col-lg-6">
                     <h6 class="fw-bold mb-3"><i class="fas fa-door-open text-success me-2"></i>Pendaftaran Sedang Buka</h6>
-                    <div id="homeOpenRegistrations">
+                    <div id="homeOpenRegistrations" class="custom-scroll" style="max-height: 380px; overflow-y: auto; padding-right: 5px;">
                         <!-- Injected by JS -->
                     </div>
 
                     <h6 class="fw-bold mb-3 mt-4"><i class="fas fa-stopwatch text-warning me-2"></i>Ujian yang Akan Datang</h6>
-                    <div id="homeUpcomingExams">
+                    <div id="homeUpcomingExams" class="custom-scroll" style="max-height: 380px; overflow-y: auto; padding-right: 5px;">
                         <!-- Injected by JS -->
                     </div>
 
@@ -175,7 +181,7 @@
                 <div class="col-12 col-lg-6">
                     <h6 class="fw-bold mb-3"><i class="fas fa-calendar-alt text-primary me-2"></i>Timeline Agenda Siswa</h6>
                     <div class="card border-0 shadow-sm rounded-4 mb-3">
-                        <div class="card-body overflow-auto" style="max-height: 550px;" id="homeStudentTimeline">
+                        <div class="card-body overflow-auto custom-scroll" style="max-height: 600px;" id="homeStudentTimeline">
                             <!-- Injected by JS -->
                         </div>
                     </div>
@@ -208,7 +214,7 @@
             </div>
 
             <!-- Filter / Sort Siswa -->
-            <div class="d-flex gap-2 overflow-auto pb-3 mb-2" style="white-space: nowrap;">
+            <div class="d-flex gap-2 overflow-auto pb-3 mb-2 custom-scroll" style="white-space: nowrap;">
                 <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 sort-btn" onclick="renderSiswaList('nama')"><i class="fas fa-sort-alpha-down me-1"></i>A-Z</button>
                 <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 sort-btn" onclick="renderSiswaList('kelas')"><i class="fas fa-layer-group me-1"></i>Per Kelas</button>
                 <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 sort-btn" onclick="renderSiswaList('jalur')"><i class="fas fa-sort-numeric-down-alt me-1"></i>Paling Banyak Terdaftar</button>
@@ -299,7 +305,7 @@
                 </div>
             </div>
 
-            <div class="d-flex gap-2 overflow-auto pb-3 mb-2" style="white-space: nowrap;" id="katalogButtons">
+            <div class="d-flex gap-2 overflow-auto pb-3 mb-2 custom-scroll" style="white-space: nowrap;" id="katalogButtons">
                 <button class="btn btn-primary rounded-pill px-4 shadow-sm btn-filter" onclick="filterCatalogType('Semua')">Semua</button>
                 <button class="btn btn-outline-primary rounded-pill px-4 bg-white btn-filter" onclick="filterCatalogType('Mandiri')">Mandiri</button>
                 <button class="btn btn-outline-primary rounded-pill px-4 bg-white btn-filter" onclick="filterCatalogType('Nasional')">Nasional</button>
@@ -342,7 +348,7 @@
                             <button class="btn btn-sm btn-light" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
                         </div>
                         
-                        <div class="calendar-scroll-wrapper">
+                        <div class="calendar-scroll-wrapper custom-scroll">
                             <div class="calendar-inner-container" id="calendarGridContainer">
                                 <!-- Calendar Headers and Days injected by JS to maintain grid consistency -->
                             </div>
@@ -366,11 +372,11 @@
         <a href="#" class="bottom-nav-item" id="nav-univ" onclick="switchView('univ'); return false;">
             <i class="fas fa-university"></i><span>By Univ</span>
         </a>
-        <a href="#" class="bottom-nav-item" id="nav-siswa" onclick="switchView('siswa'); return false;">
-            <i class="fas fa-users"></i><span>Siswa</span>
-        </a>
         <a href="#" class="bottom-nav-item" id="nav-catalog" onclick="switchView('catalog'); return false;">
             <i class="fas fa-th-large"></i><span>Katalog</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="nav-siswa" onclick="switchView('siswa'); return false;">
+            <i class="fas fa-users"></i><span>Siswa</span>
         </a>
         <a href="#" class="bottom-nav-item" id="nav-timeline" onclick="switchView('timeline'); return false;">
             <i class="fas fa-calendar-day"></i><span>Timeline</span>
@@ -382,7 +388,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">Tambah Data Siswa</h5>
+                    <h5 class="modal-title fw-bold" id="modalStudentTitle">Tambah Data Siswa</h5>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body pt-3">
@@ -449,7 +455,7 @@
                     <h6 class="modal-title fw-bold text-primary mb-0" id="calEventDate">Tanggal</h6>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-3" id="calEventList" style="max-height: 60vh; overflow-y: auto;"></div>
+                <div class="modal-body p-3 custom-scroll" id="calEventList" style="max-height: 60vh; overflow-y: auto;"></div>
                 <div class="modal-footer border-0 bg-light rounded-bottom-4">
                     <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
                 </div>
@@ -472,13 +478,14 @@
         let currentDetailProdiSelection = [];
         let editItemIndex = -1; 
         let editStudentId = null; 
-        let currentSortType = 'nama'; // Default sort for students
+        let currentSortType = 'nama';
+        let editingStudentIdForModal = null; // State for Edit Student feature
 
         // --- UTILITIES ---
         const formatRupiah = (angka) => angka === 0 ? "Gratis" : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
         const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : "-";
         
-        // Custom Toast Alert Setup
+        // Custom Toast Alert
         const showToast = (msg, iconType = 'success') => {
             Swal.fire({
                 toast: true,
@@ -551,7 +558,50 @@
         const goBack = () => { if(viewHistory.length > 1) { viewHistory.pop(); switchView(viewHistory[viewHistory.length - 1], false); } else { switchView('home'); } };
 
         // --- SISWA LOGIC ---
-        const showAddStudentModal = () => new bootstrap.Modal(document.getElementById('addStudentModal')).show();
+        const showAddStudentModal = () => {
+            editingStudentIdForModal = null;
+            document.getElementById('formAddStudent').reset();
+            document.getElementById('modalStudentTitle').innerText = "Tambah Data Siswa";
+            new bootstrap.Modal(document.getElementById('addStudentModal')).show();
+        };
+
+        const editStudentInfo = (id) => {
+            editingStudentIdForModal = id;
+            const s = students.find(x => x.id === id);
+            document.getElementById('inpNama').value = s.nama;
+            document.getElementById('inpPanggilan').value = s.panggilan;
+            document.getElementById('inpKelas').value = s.kelas;
+            document.getElementById('inpSekolah').value = s.sekolah;
+            document.getElementById('inpEmail').value = s.email !== '-' ? s.email : '';
+            document.getElementById('inpAkunTO').value = s.akunTO !== '-' ? s.akunTO : '';
+            
+            document.getElementById('modalStudentTitle').innerText = "Edit Data Siswa";
+            new bootstrap.Modal(document.getElementById('addStudentModal')).show();
+        };
+
+        const deleteStudent = (id) => {
+            event.stopPropagation();
+            Swal.fire({
+                title: 'Hapus Data Siswa?',
+                text: "Data siswa ini beserta seluruh pilihan jalurnya akan dihapus.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const s = students.find(x => x.id === id);
+                    s.action = 'delete'; // Perlu penambahan logic backend jika ingin dihapus riil di DB
+                    syncStudentToDB(s); 
+                    
+                    students = students.filter(x => x.id !== id);
+                    localStorage.setItem('wali_students_db', JSON.stringify(students));
+                    renderSiswaList(currentSortType);
+                    showToast("Data siswa berhasil dihapus.");
+                }
+            });
+        };
         
         const saveNewStudent = () => {
             const nama = document.getElementById('inpNama').value;
@@ -562,20 +612,28 @@
             const akunTO = document.getElementById('inpAkunTO').value || '-';
             
             if(!nama || !panggilan || !kelas) return showToast("Lengkapi data penting (Nama, Panggilan, Kelas).", "warning");
-            const newStudent = { id: Date.now(), nama, panggilan, kelas, sekolah, email, akunTO, items: [] };
-            students.push(newStudent);
-            syncStudentToDB(newStudent);
+            
+            if(editingStudentIdForModal) {
+                const s = students.find(x => x.id === editingStudentIdForModal);
+                s.nama = nama; s.panggilan = panggilan; s.kelas = kelas; s.sekolah = sekolah; s.email = email; s.akunTO = akunTO;
+                s.action = 'update';
+                syncStudentToDB(s);
+                showToast("Data siswa diperbarui!");
+            } else {
+                const newStudent = { id: Date.now(), nama, panggilan, kelas, sekolah, email, akunTO, items: [], action: 'create' };
+                students.push(newStudent);
+                syncStudentToDB(newStudent);
+                showToast("Siswa berhasil ditambahkan!");
+            }
 
             bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide();
             document.getElementById('formAddStudent').reset();
-            showToast("Siswa berhasil ditambahkan!");
             renderSiswaList(currentSortType);
         };
 
         const renderSiswaList = (sortType = currentSortType) => {
             currentSortType = sortType;
             
-            // Update Sort Buttons UI
             document.querySelectorAll('.sort-btn').forEach(btn => {
                 btn.classList.remove('btn-secondary', 'text-white');
                 btn.classList.add('btn-outline-secondary');
@@ -589,7 +647,6 @@
             
             let filtered = students.filter(s => s.nama.toLowerCase().includes(query) || s.panggilan.toLowerCase().includes(query));
             
-            // Sorting Logic
             if(sortType === 'nama') filtered.sort((a,b) => a.nama.localeCompare(b.nama));
             if(sortType === 'kelas') filtered.sort((a,b) => a.kelas.localeCompare(b.kelas));
             if(sortType === 'jalur') filtered.sort((a,b) => b.items.length - a.items.length);
@@ -604,7 +661,7 @@
                     badgeJalursHtml = s.items.slice(0, 3).map(it => `<span class="badge bg-light text-dark border me-1 mb-1 fw-normal" style="font-size:0.6rem;">${it.jalur.nama_jalur.substring(0, 20)}...</span>`).join('');
                     if(s.items.length > 3) badgeJalursHtml += `<span class="badge bg-secondary mb-1" style="font-size:0.6rem;">+${s.items.length - 3}</span>`;
                 } else {
-                    badgeJalursHtml = `<span class="text-muted" style="font-size:0.65rem;">Belum ada jalur yang dipilih.</span>`;
+                    badgeJalursHtml = `<span class="text-muted" style="font-size:0.65rem;">Belum ada jalur yang didaftarkan.</span>`;
                 }
 
                 container.innerHTML += `
@@ -615,7 +672,13 @@
                                     <h6 class="fw-bold mb-1 text-primary">${s.nama}</h6>
                                     <small class="text-muted"><i class="fas fa-clipboard-list me-1"></i>${s.items.length} Jalur Terdaftar</small>
                                 </div>
-                                <span class="badge ${classColor} fs-6 shadow-sm">${s.kelas}</span>
+                                <div class="d-flex flex-column align-items-end gap-1">
+                                    <span class="badge ${classColor} fs-6 shadow-sm">${s.kelas}</span>
+                                    <div>
+                                        <button class="btn btn-sm btn-light text-primary px-2 py-1 border" onclick="event.stopPropagation(); editStudentInfo(${s.id})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-light text-danger px-2 py-1 border" onclick="event.stopPropagation(); deleteStudent(${s.id})"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="mt-2 pt-2 border-top">
                                 ${badgeJalursHtml}
@@ -685,8 +748,8 @@
 
         const deleteStudentItem = (sId, idx) => {
             Swal.fire({
-                title: 'Hapus jalur?',
-                text: "Jalur ini akan dihapus dari daftar pilihan siswa.",
+                title: 'Hapus Pilihan Jalur?',
+                text: "Jalur ini akan dihapus dari profil siswa.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc3545',
@@ -698,7 +761,7 @@
                     s.items.splice(idx,1); 
                     syncStudentToDB(s); 
                     renderStudentItems(); 
-                    showToast('Jalur berhasil dihapus', 'success');
+                    showToast('Jalur berhasil dihapus dari siswa');
                 }
             });
         };
@@ -736,14 +799,17 @@
                 s.items.forEach(it => { allStudentJalurs.push({...it.jalur, _siswa: s}); });
             });
             
-            // 1. Countdown Nearest Exam/Registration Close
+            // 1. Countdown Nearest
             let nextEvent = null;
             if(allStudentJalurs.length > 0) {
                 let evts = [];
                 allStudentJalurs.forEach(j => {
+                    const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
                     if(j.pendaftaran_end) evts.push({ type: 'Tutup Daftar', date: new Date(j.pendaftaran_end), j: j, s: j._siswa});
-                    if(j.ujian1_start) evts.push({ type: 'Ujian', date: new Date(j.ujian1_start), j: j, s: j._siswa});
-                    if(j.pengumuman1) evts.push({ type: 'Pengumuman', date: new Date(j.pengumuman1), j: j, s: j._siswa});
+                    if(j.ujian1_start) evts.push({ type: hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', date: new Date(j.ujian1_start), j: j, s: j._siswa});
+                    if(j.pengumuman1) evts.push({ type: hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', date: new Date(j.pengumuman1), j: j, s: j._siswa});
+                    if(j.ujian2_start) evts.push({ type: 'Ujian Tahap 2', date: new Date(j.ujian2_start), j: j, s: j._siswa});
+                    if(j.pengumuman2) evts.push({ type: 'Pengumuman Tahap 2', date: new Date(j.pengumuman2), j: j, s: j._siswa});
                 });
                 evts = evts.filter(e => e.date >= now).sort((a,b) => a.date - b.date);
                 if(evts.length > 0) nextEvent = evts[0];
@@ -763,14 +829,12 @@
                 cdBox.innerHTML = `-`;
             }
 
-            // 2. Open Registrations (Cards & Clickable)
+            // 2. Open Registrations (Cards)
             const pendaftaranPaths = dataKatalog.filter(d => {
                 if(!d.pendaftaran_start) return false;
                 const pStart = new Date(d.pendaftaran_start); pStart.setHours(0,0,0,0);
                 const pEnd = new Date(d.pendaftaran_end); pEnd.setHours(23,59,59,999);
                 const diffStart = (pStart - now) / (1000 * 60 * 60 * 24);
-                
-                // Tampilkan yang sedang buka ATAU yang akan buka <= 7 hari lagi
                 return (now >= pStart && now <= pEnd) || (diffStart > 0 && diffStart <= 7);
             }).sort((a, b) => new Date(a.pendaftaran_start) - new Date(b.pendaftaran_start));
 
@@ -788,11 +852,8 @@
                     cdHtml = `<span class="badge bg-secondary text-white border p-2 shadow-sm">Dibuka ${diff} hari lagi</span>`;
                 } else {
                     const diffEnd = Math.ceil((pEnd - now) / (1000 * 60 * 60 * 24));
-                    if (diffEnd <= 7) {
-                        cdHtml = `<span class="badge bg-danger text-white border p-2 shadow-sm">Ditutup ${diffEnd} hari lagi</span>`;
-                    } else {
-                        cdHtml = `<span class="badge bg-primary text-white border p-2 shadow-sm">Sedang Dibuka</span>`;
-                    }
+                    if (diffEnd <= 7) cdHtml = `<span class="badge bg-danger text-white border p-2 shadow-sm">Ditutup ${diffEnd} hari lagi</span>`;
+                    else cdHtml = `<span class="badge bg-primary text-white border p-2 shadow-sm">Sedang Dibuka</span>`;
                 }
 
                 openHtml += `
@@ -810,7 +871,7 @@
             });
             document.getElementById('homeOpenRegistrations').innerHTML = openHtml;
 
-            // 3. Ujian yang Akan Datang (Hilangkan yang sudah lewat)
+            // 3. Upcoming Exams
             const upcomingExams = dataKatalog.filter(d => {
                 if(!d.ujian1_start) return false;
                 const uEnd = new Date(d.ujian1_end || d.ujian1_start); uEnd.setHours(23,59,59,999);
@@ -848,13 +909,16 @@
             });
             document.getElementById('homeUpcomingExams').innerHTML = examHtml;
 
-            // 4. Timeline Siswa (All future grouped)
+            // 4. Timeline Siswa
             let allEvents = [];
             allStudentJalurs.forEach(j => {
+                const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
                 if(j.pendaftaran_start) allEvents.push({d: new Date(j.pendaftaran_start), t: 'Buka Daftar', c: 'text-primary', bg: 'border-primary', j: j, s: j._siswa});
                 if(j.pendaftaran_end) allEvents.push({d: new Date(j.pendaftaran_end), t: 'Tutup Daftar', c: 'text-danger', bg: 'border-danger', j: j, s: j._siswa});
-                if(j.ujian1_start) allEvents.push({d: new Date(j.ujian1_start), t: 'Ujian 1', c: 'text-warning', bg: 'border-warning', j: j, s: j._siswa});
-                if(j.pengumuman1) allEvents.push({d: new Date(j.pengumuman1), t: 'Pengumuman 1', c: 'text-success', bg: 'border-success', j: j, s: j._siswa});
+                if(j.ujian1_start) allEvents.push({d: new Date(j.ujian1_start), t: hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', c: 'text-warning', bg: 'border-warning', j: j, s: j._siswa});
+                if(j.pengumuman1) allEvents.push({d: new Date(j.pengumuman1), t: hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', c: 'text-success', bg: 'border-success', j: j, s: j._siswa});
+                if(j.ujian2_start) allEvents.push({d: new Date(j.ujian2_start), t: 'Ujian Tahap 2', c: 'text-warning', bg: 'border-warning', j: j, s: j._siswa});
+                if(j.pengumuman2) allEvents.push({d: new Date(j.pengumuman2), t: 'Pengumuman Tahap 2', c: 'text-success', bg: 'border-success', j: j, s: j._siswa});
             });
             allEvents = allEvents.filter(e => e.d >= now).sort((a,b) => a.d - b.d);
 
@@ -876,7 +940,6 @@
                     tlHtml += `<h6 class="fw-bold mt-3 mb-2 border-bottom pb-1 text-secondary sticky-top bg-white" style="font-size:0.85rem; top:-15px; padding-top:10px; z-index:2;">${mStr}</h6>`;
                     currentMonthGroup = mStr;
                 }
-                
                 const safeStudentsStr = encodeURIComponent(JSON.stringify(ev.students));
                 
                 tlHtml += `
@@ -892,29 +955,22 @@
             });
             document.getElementById('homeStudentTimeline').innerHTML = tlHtml;
 
-            // 5. Render Analitik Sebaran Pendaftaran
+            // 5. Analitik Sebaran
             renderAnalytics(allStudentJalurs);
         };
 
         const renderAnalytics = (allJalurs) => {
             const container = document.getElementById('analyticAccordion');
-            
-            if(allJalurs.length === 0) {
-                container.innerHTML = '<div class="p-4 text-center text-muted">Belum ada data pendaftaran siswa.</div>';
-                return;
-            }
+            if(allJalurs.length === 0) return container.innerHTML = '<div class="p-4 text-center text-muted">Belum ada data pendaftaran siswa.</div>';
 
-            // Grup Data berdasarkan Kampus -> Jalur -> Siswa
             let analytics = {};
             let maxTotalUniv = 0;
 
             allJalurs.forEach(j => {
-                const uName = j.akronim || j.universitas || 'Universitas Lainnya';
+                const uName = j.akronim || j.universitas || 'Lainnya';
                 if(!analytics[uName]) analytics[uName] = { logo: j.logo_link, total: 0, jalurs: {} };
-                
                 analytics[uName].total += 1;
                 if(analytics[uName].total > maxTotalUniv) maxTotalUniv = analytics[uName].total;
-
                 if(!analytics[uName].jalurs[j.nama_jalur]) analytics[uName].jalurs[j.nama_jalur] = { count: 0, students: [] };
                 analytics[uName].jalurs[j.nama_jalur].count += 1;
                 analytics[uName].jalurs[j.nama_jalur].students.push(j._siswa);
@@ -928,7 +984,6 @@
                 const percentage = (uData.total / maxTotalUniv) * 100;
                 const colId = `collapseAnalytic${idx}`;
                 
-                // Nested Accordion untuk Jalur
                 let jalurAccordionHtml = `<div class="accordion accordion-flush" id="accUniv_${idx}">`;
                 const sortedJalurs = Object.keys(uData.jalurs).sort((a,b) => uData.jalurs[b].count - uData.jalurs[a].count);
                 
@@ -981,7 +1036,6 @@
                         </div>
                     </div>`;
             });
-            
             container.innerHTML = html;
         };
 
@@ -1054,7 +1108,6 @@
             renderCatalogUI();
         };
 
-        // Fungsi Helper untuk menghitung Status Jalur
         const getJalurStatus = (item, now) => {
             const pStart = new Date(item.pendaftaran_start);
             const pEnd = new Date(item.pendaftaran_end); pEnd.setHours(23,59,59,999);
@@ -1092,19 +1145,13 @@
             container.innerHTML = '';
             const now = new Date();
 
-            // Gabungkan status ke setiap item agar mudah difilter & diurutkan
             let catalogWithStatus = dataKatalog.map(item => ({ ...item, ...getJalurStatus(item, now) }));
 
             if(currentCatalogFilter.univCode) {
                 catalogWithStatus = catalogWithStatus.filter(d => d.univ_code === currentCatalogFilter.univCode);
-                document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.replace('btn-primary', 'btn-outline-primary'));
             } else {
                 if(currentCatalogFilter.type && currentCatalogFilter.type !== 'Semua') {
                     catalogWithStatus = catalogWithStatus.filter(d => d.jalur === currentCatalogFilter.type);
-                    document.querySelectorAll('.btn-filter').forEach(btn => {
-                        if(btn.innerText === currentCatalogFilter.type) { btn.classList.replace('btn-outline-primary', 'btn-primary'); }
-                        else { btn.classList.replace('btn-primary', 'btn-outline-primary'); }
-                    });
                 }
                 if(currentCatalogFilter.search) {
                     catalogWithStatus = catalogWithStatus.filter(d => 
@@ -1127,7 +1174,6 @@
                 }
             }
 
-            // Sorting: Status Terpenting -> Tanggal Terdekat
             catalogWithStatus.sort((a, b) => {
                 if (a.weight !== b.weight) return a.weight - b.weight;
                 return new Date(a.pendaftaran_start) - new Date(b.pendaftaran_start);
@@ -1144,7 +1190,6 @@
                 let biayaMaxxNum = Number(item.biaya_maxx) || biayaNum;
                 let hargaTeks = biayaNum === biayaMaxxNum ? formatRupiah(biayaNum) : `${formatRupiah(biayaNum)} - ${formatRupiah(biayaMaxxNum)}`;
 
-                // Gunakan status badge dan info html dari fungsi helper
                 container.innerHTML += `
                     <div class="col-12 col-md-6 d-flex align-items-stretch">
                         <div class="card katalog-card w-100 p-3 position-relative ${item.opacityClass}" onclick="openDetailByItemId(${item.index})">
@@ -1187,8 +1232,8 @@
 
             editStudentId = isEdit ? stuId : null;
             editItemIndex = isEdit ? stuItemIdx : -1;
-            
             currentDetailProdiSelection = [];
+            
             if(isEdit) {
                 const s = students.find(x => x.id === stuId);
                 currentDetailProdiSelection = [...s.items[stuItemIdx].prodiTerpilih];
@@ -1216,10 +1261,12 @@
             });
             if(prodiList.length === 0) prodiTableRows = `<tr><td colspan="${hasDayaTampung?4:2}" class="text-center text-muted py-3">Data Program Studi Belum Tersedia</td></tr>`;
 
+            const hasTahap2 = !!item.ujian2_start || !!item.pengumuman2;
+
             let timelineHTML = `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Masa Pendaftaran</h6><small class="text-muted">${formatDate(item.pendaftaran_start)} - ${formatDate(item.pendaftaran_end)}</small></div>`;
             
-            if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian/Seleksi Tahap 1</h6><small class="text-muted">${formatDate(item.ujian1_start)} ${item.ujian1_end && item.ujian1_end !== item.ujian1_start ? 's/d ' + formatDate(item.ujian1_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
-            if(item.pengumuman1) timelineHTML += `<div class="list-timeline-item ${!item.pengumuman2 ? 'border-success' : ''}"><h6 class="fw-bold mb-0 ${!item.pengumuman2 ? 'text-success' : ''}">Pengumuman Tahap 1</h6><small class="text-muted">${formatDate(item.pengumuman1)}</small><p class="small mb-0 mt-1">${item.pengumuman1_keterangan || ''}</p></div>`;
+            if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">${hasTahap2 ? 'Ujian/Seleksi Tahap 1' : 'Ujian/Seleksi'}</h6><small class="text-muted">${formatDate(item.ujian1_start)} ${item.ujian1_end && item.ujian1_end !== item.ujian1_start ? 's/d ' + formatDate(item.ujian1_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
+            if(item.pengumuman1) timelineHTML += `<div class="list-timeline-item ${!hasTahap2 ? 'border-success' : ''}"><h6 class="fw-bold mb-0 ${!hasTahap2 ? 'text-success' : ''}">${hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman Hasil'}</h6><small class="text-muted">${formatDate(item.pengumuman1)}</small><p class="small mb-0 mt-1">${item.pengumuman1_keterangan || ''}</p></div>`;
             if(item.ujian2_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian/Seleksi Tahap 2</h6><small class="text-muted">${formatDate(item.ujian2_start)} ${item.ujian2_end && item.ujian2_end !== item.ujian2_start ? 's/d ' + formatDate(item.ujian2_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian2_keterangan || ''}</p></div>`;
             if(item.pengumuman2) timelineHTML += `<div class="list-timeline-item border-success"><h6 class="fw-bold mb-0 text-success">Pengumuman Tahap 2</h6><small class="text-muted">${formatDate(item.pengumuman2)}</small><p class="small mb-0 mt-1">${item.pengumuman2_keterangan || ''}</p></div>`;
 
@@ -1327,14 +1374,15 @@
         const getTimelineEvents = (sourceArray) => {
             let events = [];
             sourceArray.forEach(item => {
+                const hasTahap2 = !!item.ujian2_start || !!item.pengumuman2;
                 if(item.pendaftaran_start) {
                     events.push({ type: 'Buka Daftar', date: new Date(item.pendaftaran_start), item: item, color: 'text-primary', bg: 'border-primary' });
                     events.push({ type: 'Tutup Daftar', date: new Date(item.pendaftaran_end), item: item, color: 'text-danger', bg: 'border-danger' });
                 }
-                if(item.ujian1_start) events.push({ type: 'Ujian 1', date: new Date(item.ujian1_start), item: item, color: 'text-warning', bg: 'border-warning' });
-                if(item.pengumuman1) events.push({ type: 'Pengumuman 1', date: new Date(item.pengumuman1), item: item, color: 'text-success', bg: 'border-success' });
-                if(item.ujian2_start) events.push({ type: 'Ujian 2', date: new Date(item.ujian2_start), item: item, color: 'text-warning', bg: 'border-warning' });
-                if(item.pengumuman2) events.push({ type: 'Pengumuman 2', date: new Date(item.pengumuman2), item: item, color: 'text-success', bg: 'border-success' });
+                if(item.ujian1_start) events.push({ type: hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', date: new Date(item.ujian1_start), item: item, color: 'text-warning', bg: 'border-warning' });
+                if(item.pengumuman1) events.push({ type: hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', date: new Date(item.pengumuman1), item: item, color: 'text-success', bg: 'border-success' });
+                if(item.ujian2_start) events.push({ type: 'Ujian Tahap 2', date: new Date(item.ujian2_start), item: item, color: 'text-warning', bg: 'border-warning' });
+                if(item.pengumuman2) events.push({ type: 'Pengumuman Tahap 2', date: new Date(item.pengumuman2), item: item, color: 'text-success', bg: 'border-success' });
             });
             return events.sort((a, b) => a.date - b.date);
         };
@@ -1363,10 +1411,8 @@
         let currentYear = new Date().getFullYear();
 
         const renderTimelineAll = () => {
-            // 1. Render List
             document.getElementById('listTimelineAllContainer').innerHTML = generateTimelineListHTML(getTimelineEvents(dataKatalog));
 
-            // 2. Render Gantt (Sorted by pendaftaran_start)
             let sortedKatalog = [...dataKatalog].sort((a, b) => new Date(a.pendaftaran_start) - new Date(b.pendaftaran_start));
             
             let minDate = new Date(); let maxDate = new Date(); maxDate.setMonth(maxDate.getMonth() + 3);
@@ -1420,7 +1466,6 @@
             });
             document.getElementById('ganttContainer').innerHTML = `<div class="gantt-wrapper"><table class="gantt-table"><thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody></table></div>`;
 
-            // 3. Render Calendar
             renderCalendar();
         };
 
@@ -1439,7 +1484,6 @@
             const firstDay = new Date(currentYear, currentMonth, 1).getDay();
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             
-            // Grid Header Hari dan Tanggal disatukan ke dalam satu Grid agar ukurannya presisi
             let calHtml = `
                 <div class="calendar-header border-bottom">Min</div><div class="calendar-header border-bottom">Sen</div><div class="calendar-header border-bottom">Sel</div>
                 <div class="calendar-header border-bottom">Rab</div><div class="calendar-header border-bottom">Kam</div><div class="calendar-header border-bottom">Jum</div><div class="calendar-header border-bottom">Sab</div>
@@ -1454,6 +1498,7 @@
                 
                 let eventsHtml = '';
                 dataKatalog.forEach(j => {
+                    const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
                     const checkRange = (ds, de, t, c) => {
                         if(!ds) return;
                         let s = new Date(ds); s.setHours(0,0,0,0);
@@ -1463,10 +1508,10 @@
                         }
                     };
                     checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary');
-                    checkRange(j.ujian1_start, j.ujian1_end, 'Ujian 1', 'bg-warning text-dark');
-                    checkRange(j.pengumuman1, j.pengumuman1, 'Pengumuman 1', 'bg-success');
-                    checkRange(j.ujian2_start, j.ujian2_end, 'Ujian 2', 'bg-warning text-dark');
-                    checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman 2', 'bg-success');
+                    checkRange(j.ujian1_start, j.ujian1_end, hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', 'bg-warning text-dark');
+                    checkRange(j.pengumuman1, j.pengumuman1, hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', 'bg-success');
+                    checkRange(j.ujian2_start, j.ujian2_end, 'Ujian Tahap 2', 'bg-warning text-dark');
+                    checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman Tahap 2', 'bg-success');
                 });
                 
                 calHtml += `
@@ -1486,6 +1531,7 @@
             
             let html = '';
             dataKatalog.forEach(j => {
+                const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
                 const checkRange = (ds, de, t, c) => {
                     if(!ds) return;
                     let s = new Date(ds); s.setHours(0,0,0,0);
@@ -1495,10 +1541,10 @@
                     }
                 };
                 checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary');
-                checkRange(j.ujian1_start, j.ujian1_end, 'Ujian 1', 'bg-warning text-dark');
-                checkRange(j.pengumuman1, j.pengumuman1, 'Pengumuman 1', 'bg-success');
-                checkRange(j.ujian2_start, j.ujian2_end, 'Ujian 2', 'bg-warning text-dark');
-                checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman 2', 'bg-success');
+                checkRange(j.ujian1_start, j.ujian1_end, hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', 'bg-warning text-dark');
+                checkRange(j.pengumuman1, j.pengumuman1, hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', 'bg-success');
+                checkRange(j.ujian2_start, j.ujian2_end, 'Ujian Tahap 2', 'bg-warning text-dark');
+                checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman Tahap 2', 'bg-success');
             });
 
             if(html === '') html = '<p class="text-muted text-center small">Tidak ada agenda.</p>';
