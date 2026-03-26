@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PTNPlanner - Edisi Wali Kelas</title>
-
-       <!-- PWA Meta Tags -->
+    
+    <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0d6efd">
-    <!-- Meta tags khusus iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PTN Wali">
-    <link rel="apple-touch-icon" href="192x192.png">
-    
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/192x192.png?text=PTN">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary-blue: #0d6efd;
@@ -32,15 +32,14 @@
 
         body { background-color: var(--bg-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-bottom: 80px; }
 
-        /* Loader */
         #loadingOverlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(255, 255, 255, 0.95); z-index: 9999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
-        /* Navbar & Bottom Nav */
         .navbar-custom { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.08);
             display: flex; justify-content: space-around; padding: 0.5rem 0; z-index: 1030; border-radius: 20px 20px 0 0;
@@ -54,7 +53,6 @@
         .bottom-nav-item i { display: block; font-size: 1.25rem; margin-bottom: 2px; }
         .bottom-nav-item span { font-size: 0.65rem; }
 
-        /* Cards */
         .katalog-card, .univ-card, .siswa-card {
             background: #ffffff; border: none; border-radius: 16px; transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(13, 110, 253, 0.05);
             overflow: hidden; height: 100%; display: flex; flex-direction: column; cursor: pointer;
@@ -68,7 +66,6 @@
         .btn-gradient { background: var(--accent-gradient); color: white; border: none; border-radius: 12px; font-weight: 600; padding: 0.6rem 1.5rem; transition: all 0.3s;}
         .btn-gradient:hover { background: linear-gradient(135deg, #e86e04 0%, #e0a800 100%); color: white; transform: scale(1.02); }
         
-        /* Freeze Gantt Chart */
         .gantt-wrapper { overflow-x: auto; background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .gantt-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
         .gantt-table th, .gantt-table td { padding: 10px; border-bottom: 1px solid #eee; position: relative; }
@@ -82,7 +79,6 @@
         .gantt-segment.ujian { background-color: var(--color-ujian); color: #000; }
         .gantt-segment.pengumuman { background-color: var(--color-pengumuman); border-radius: 0 10px 10px 0; }
 
-        /* Google Calendar Style */
         .calendar-scroll-wrapper { overflow-x: auto; background: white; border-radius: 15px; border: 1px solid #eee; }
         .calendar-inner-container { min-width: 800px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; text-align: center; background: #eee; }
@@ -103,27 +99,25 @@
         .agenda-card:hover { transform: translateX(5px); border-left-color: var(--accent-orange) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.08) !important; }
         .student-badge { pointer-events: none; }
 
-        /* Custom UI for Analytic Bars */
         .analytic-bar-bg { background: #e9ecef; border-radius: 5px; height: 8px; width: 100%; overflow: hidden; margin-top: 5px; }
         .analytic-bar-fill { background: var(--primary-blue); height: 100%; border-radius: 5px; }
 
-        /* Scrollbars Customization */
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        
+        /* Folder UI Slots */
+        .slot-btn { border: 2px dashed #dee2e6; background: #f8f9fa; color: #6c757d; font-weight: 600; padding: 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .slot-btn:hover { border-color: var(--primary-blue); color: var(--primary-blue); background: #eef5ff; }
+        .slot-filled { border: 2px solid var(--primary-blue); background: #f0f7ff; color: var(--primary-dark); text-align: left; }
     </style>
-    <!-- SweetAlert2 for Custom Alerts -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
-    <!-- Loading Overlay -->
     <div id="loadingOverlay">
-        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <h5 class="fw-bold text-primary">Memuat Data...</h5>
+        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"><span class="visually-hidden">Loading...</span></div>
+        <h5 class="fw-bold text-primary" id="loadingText">Memuat Data...</h5>
         <p class="text-muted small">Menghubungkan ke Database</p>
     </div>
 
@@ -133,6 +127,9 @@
             <a class="navbar-brand fw-bold text-primary mb-0" href="#" onclick="switchView('home')">
                 <i class="fas fa-chalkboard-teacher me-2 text-warning"></i>PTN<span class="text-dark">WaliKelas</span>
             </a>
+            <button class="btn btn-light rounded-circle shadow-sm border" onclick="forceSync()" title="Paksa Sinkronisasi Data">
+                <i class="fas fa-sync-alt text-primary"></i>
+            </button>
         </div>
     </nav>
 
@@ -148,52 +145,38 @@
                 </div>
             </div>
 
-            <!-- Countdown Box -->
             <div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary text-white" style="background: var(--blue-gradient) !important;">
                 <div class="card-body p-4 text-center">
                     <h6 class="opacity-75 mb-1">Agenda Siswa Terdekat</h6>
                     <h4 class="fw-bold mb-3" id="homeNextAgendaTitle">Belum ada agenda</h4>
                     <div class="d-flex justify-content-center gap-3" id="homeCountdown">
-                        <div class="bg-white text-primary rounded-3 p-2" style="min-width: 60px;">
-                            <h3 class="fw-bold mb-0">-</h3><small>Hari</small>
-                        </div>
+                        <div class="bg-white text-primary rounded-3 p-2" style="min-width: 60px;"><h3 class="fw-bold mb-0">-</h3><small>Hari</small></div>
                     </div>
                 </div>
             </div>
 
             <div class="row g-4">
-                <!-- Kolom Kiri: Pendaftaran & Ujian -->
                 <div class="col-12 col-lg-6">
                     <h6 class="fw-bold mb-3"><i class="fas fa-door-open text-success me-2"></i>Pendaftaran Sedang Buka</h6>
-                    <div id="homeOpenRegistrations" class="custom-scroll" style="max-height: 380px; overflow-y: auto; padding-right: 5px;">
-                        <!-- Injected by JS -->
-                    </div>
+                    <div id="homeOpenRegistrations" class="custom-scroll" style="max-height: 380px; overflow-y: auto; padding-right: 5px;"></div>
 
                     <h6 class="fw-bold mb-3 mt-4"><i class="fas fa-stopwatch text-warning me-2"></i>Ujian yang Akan Datang</h6>
-                    <div id="homeUpcomingExams" class="custom-scroll" style="max-height: 380px; overflow-y: auto; padding-right: 5px;">
-                        <!-- Injected by JS -->
-                    </div>
+                    <div id="homeUpcomingExams" class="custom-scroll" style="max-height: 380px; overflow-y: auto; padding-right: 5px;"></div>
 
-                    <!-- Analitik Sebaran Pendaftaran dipindah ke sini -->
                     <div class="mt-4 mb-4">
                         <h6 class="fw-bold mb-3"><i class="fas fa-chart-bar text-warning me-2"></i>Sebaran Pendaftaran Siswa</h6>
                         <div class="card border-0 shadow-sm rounded-4">
                             <div class="card-body p-0">
-                                <div class="accordion accordion-flush" id="analyticAccordion">
-                                    <!-- Injected by JS -->
-                                </div>
+                                <div class="accordion accordion-flush" id="analyticAccordion"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Kolom Kanan: Timeline Siswa -->
                 <div class="col-12 col-lg-6">
                     <h6 class="fw-bold mb-3"><i class="fas fa-calendar-alt text-primary me-2"></i>Timeline Agenda Siswa</h6>
                     <div class="card border-0 shadow-sm rounded-4 mb-3">
-                        <div class="card-body overflow-auto custom-scroll" style="max-height: 600px;" id="homeStudentTimeline">
-                            <!-- Injected by JS -->
-                        </div>
+                        <div class="card-body overflow-auto custom-scroll" style="max-height: 600px;" id="homeStudentTimeline"></div>
                     </div>
                 </div>
             </div>
@@ -223,7 +206,6 @@
                 <input class="form-control border-start-0 rounded-end-pill shadow-none" type="search" id="searchSiswa" placeholder="Cari nama siswa..." onkeyup="renderSiswaList()">
             </div>
 
-            <!-- Filter / Sort Siswa -->
             <div class="d-flex gap-2 overflow-auto pb-3 mb-2 custom-scroll" style="white-space: nowrap;">
                 <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 sort-btn" onclick="renderSiswaList('nama')"><i class="fas fa-sort-alpha-down me-1"></i>A-Z</button>
                 <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 sort-btn" onclick="renderSiswaList('kelas')"><i class="fas fa-layer-group me-1"></i>Per Kelas</button>
@@ -283,7 +265,6 @@
                 <h4 class="fw-bold mb-0"><i class="fas fa-th-large text-primary me-2"></i>Katalog Jalur</h4>
             </div>
 
-            <!-- Enhanced Filters -->
             <div class="row g-2 mb-3">
                 <div class="col-12 col-md-4">
                     <div class="input-group">
@@ -359,9 +340,7 @@
                         </div>
                         
                         <div class="calendar-scroll-wrapper custom-scroll">
-                            <div class="calendar-inner-container" id="calendarGridContainer">
-                                <!-- Calendar Headers and Days injected by JS to maintain grid consistency -->
-                            </div>
+                            <div class="calendar-inner-container" id="calendarGridContainer"></div>
                         </div>
 
                     </div>
@@ -485,33 +464,28 @@
         
         let viewHistory = ['home'];
         let currentStudentId = null; 
-        let currentDetailProdiSelection = [];
+        
+        // State for dynamic slots (Nasional)
+        let currentDetailProdiSelection = []; 
+        let activeSlotIndex = 0; 
+        let dynamicFolderUniv = null; 
+
         let editItemIndex = -1; 
         let editStudentId = null; 
         let currentSortType = 'nama';
-        let editingStudentIdForModal = null; // State for Edit Student feature
+        let editingStudentIdForModal = null; 
 
         // --- UTILITIES ---
         const formatRupiah = (angka) => angka === 0 ? "Gratis" : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
         const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : "-";
         
-        // Custom Toast Alert
         const showToast = (msg, iconType = 'success') => {
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: iconType,
-                title: msg,
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true
-            });
+            Swal.fire({ toast: true, position: 'top-end', icon: iconType, title: msg, showConfirmButton: false, timer: 3000, timerProgressBar: true });
         };
 
         const getBadgeColor = (str) => {
             const colors = ['bg-primary', 'bg-success', 'bg-danger', 'bg-warning text-dark', 'bg-info text-dark', 'bg-secondary', 'bg-dark'];
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
             return colors[Math.abs(hash) % colors.length];
         };
 
@@ -520,31 +494,43 @@
             try {
                 const response = await fetch(API_URL);
                 const result = await response.json();
-                
                 if(result.status === "success") {
                     if(result.data) dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
-                    if(result.students) {
-                        students = result.students;
-                        localStorage.setItem('wali_students_db', JSON.stringify(students));
-                    }
+                    if(result.students) { students = result.students; localStorage.setItem('wali_students_db', JSON.stringify(students)); }
                 }
-            } catch (error) {
-                console.error("API Error:", error);
-            } finally {
+            } catch (error) { console.error("API Error:", error); } 
+            finally {
                 document.getElementById('loadingOverlay').style.display = 'none';
                 document.getElementById('mainContainer').style.display = 'block';
                 switchView('home');
             }
         };
 
+        const forceSync = async () => {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingText').innerText = "Sinkronisasi Paksa...";
+            try {
+                const response = await fetch(API_URL + "?action=force_sync");
+                const result = await response.json();
+                if(result.status === "success") {
+                    if(result.data) dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
+                    if(result.students) { students = result.students; localStorage.setItem('wali_students_db', JSON.stringify(students)); }
+                    showToast("Sinkronisasi berhasil!");
+                } else {
+                    showToast("Gagal sinkronisasi: " + result.message, "error");
+                }
+            } catch (error) { showToast("Error jaringan saat sinkronisasi.", "error"); } 
+            finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('loadingText').innerText = "Memuat Data...";
+                switchView(viewHistory[viewHistory.length-1], false);
+            }
+        };
+
         const syncStudentToDB = async (studentData) => {
             localStorage.setItem('wali_students_db', JSON.stringify(students));
             try {
-                await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-                    body: JSON.stringify(studentData)
-                });
+                await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(studentData) });
             } catch (error) { console.error("Sync POST error:", error); }
         };
 
@@ -591,20 +577,12 @@
 
         const deleteStudent = (id) => {
             event.stopPropagation();
-            Swal.fire({
-                title: 'Hapus Data Siswa?',
-                text: "Data siswa ini beserta seluruh pilihan jalurnya akan dihapus.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Ya, Hapus!'
-            }).then((result) => {
+            Swal.fire({ title: 'Hapus Data Siswa?', text: "Data siswa ini beserta seluruh pilihan jalurnya akan dihapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Ya, Hapus!' })
+            .then((result) => {
                 if (result.isConfirmed) {
                     const s = students.find(x => x.id === id);
-                    s.action = 'delete'; // Perlu penambahan logic backend jika ingin dihapus riil di DB
+                    s.action = 'delete'; 
                     syncStudentToDB(s); 
-                    
                     students = students.filter(x => x.id !== id);
                     localStorage.setItem('wali_students_db', JSON.stringify(students));
                     renderSiswaList(currentSortType);
@@ -625,38 +603,26 @@
             
             if(editingStudentIdForModal) {
                 const s = students.find(x => x.id === editingStudentIdForModal);
-                s.nama = nama; s.panggilan = panggilan; s.kelas = kelas; s.sekolah = sekolah; s.email = email; s.akunTO = akunTO;
-                s.action = 'update';
-                syncStudentToDB(s);
-                showToast("Data siswa diperbarui!");
+                s.nama = nama; s.panggilan = panggilan; s.kelas = kelas; s.sekolah = sekolah; s.email = email; s.akunTO = akunTO; s.action = 'update';
+                syncStudentToDB(s); showToast("Data siswa diperbarui!");
             } else {
                 const newStudent = { id: Date.now(), nama, panggilan, kelas, sekolah, email, akunTO, items: [], action: 'create' };
-                students.push(newStudent);
-                syncStudentToDB(newStudent);
-                showToast("Siswa berhasil ditambahkan!");
+                students.push(newStudent); syncStudentToDB(newStudent); showToast("Siswa berhasil ditambahkan!");
             }
-
             bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide();
-            document.getElementById('formAddStudent').reset();
             renderSiswaList(currentSortType);
         };
 
         const renderSiswaList = (sortType = currentSortType) => {
             currentSortType = sortType;
-            
-            document.querySelectorAll('.sort-btn').forEach(btn => {
-                btn.classList.remove('btn-secondary', 'text-white');
-                btn.classList.add('btn-outline-secondary');
-            });
+            document.querySelectorAll('.sort-btn').forEach(btn => { btn.classList.remove('btn-secondary', 'text-white'); btn.classList.add('btn-outline-secondary'); });
             event?.target?.closest('.sort-btn')?.classList.replace('btn-outline-secondary', 'btn-secondary');
             event?.target?.closest('.sort-btn')?.classList.add('text-white');
 
             const query = (document.getElementById('searchSiswa')?.value || '').toLowerCase();
-            const container = document.getElementById('siswaGridContainer');
-            container.innerHTML = '';
+            const container = document.getElementById('siswaGridContainer'); container.innerHTML = '';
             
             let filtered = students.filter(s => s.nama.toLowerCase().includes(query) || s.panggilan.toLowerCase().includes(query));
-            
             if(sortType === 'nama') filtered.sort((a,b) => a.nama.localeCompare(b.nama));
             if(sortType === 'kelas') filtered.sort((a,b) => a.kelas.localeCompare(b.kelas));
             if(sortType === 'jalur') filtered.sort((a,b) => b.items.length - a.items.length);
@@ -665,23 +631,14 @@
 
             filtered.forEach(s => {
                 const classColor = getBadgeColor(s.kelas);
-                
-                let badgeJalursHtml = '';
-                if(s.items.length > 0) {
-                    badgeJalursHtml = s.items.slice(0, 3).map(it => `<span class="badge bg-light text-dark border me-1 mb-1 fw-normal" style="font-size:0.6rem;">${it.jalur.nama_jalur.substring(0, 20)}...</span>`).join('');
-                    if(s.items.length > 3) badgeJalursHtml += `<span class="badge bg-secondary mb-1" style="font-size:0.6rem;">+${s.items.length - 3}</span>`;
-                } else {
-                    badgeJalursHtml = `<span class="text-muted" style="font-size:0.65rem;">Belum ada jalur yang didaftarkan.</span>`;
-                }
+                let badgeJalursHtml = s.items.length > 0 ? s.items.slice(0, 3).map(it => `<span class="badge bg-light text-dark border me-1 mb-1 fw-normal" style="font-size:0.6rem;">${it.jalur.nama_jalur.substring(0, 20)}...</span>`).join('') : `<span class="text-muted" style="font-size:0.65rem;">Belum ada jalur yang didaftarkan.</span>`;
+                if(s.items.length > 3) badgeJalursHtml += `<span class="badge bg-secondary mb-1" style="font-size:0.6rem;">+${s.items.length - 3}</span>`;
 
                 container.innerHTML += `
                     <div class="col-12 col-md-6">
                         <div class="card siswa-card p-3 h-100" onclick="openStudentDetail(${s.id})">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h6 class="fw-bold mb-1 text-primary">${s.nama}</h6>
-                                    <small class="text-muted"><i class="fas fa-clipboard-list me-1"></i>${s.items.length} Jalur Terdaftar</small>
-                                </div>
+                                <div><h6 class="fw-bold mb-1 text-primary">${s.nama}</h6><small class="text-muted"><i class="fas fa-clipboard-list me-1"></i>${s.items.length} Jalur Terdaftar</small></div>
                                 <div class="d-flex flex-column align-items-end gap-1">
                                     <span class="badge ${classColor} fs-6 shadow-sm">${s.kelas}</span>
                                     <div>
@@ -690,23 +647,17 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-2 pt-2 border-top">
-                                ${badgeJalursHtml}
-                            </div>
+                            <div class="mt-2 pt-2 border-top">${badgeJalursHtml}</div>
                         </div>
                     </div>`;
             });
         };
 
         const openStudentDetail = (id) => {
-            currentStudentId = id;
-            const s = students.find(x => x.id === id);
-            document.getElementById('sdName').innerText = s.nama;
-            document.getElementById('sdClassSchool').innerText = `${s.kelas} | ${s.sekolah}`;
-            document.getElementById('sdEmail').innerText = s.email;
-            document.getElementById('sdAkunTO').innerText = s.akunTO;
-            renderStudentItems();
-            switchView('siswa-detail');
+            currentStudentId = id; const s = students.find(x => x.id === id);
+            document.getElementById('sdName').innerText = s.nama; document.getElementById('sdClassSchool').innerText = `${s.kelas} | ${s.sekolah}`;
+            document.getElementById('sdEmail').innerText = s.email; document.getElementById('sdAkunTO').innerText = s.akunTO;
+            renderStudentItems(); switchView('siswa-detail');
         };
 
         const renderStudentItems = () => {
@@ -719,9 +670,7 @@
             } else {
                 let html = '';
                 s.items.forEach((p, idx) => {
-                    const biayaNum = Number(p.jalur.biaya) || 0;
-                    total += biayaNum;
-
+                    const biayaNum = Number(p.jalur.biaya) || 0; total += biayaNum;
                     const bDaftar = p.statusDaftar ? `<button class="btn btn-success status-btn me-1 small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'daftar')"><i class="fas fa-check"></i> Daftar</button>` : `<button class="btn btn-outline-primary status-btn me-1 small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'daftar')">Konfirmasi Daftar</button>`;
                     const bUjian = !p.jalur.ujian1_start ? '' : (p.statusUjian ? `<button class="btn btn-success status-btn small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'ujian')"><i class="fas fa-check"></i> Ujian</button>` : `<button class="btn btn-outline-warning text-dark status-btn small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'ujian')">Konfirmasi Ujian</button>`);
                     
@@ -736,10 +685,7 @@
                                     </div>
                                 </div>
                                 <div class="small mb-2">${p.prodiTerpilih.map((pr, i) => `<span class="badge bg-secondary border me-1 mb-1"><span class="text-warning">${i+1}.</span> ${pr}</span>`).join('')}</div>
-                                <div class="d-flex justify-content-between pt-2 border-top align-items-center flex-wrap gap-2">
-                                    <div>${bDaftar}${bUjian}</div>
-                                    <span class="text-warning fw-bold small">${formatRupiah(biayaNum)}</span>
-                                </div>
+                                <div class="d-flex justify-content-between pt-2 border-top align-items-center flex-wrap gap-2"><div>${bDaftar}${bUjian}</div><span class="text-warning fw-bold small">${formatRupiah(biayaNum)}</span></div>
                             </div>
                         </div>`;
                 });
@@ -752,39 +698,22 @@
             const s = students.find(x => x.id === sId);
             if(type === 'daftar') s.items[idx].statusDaftar = !s.items[idx].statusDaftar;
             if(type === 'ujian') s.items[idx].statusUjian = !s.items[idx].statusUjian;
-            syncStudentToDB(s);
-            renderStudentItems();
+            syncStudentToDB(s); renderStudentItems();
         };
 
         const deleteStudentItem = (sId, idx) => {
-            Swal.fire({
-                title: 'Hapus Pilihan Jalur?',
-                text: "Jalur ini akan dihapus dari profil siswa.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Ya, Hapus!'
-            }).then((result) => {
+            Swal.fire({ title: 'Hapus Pilihan Jalur?', text: "Jalur ini akan dihapus dari profil siswa.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Ya, Hapus!' })
+            .then((result) => {
                 if (result.isConfirmed) {
-                    const s = students.find(x => x.id === sId);
-                    s.items.splice(idx,1); 
-                    syncStudentToDB(s); 
-                    renderStudentItems(); 
-                    showToast('Jalur berhasil dihapus dari siswa');
+                    const s = students.find(x => x.id === sId); s.items.splice(idx,1); syncStudentToDB(s); renderStudentItems(); showToast('Jalur berhasil dihapus dari siswa');
                 }
             });
         };
 
         const editStudentItem = (sId, idx) => {
-            const s = students.find(x => x.id === sId);
-            const item = s.items[idx];
+            const s = students.find(x => x.id === sId); const item = s.items[idx];
             const catIndex = dataKatalog.findIndex(d => d.index === item.jalur.index);
-            if(catIndex > -1) {
-                openDetail(catIndex, true, sId, idx);
-            } else {
-                showToast("Data jalur ini tidak ditemukan di katalog saat ini.", "error");
-            }
+            if(catIndex > -1) { openDetail(catIndex, true, sId, idx); } else { showToast("Data jalur ini tidak ditemukan di katalog.", "error"); }
         };
 
         const renderStudentTimeline = () => {
@@ -796,20 +725,15 @@
 
         // --- HOME VIEW LOGIC & ANALYTICS ---
         setInterval(() => {
-            const now = new Date();
-            const el = document.getElementById('currentDateTime');
+            const now = new Date(); const el = document.getElementById('currentDateTime');
             if(el) el.innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'}) + ' | ' + now.toLocaleTimeString('id-ID');
         }, 1000);
 
         const renderHome = () => {
             const now = new Date(); 
+            let allStudentJalurs = []; students.forEach(s => { s.items.forEach(it => { allStudentJalurs.push({...it.jalur, _siswa: s}); }); });
             
-            let allStudentJalurs = [];
-            students.forEach(s => {
-                s.items.forEach(it => { allStudentJalurs.push({...it.jalur, _siswa: s}); });
-            });
-            
-            // 1. Countdown Nearest
+            // 1. Countdown Nearest Exam/Registration Close
             let nextEvent = null;
             if(allStudentJalurs.length > 0) {
                 let evts = [];
@@ -825,19 +749,12 @@
                 if(evts.length > 0) nextEvent = evts[0];
             }
 
-            const cdBox = document.getElementById('homeCountdown');
-            const titleBox = document.getElementById('homeNextAgendaTitle');
+            const cdBox = document.getElementById('homeCountdown'); const titleBox = document.getElementById('homeNextAgendaTitle');
             if(nextEvent) {
                 titleBox.innerHTML = `${nextEvent.j.nama_jalur || nextEvent.j.akronim} - ${nextEvent.type}`;
-                const diffTime = Math.abs(nextEvent.date - now);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                cdBox.innerHTML = `
-                    <div class="bg-white text-primary rounded-3 p-2" style="min-width: 60px;"><h3 class="fw-bold mb-0">${diffDays}</h3><small>Hari</small></div>
-                    <div class="align-self-center text-white text-start lh-1"><small class="d-block opacity-75">Menuju tanggal</small><span class="fw-bold">${formatDate(nextEvent.date)}</span></div>`;
-            } else {
-                titleBox.innerHTML = "Belum ada agenda terdekat";
-                cdBox.innerHTML = `-`;
-            }
+                const diffTime = Math.abs(nextEvent.date - now); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                cdBox.innerHTML = `<div class="bg-white text-primary rounded-3 p-2" style="min-width: 60px;"><h3 class="fw-bold mb-0">${diffDays}</h3><small>Hari</small></div><div class="align-self-center text-white text-start lh-1"><small class="d-block opacity-75">Menuju tanggal</small><span class="fw-bold">${formatDate(nextEvent.date)}</span></div>`;
+            } else { titleBox.innerHTML = "Belum ada agenda terdekat"; cdBox.innerHTML = `-`; }
 
             // 2. Open Registrations (Cards)
             const pendaftaranPaths = dataKatalog.filter(d => {
@@ -848,34 +765,24 @@
                 return (now >= pStart && now <= pEnd) || (diffStart > 0 && diffStart <= 7);
             }).sort((a, b) => new Date(a.pendaftaran_start) - new Date(b.pendaftaran_start));
 
-            let openHtml = '';
-            if(pendaftaranPaths.length === 0) openHtml = '<div class="card border-0 shadow-sm rounded-4 bg-white"><div class="card-body p-3 text-muted small">Tidak ada pendaftaran dalam waktu dekat.</div></div>';
-            
+            let openHtml = ''; if(pendaftaranPaths.length === 0) openHtml = '<div class="card border-0 shadow-sm rounded-4 bg-white"><div class="card-body p-3 text-muted small">Tidak ada pendaftaran dalam waktu dekat.</div></div>';
             pendaftaranPaths.forEach(path => {
                 const pIdx = dataKatalog.findIndex(d => d.index === path.index);
                 const pStart = new Date(path.pendaftaran_start); pStart.setHours(0,0,0,0);
                 const pEnd = new Date(path.pendaftaran_end); pEnd.setHours(23,59,59,999);
-                
                 let cdHtml = '';
                 if (now < pStart) {
-                    const diff = Math.ceil((pStart - now) / (1000 * 60 * 60 * 24));
-                    cdHtml = `<span class="badge bg-secondary text-white border p-2 shadow-sm">Dibuka ${diff} hari lagi</span>`;
+                    const diff = Math.ceil((pStart - now) / (1000 * 60 * 60 * 24)); cdHtml = `<span class="badge bg-secondary text-white border p-2 shadow-sm">Dibuka ${diff} hari lagi</span>`;
                 } else {
                     const diffEnd = Math.ceil((pEnd - now) / (1000 * 60 * 60 * 24));
                     if (diffEnd <= 7) cdHtml = `<span class="badge bg-danger text-white border p-2 shadow-sm">Ditutup ${diffEnd} hari lagi</span>`;
                     else cdHtml = `<span class="badge bg-primary text-white border p-2 shadow-sm">Sedang Dibuka</span>`;
                 }
-
                 openHtml += `
                     <div class="card agenda-card border-0 border-start border-4 border-primary shadow-sm mb-2 rounded-end-3 bg-white" onclick="openDetail(${pIdx})">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="fw-bold mb-1 text-dark">${path.nama_jalur}</h6>
-                                <small class="text-muted d-block"><i class="far fa-calendar-alt me-1"></i>${formatDate(path.pendaftaran_start)} - ${formatDate(path.pendaftaran_end)}</small>
-                            </div>
-                            <div class="text-end">
-                                ${cdHtml}
-                            </div>
+                            <div><h6 class="fw-bold mb-1 text-dark">${path.nama_jalur}</h6><small class="text-muted d-block"><i class="far fa-calendar-alt me-1"></i>${formatDate(path.pendaftaran_start)} - ${formatDate(path.pendaftaran_end)}</small></div>
+                            <div class="text-end">${cdHtml}</div>
                         </div>
                     </div>`;
             });
@@ -888,20 +795,14 @@
                 return now <= uEnd; 
             }).sort((a,b) => new Date(a.ujian1_start) - new Date(b.ujian1_start));
             
-            let examHtml = '';
-            if(upcomingExams.length === 0) examHtml = '<div class="card border-0 shadow-sm rounded-4 bg-white"><div class="card-body p-3 text-muted small">Tidak ada ujian dalam waktu dekat.</div></div>';
+            let examHtml = ''; if(upcomingExams.length === 0) examHtml = '<div class="card border-0 shadow-sm rounded-4 bg-white"><div class="card-body p-3 text-muted small">Tidak ada ujian dalam waktu dekat.</div></div>';
             upcomingExams.forEach(path => {
                 const pIdx = dataKatalog.findIndex(d => d.index === path.index);
                 const uStart = new Date(path.ujian1_start); uStart.setHours(0,0,0,0);
                 const isOngoing = now >= uStart;
-                
                 let cdHtml = '';
-                if(isOngoing) {
-                    cdHtml = `<span class="badge bg-success shadow-sm p-2"><i class="fas fa-circle-notch fa-spin me-1"></i>Sedang Berlangsung</span>`;
-                } else {
-                    const diff = Math.ceil((uStart - now) / (1000 * 60 * 60 * 24));
-                    cdHtml = `<span class="badge bg-warning text-dark border p-2 shadow-sm">H-${diff}</span>`;
-                }
+                if(isOngoing) cdHtml = `<span class="badge bg-success shadow-sm p-2"><i class="fas fa-circle-notch fa-spin me-1"></i>Sedang Berlangsung</span>`;
+                else { const diff = Math.ceil((uStart - now) / (1000 * 60 * 60 * 24)); cdHtml = `<span class="badge bg-warning text-dark border p-2 shadow-sm">H-${diff}</span>`; }
 
                 examHtml += `
                     <div class="card agenda-card border-0 border-start border-4 border-warning shadow-sm mb-2 rounded-end-3 bg-white" onclick="openDetail(${pIdx})">
@@ -911,15 +812,13 @@
                                 <small class="text-muted d-block mb-1"><i class="far fa-calendar-alt me-1"></i>${formatDate(path.ujian1_start)} ${path.ujian1_end && path.ujian1_end !== path.ujian1_start ? '- ' + formatDate(path.ujian1_end) : ''}</small>
                                 <div>${(path.materi_ujian||[]).map(m => `<span class="badge bg-light text-dark border me-1" style="font-size:0.6rem">${m}</span>`).join('')}</div>
                             </div>
-                            <div class="text-end">
-                                ${cdHtml}
-                            </div>
+                            <div class="text-end">${cdHtml}</div>
                         </div>
                     </div>`;
             });
             document.getElementById('homeUpcomingExams').innerHTML = examHtml;
 
-            // 4. Timeline Siswa
+            // 4. Timeline Siswa (All future grouped)
             let allEvents = [];
             allStudentJalurs.forEach(j => {
                 const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
@@ -934,7 +833,6 @@
 
             let tlHtml = allEvents.length === 0 ? '<p class="text-muted small">Tidak ada agenda masa depan.</p>' : '';
             let grouped = {};
-            
             allEvents.forEach(e => {
                 const key = e.d.getTime() + '_' + e.t + '_' + e.j.index;
                 if(!grouped[key]) { grouped[key] = { date: e.d, type: e.t, j: e.j, color: e.c, bg: e.bg, students: [] }; }
@@ -943,7 +841,6 @@
 
             let flatGrouped = Object.values(grouped).sort((a,b) => a.date - b.date);
             let currentMonthGroup = '';
-
             flatGrouped.forEach(ev => {
                 const mStr = ev.date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
                 if(mStr !== currentMonthGroup) {
@@ -951,7 +848,6 @@
                     currentMonthGroup = mStr;
                 }
                 const safeStudentsStr = encodeURIComponent(JSON.stringify(ev.students));
-                
                 tlHtml += `
                     <div class="card agenda-card border-0 border-start border-4 ${ev.bg} shadow-sm mb-2 rounded-end-3 bg-light" onclick="openAgendaStudentsModal('${ev.type}', '${ev.j.nama_jalur}', '${ev.date.toISOString()}', '${safeStudentsStr}')">
                         <div class="card-body py-2 px-3">
@@ -965,7 +861,6 @@
             });
             document.getElementById('homeStudentTimeline').innerHTML = tlHtml;
 
-            // 5. Analitik Sebaran
             renderAnalytics(allStudentJalurs);
         };
 
@@ -973,9 +868,7 @@
             const container = document.getElementById('analyticAccordion');
             if(allJalurs.length === 0) return container.innerHTML = '<div class="p-4 text-center text-muted">Belum ada data pendaftaran siswa.</div>';
 
-            let analytics = {};
-            let maxTotalUniv = 0;
-
+            let analytics = {}; let maxTotalUniv = 0;
             allJalurs.forEach(j => {
                 const uName = j.akronim || j.universitas || 'Lainnya';
                 if(!analytics[uName]) analytics[uName] = { logo: j.logo_link, total: 0, jalurs: {} };
@@ -987,35 +880,24 @@
             });
 
             const sortedUnivs = Object.keys(analytics).sort((a,b) => analytics[b].total - analytics[a].total);
-
             let html = '';
             sortedUnivs.forEach((uName, idx) => {
-                const uData = analytics[uName];
-                const percentage = (uData.total / maxTotalUniv) * 100;
-                const colId = `collapseAnalytic${idx}`;
+                const uData = analytics[uName]; const percentage = (uData.total / maxTotalUniv) * 100; const colId = `collapseAnalytic${idx}`;
                 
                 let jalurAccordionHtml = `<div class="accordion accordion-flush" id="accUniv_${idx}">`;
                 const sortedJalurs = Object.keys(uData.jalurs).sort((a,b) => uData.jalurs[b].count - uData.jalurs[a].count);
                 
                 sortedJalurs.forEach((jName, jIdx) => {
-                    const jData = uData.jalurs[jName];
-                    const colJalurId = `colUniv_${idx}_Jalur_${jIdx}`;
+                    const jData = uData.jalurs[jName]; const colJalurId = `colUniv_${idx}_Jalur_${jIdx}`;
                     jalurAccordionHtml += `
                         <div class="accordion-item bg-transparent border-0 border-bottom border-dashed">
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed py-2 px-1 small bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#${colJalurId}">
-                                    <div class="d-flex justify-content-between align-items-center w-100 pe-2">
-                                        <span class="text-dark fw-semibold" style="font-size:0.85rem">${jName}</span>
-                                        <span class="badge bg-secondary">${jData.count} Siswa</span>
-                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center w-100 pe-2"><span class="text-dark fw-semibold" style="font-size:0.85rem">${jName}</span><span class="badge bg-secondary">${jData.count} Siswa</span></div>
                                 </button>
                             </h2>
                             <div id="${colJalurId}" class="accordion-collapse collapse" data-bs-parent="#accUniv_${idx}">
-                                <div class="accordion-body p-2 pt-0 pb-3">
-                                    <div class="d-flex flex-wrap gap-1">
-                                       ${jData.students.map(s => `<span class="badge bg-light text-dark border fw-normal" onclick="openStudentDetail(${s.id})" style="cursor:pointer;">${s.nama} (${s.kelas})</span>`).join('')}
-                                    </div>
-                                </div>
+                                <div class="accordion-body p-2 pt-0 pb-3"><div class="d-flex flex-wrap gap-1">${jData.students.map(s => `<span class="badge bg-light text-dark border fw-normal" onclick="openStudentDetail(${s.id})" style="cursor:pointer;">${s.nama} (${s.kelas})</span>`).join('')}</div></div>
                             </div>
                         </div>`;
                 });
@@ -1026,24 +908,12 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed px-3 py-3" type="button" data-bs-toggle="collapse" data-bs-target="#${colId}">
                                 <div class="w-100 pe-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <div class="d-flex align-items-center">
-                                            <img src="${uData.logo || 'https://via.placeholder.com/20'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded">
-                                            <span class="fw-bold text-dark">${uName}</span>
-                                        </div>
-                                        <span class="fw-bold text-primary">${uData.total}</span>
-                                    </div>
-                                    <div class="analytic-bar-bg">
-                                        <div class="analytic-bar-fill" style="width: ${percentage}%"></div>
-                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1"><div class="d-flex align-items-center"><img src="${uData.logo || 'https://via.placeholder.com/20'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded"><span class="fw-bold text-dark">${uName}</span></div><span class="fw-bold text-primary">${uData.total}</span></div>
+                                    <div class="analytic-bar-bg"><div class="analytic-bar-fill" style="width: ${percentage}%"></div></div>
                                 </div>
                             </button>
                         </h2>
-                        <div id="${colId}" class="accordion-collapse collapse" data-bs-parent="#analyticAccordion">
-                            <div class="accordion-body bg-light rounded-bottom px-3 py-2">
-                                ${jalurAccordionHtml}
-                            </div>
-                        </div>
+                        <div id="${colId}" class="accordion-collapse collapse" data-bs-parent="#analyticAccordion"><div class="accordion-body bg-light rounded-bottom px-3 py-2">${jalurAccordionHtml}</div></div>
                     </div>`;
             });
             container.innerHTML = html;
@@ -1058,10 +928,7 @@
             studentsArr.forEach(s => {
                 html += `
                     <li class="list-group-item d-flex justify-content-between align-items-center py-3 px-1">
-                        <div>
-                            <h6 class="fw-bold mb-0">${s.nama}</h6>
-                            <small class="text-muted d-block">${s.kelas} | ${s.sekolah}</small>
-                        </div>
+                        <div><h6 class="fw-bold mb-0">${s.nama}</h6><small class="text-muted d-block">${s.kelas} | ${s.sekolah}</small></div>
                         <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="bootstrap.Modal.getInstance(document.getElementById('agendaStudentsModal')).hide(); setTimeout(()=>openStudentDetail(${s.id}), 300)">Profil</button>
                     </li>`;
             });
@@ -1072,29 +939,18 @@
         // --- BY UNIV VIEW ---
         const renderUnivList = () => {
             const query = (document.getElementById('searchUniv')?.value || '').toLowerCase();
-            const container = document.getElementById('univGridContainer');
-            container.innerHTML = '';
+            const container = document.getElementById('univGridContainer'); container.innerHTML = '';
             let univs = []; let seen = new Set();
-            dataKatalog.forEach(d => {
-                if(!seen.has(d.univ_code)) { seen.add(d.univ_code); univs.push({code: d.univ_code, nama: d.universitas, akronim: d.akronim, logo: d.logo_link}); }
-            });
+            dataKatalog.forEach(d => { if(!seen.has(d.univ_code)) { seen.add(d.univ_code); univs.push({code: d.univ_code, nama: d.universitas, akronim: d.akronim, logo: d.logo_link}); } });
 
             const filtered = univs.filter(u => u.nama.toLowerCase().includes(query) || (u.akronim && u.akronim.toLowerCase().includes(query)));
             filtered.forEach(u => {
-                container.innerHTML += `
-                    <div class="col-6">
-                        <div class="card univ-card p-3 text-center" onclick="filterCatalogByUniv('${u.code}')">
-                            <img src="${u.logo || 'https://via.placeholder.com/60'}" class="card-logo mx-auto">
-                            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${u.akronim || 'UNIV'}</h6>
-                            <small class="text-muted" style="font-size: 0.7rem;">${u.nama}</small>
-                        </div>
-                    </div>`;
+                container.innerHTML += `<div class="col-6"><div class="card univ-card p-3 text-center" onclick="filterCatalogByUniv('${u.code}')"><img src="${u.logo || 'https://via.placeholder.com/60'}" class="card-logo mx-auto"><h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${u.akronim || 'UNIV'}</h6><small class="text-muted" style="font-size: 0.7rem;">${u.nama}</small></div></div>`;
             });
         };
 
         // --- CATALOG LOGIC ---
         let currentCatalogFilter = { search: '', status: '', skema: '', type: 'Semua', univCode: null };
-        
         const filterCatalogType = (type) => { currentCatalogFilter.type = type; currentCatalogFilter.univCode = null; renderCatalogUI(); };
         const filterCatalogByUniv = (univCode) => { currentCatalogFilter.univCode = univCode; switchView('catalog'); renderCatalogUI(); };
         
@@ -1102,19 +958,13 @@
             currentCatalogFilter.search = document.getElementById('searchKatalog').value.toLowerCase();
             currentCatalogFilter.status = document.getElementById('filterStatus').value;
             currentCatalogFilter.skema = document.getElementById('filterSkema').value;
-            currentCatalogFilter.univCode = null;
-            renderCatalogUI();
+            currentCatalogFilter.univCode = null; renderCatalogUI();
         };
 
         const resetKatalogFilter = () => {
-            document.getElementById('searchKatalog').value = '';
-            document.getElementById('filterStatus').value = '';
-            document.getElementById('filterSkema').value = '';
+            document.getElementById('searchKatalog').value = ''; document.getElementById('filterStatus').value = ''; document.getElementById('filterSkema').value = '';
             currentCatalogFilter = { search: '', status: '', skema: '', type: 'Semua', univCode: null };
-            document.querySelectorAll('.btn-filter').forEach(btn => {
-                btn.classList.replace('btn-primary', 'btn-outline-primary');
-                if(btn.innerText === 'Semua') btn.classList.replace('btn-outline-primary', 'btn-primary');
-            });
+            document.querySelectorAll('.btn-filter').forEach(btn => { btn.classList.replace('btn-primary', 'btn-outline-primary'); if(btn.innerText === 'Semua') btn.classList.replace('btn-outline-primary', 'btn-primary'); });
             renderCatalogUI();
         };
 
@@ -1131,11 +981,7 @@
             } else if (now >= pStart && now <= pEnd) {
                 const diffDays = Math.ceil((pEnd - now) / (1000 * 60 * 60 * 24));
                 weight = 1;
-                if (diffDays <= 7) {
-                    status = `Penutupan ${diffDays} hari lagi`; badgeClass = 'bg-danger';
-                } else {
-                    status = 'Sedang Dibuka'; badgeClass = 'bg-primary';
-                }
+                if (diffDays <= 7) { status = `Penutupan ${diffDays} hari lagi`; badgeClass = 'bg-danger'; } else { status = 'Sedang Dibuka'; badgeClass = 'bg-primary'; }
                 infoHTML = `<div class="col-6 text-muted">Buka: <span class="text-success fw-semibold">${formatDate(item.pendaftaran_start)}</span></div><div class="col-6 text-muted">Tutup: <span class="text-danger fw-semibold">${formatDate(item.pendaftaran_end)}</span></div>`;
             } else if (now > pEnd && now < uStart) {
                 status = 'Pendaftaran Tutup'; badgeClass = 'bg-warning text-dark'; weight = 3;
@@ -1151,37 +997,21 @@
         };
 
         const renderCatalogUI = () => {
-            const container = document.getElementById('katalogContainer');
-            container.innerHTML = '';
-            const now = new Date();
+            const container = document.getElementById('katalogContainer'); container.innerHTML = ''; const now = new Date();
 
             let catalogWithStatus = dataKatalog.map(item => ({ ...item, ...getJalurStatus(item, now) }));
 
             if(currentCatalogFilter.univCode) {
                 catalogWithStatus = catalogWithStatus.filter(d => d.univ_code === currentCatalogFilter.univCode);
             } else {
-                if(currentCatalogFilter.type && currentCatalogFilter.type !== 'Semua') {
-                    catalogWithStatus = catalogWithStatus.filter(d => d.jalur === currentCatalogFilter.type);
-                }
-                if(currentCatalogFilter.search) {
-                    catalogWithStatus = catalogWithStatus.filter(d => 
-                        d.nama_jalur.toLowerCase().includes(currentCatalogFilter.search) || 
-                        (d.universitas && d.universitas.toLowerCase().includes(currentCatalogFilter.search)) ||
-                        (d.akronim && d.akronim.toLowerCase().includes(currentCatalogFilter.search))
-                    );
-                }
+                if(currentCatalogFilter.type && currentCatalogFilter.type !== 'Semua') catalogWithStatus = catalogWithStatus.filter(d => d.jalur === currentCatalogFilter.type);
+                if(currentCatalogFilter.search) catalogWithStatus = catalogWithStatus.filter(d => d.nama_jalur.toLowerCase().includes(currentCatalogFilter.search) || (d.universitas && d.universitas.toLowerCase().includes(currentCatalogFilter.search)) || (d.akronim && d.akronim.toLowerCase().includes(currentCatalogFilter.search)));
                 if(currentCatalogFilter.status) {
-                    if(currentCatalogFilter.status === 'Pendaftaran Tutup') {
-                        catalogWithStatus = catalogWithStatus.filter(d => d.status === 'Pendaftaran Tutup');
-                    } else if(currentCatalogFilter.status === 'Sedang Dibuka') {
-                        catalogWithStatus = catalogWithStatus.filter(d => d.status === 'Sedang Dibuka' || d.status.includes('Penutupan'));
-                    } else {
-                        catalogWithStatus = catalogWithStatus.filter(d => d.status === currentCatalogFilter.status);
-                    }
+                    if(currentCatalogFilter.status === 'Pendaftaran Tutup') catalogWithStatus = catalogWithStatus.filter(d => d.status === 'Pendaftaran Tutup');
+                    else if(currentCatalogFilter.status === 'Sedang Dibuka') catalogWithStatus = catalogWithStatus.filter(d => d.status === 'Sedang Dibuka' || d.status.includes('Penutupan'));
+                    else catalogWithStatus = catalogWithStatus.filter(d => d.status === currentCatalogFilter.status);
                 }
-                if(currentCatalogFilter.skema) {
-                    catalogWithStatus = catalogWithStatus.filter(d => d.skema === currentCatalogFilter.skema);
-                }
+                if(currentCatalogFilter.skema) catalogWithStatus = catalogWithStatus.filter(d => d.skema === currentCatalogFilter.skema);
             }
 
             catalogWithStatus.sort((a, b) => {
@@ -1189,51 +1019,176 @@
                 return new Date(a.pendaftaran_start) - new Date(b.pendaftaran_start);
             });
 
-            if(catalogWithStatus.length === 0) {
-                container.innerHTML = '<div class="col-12 text-center text-muted py-4">Jalur tidak ditemukan. Coba hapus filter.</div>';
-                return;
-            }
+            if(catalogWithStatus.length === 0) return container.innerHTML = '<div class="col-12 text-center text-muted py-4">Jalur tidak ditemukan. Coba hapus filter.</div>';
 
             catalogWithStatus.forEach((item) => {
                 let jTipeBadge = item.jalur === 'Mandiri' ? 'bg-warning text-dark' : (item.jalur === 'Nasional' ? 'bg-primary text-white' : 'bg-danger text-white');
-                let biayaNum = Number(item.biaya) || 0;
-                let biayaMaxxNum = Number(item.biaya_maxx) || biayaNum;
+                let biayaNum = Number(item.biaya) || 0; let biayaMaxxNum = Number(item.biaya_maxx) || biayaNum;
                 let hargaTeks = biayaNum === biayaMaxxNum ? formatRupiah(biayaNum) : `${formatRupiah(biayaNum)} - ${formatRupiah(biayaMaxxNum)}`;
 
                 container.innerHTML += `
                     <div class="col-12 col-md-6 d-flex align-items-stretch">
                         <div class="card katalog-card w-100 p-3 position-relative ${item.opacityClass}" onclick="openDetailByItemId(${item.index})">
                             <span class="position-absolute top-0 end-0 badge ${item.badgeClass} m-3 shadow-sm">${item.status}</span>
-                            
                             <div class="d-flex align-items-center mb-3 mt-1">
                                 <img src="${item.logo_link || 'https://via.placeholder.com/45'}" class="card-logo me-3">
-                                <div>
-                                    <div class="d-flex align-items-center gap-2 mb-1"><h6 class="fw-bold mb-0 text-dark">${item.akronim || ''}</h6><span class="badge badge-jalur ${jTipeBadge}">${item.jalur || ''}</span></div>
-                                    <h5 class="card-title fw-bold text-primary mb-0 pe-4" style="font-size: 1.1rem; line-height: 1.2;">${item.nama_jalur}</h5>
-                                </div>
+                                <div><div class="d-flex align-items-center gap-2 mb-1"><h6 class="fw-bold mb-0 text-dark">${item.akronim || ''}</h6><span class="badge badge-jalur ${jTipeBadge}">${item.jalur || ''}</span></div><h5 class="card-title fw-bold text-primary mb-0 pe-4" style="font-size: 1.1rem; line-height: 1.2;">${item.nama_jalur}</h5></div>
                             </div>
-                            <div class="d-flex flex-wrap gap-1 mb-3">
-                                <span class="badge bg-light text-secondary border"><i class="fas fa-file-alt me-1"></i>${item.tipe_ujian || '-'}</span>
-                                <span class="badge bg-light text-secondary border"><i class="fas fa-desktop me-1"></i>${item.skema || '-'}</span>
-                            </div>
-                            <div class="bg-white border rounded p-2 mb-3 small flex-grow-1">
-                                <div class="row g-1">
-                                    ${item.infoHTML}
-                                </div>
-                            </div>
+                            <div class="d-flex flex-wrap gap-1 mb-3"><span class="badge bg-light text-secondary border"><i class="fas fa-file-alt me-1"></i>${item.tipe_ujian || '-'}</span><span class="badge bg-light text-secondary border"><i class="fas fa-desktop me-1"></i>${item.skema || '-'}</span></div>
+                            <div class="bg-white border rounded p-2 mb-3 small flex-grow-1"><div class="row g-1">${item.infoHTML}</div></div>
                             <hr class="mt-auto mb-2 opacity-25">
-                            <div class="d-flex justify-content-between align-items-end">
-                                <div><small class="text-muted d-block" style="font-size: 0.75rem;">Biaya Pendaftaran</small><div class="price-tag">${hargaTeks}</div></div>
-                                <i class="fas fa-chevron-right text-primary opacity-50"></i>
-                            </div>
+                            <div class="d-flex justify-content-between align-items-end"><div><small class="text-muted d-block" style="font-size: 0.75rem;">Biaya Pendaftaran</small><div class="price-tag">${hargaTeks}</div></div><i class="fas fa-chevron-right text-primary opacity-50"></i></div>
                         </div>
                     </div>`;
             });
         };
 
-        const openDetailByItemId = (itemId) => {
-            const dataIndex = dataKatalog.findIndex(d => d.index === itemId);
-            if(dataIndex > -1) openDetail(dataIndex);
+        const openDetailByItemId = (itemId) => { const dataIndex = dataKatalog.findIndex(d => d.index === itemId); if(dataIndex > -1) openDetail(dataIndex); };
+
+        // --- RENDER DYNAMIC PRODI FOLDER UI ---
+        const renderProdiSelectionArea = (item, dataIndex, isEdit) => {
+            const container = document.getElementById('prodiSelectionContainer');
+            
+            // If it's a regular array (Static)
+            if(Array.isArray(item.prodi_list)) {
+                let prodiTableRows = '';
+                const prodiList = item.prodi_list || [];
+                const hasDayaTampung = !!item.daya_tampung;
+                const thDayaTampung = hasDayaTampung ? `<th class="text-center">Daya Tampung</th><th class="text-center">Peminat Th Lalu</th>` : '';
+
+                prodiList.forEach((prodi, i) => {
+                    const isChecked = currentDetailProdiSelection.includes(prodi);
+                    const orderIndex = isChecked ? currentDetailProdiSelection.indexOf(prodi) + 1 : '';
+                    const badgeHtml = isChecked ? `<span class="badge bg-primary rounded-circle order-badge" id="badge_${dataIndex}_${i}">${orderIndex}</span>` : `<span class="badge bg-primary rounded-circle order-badge" id="badge_${dataIndex}_${i}" style="display:none;"></span>`;
+                    const tdDayaTampung = hasDayaTampung ? `<td class="text-center">${item.daya_tampung || '-'}</td><td class="text-center">-</td>` : '';
+
+                    prodiTableRows += `
+                        <tr onclick="toggleProdiStatic('${prodi}', ${item.prodi_select || 2}, ${dataIndex}, ${i})">
+                            <td class="text-center" style="width: 50px;"><input class="form-check-input prodi-checkbox" type="checkbox" value="${prodi}" id="cb_${dataIndex}_${i}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleProdiStatic('${prodi}', ${item.prodi_select || 2}, ${dataIndex}, ${i})"></td>
+                            <td><label class="form-check-label w-100 mb-0 fw-semibold" style="cursor:pointer">${prodi} ${badgeHtml}</label></td>
+                            ${tdDayaTampung}
+                        </tr>`;
+                });
+                if(prodiList.length === 0) prodiTableRows = `<tr><td colspan="${hasDayaTampung?4:2}" class="text-center text-muted py-3">Data Program Studi Belum Tersedia</td></tr>`;
+
+                container.innerHTML = `
+                    <div class="alert alert-info border-0 bg-primary bg-opacity-10 py-2"><i class="fas fa-info-circle text-primary me-2"></i>Maksimal memilih <strong>${item.prodi_select || '-'} Prodi</strong>. Urutan klik menentukan prioritas.</div>
+                    <div class="table-responsive border rounded-3" style="max-height: 350px; overflow-y: auto;">
+                        <table class="table table-hover table-bordered table-prodi align-middle mb-0">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1;"><tr><th class="text-center">Pilih</th><th>Nama Program Studi</th>${thDayaTampung}</tr></thead>
+                            <tbody>${prodiTableRows}</tbody>
+                        </table>
+                    </div>`;
+                return;
+            }
+
+            // If it's Dynamic Folder (Nasional)
+            if(item.prodi_list.is_dynamic) {
+                // Ensure currentDetailProdiSelection has exact slots
+                if(currentDetailProdiSelection.length !== item.prodi_select) {
+                    const temp = [...currentDetailProdiSelection];
+                    currentDetailProdiSelection = Array(item.prodi_select).fill("");
+                    for(let i=0; i<Math.min(temp.length, item.prodi_select); i++) currentDetailProdiSelection[i] = temp[i] || "";
+                }
+
+                if(activeSlotIndex === -1) {
+                    // MODE: SLOTS
+                    let slotsHtml = `<div class="alert alert-info border-0 bg-primary bg-opacity-10 py-2 mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Jalur ini mengharuskan Anda memilih <strong>${item.prodi_select}</strong> jurusan lintas kampus.</div>`;
+                    for(let i=0; i<item.prodi_select; i++) {
+                        const val = currentDetailProdiSelection[i];
+                        if(val) {
+                            slotsHtml += `
+                                <div class="slot-btn slot-filled mb-2 d-flex justify-content-between align-items-center">
+                                    <div><span class="badge bg-warning text-dark me-2">Pilihan ${i+1}</span><span class="fw-bold">${val}</span></div>
+                                    <div>
+                                        <button class="btn btn-sm btn-light border text-primary" onclick="openFolderUniv(${i}, ${dataIndex})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-light border text-danger" onclick="clearSlot(${i}, ${dataIndex})"><i class="fas fa-times"></i></button>
+                                    </div>
+                                </div>`;
+                        } else {
+                            slotsHtml += `<div class="slot-btn mb-2" onclick="openFolderUniv(${i}, ${dataIndex})"><i class="fas fa-plus-circle me-2"></i> Pilih Jurusan untuk Pilihan ${i+1}</div>`;
+                        }
+                    }
+                    container.innerHTML = slotsHtml;
+                } 
+                else if (dynamicFolderUniv === null) {
+                    // MODE: UNIVS
+                    const dynData = item.prodi_list.data;
+                    let univListHtml = '';
+                    Object.keys(dynData).forEach(uName => {
+                        univListHtml += `
+                            <div class="col-12 col-sm-6 folder-univ-item">
+                                <div class="card bg-light border-0 shadow-sm h-100" style="cursor:pointer;" onclick="openFolderProdi('${uName}', ${dataIndex})">
+                                    <div class="card-body p-3 d-flex align-items-center">
+                                        <img src="${dynData[uName].logo || 'https://via.placeholder.com/30'}" style="width:30px;height:30px;object-fit:contain;" class="me-3">
+                                        <span class="fw-bold text-dark" style="font-size:0.9rem">${uName}</span>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                    container.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="closeFolderSlots(${dataIndex})"><i class="fas fa-arrow-left me-1"></i> Batal Pilihan ${activeSlotIndex+1}</button>
+                            <span class="badge bg-warning text-dark">Pilihan ${activeSlotIndex+1}</span>
+                        </div>
+                        <input type="text" class="form-control rounded-pill mb-3" id="folderSearch" placeholder="Cari nama universitas..." onkeyup="filterFolderSearch('folder-univ-item')">
+                        <div class="row g-2 custom-scroll" style="max-height:350px; overflow-y:auto;">${univListHtml}</div>`;
+                } 
+                else {
+                    // MODE: PRODIS
+                    const prodis = item.prodi_list.data[dynamicFolderUniv].prodis;
+                    let prodiTableRows = '';
+                    prodis.forEach(p => {
+                        prodiTableRows += `
+                            <tr class="folder-prodi-item" style="cursor:pointer;" onclick="selectProdiForSlot('${dynamicFolderUniv} - ${p.nama}', ${dataIndex})">
+                                <td><span class="fw-semibold">${p.nama}</span></td>
+                                <td class="text-center">${p.kuota}</td>
+                                <td class="text-center">${p.peminat}</td>
+                            </tr>`;
+                    });
+                    container.innerHTML = `
+                        <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                            <button class="btn btn-sm btn-light border rounded-circle me-3" onclick="openFolderUniv(${activeSlotIndex}, ${dataIndex})"><i class="fas fa-arrow-left"></i></button>
+                            <img src="${item.prodi_list.data[dynamicFolderUniv].logo || 'https://via.placeholder.com/30'}" style="width:30px;height:30px;object-fit:contain;" class="me-2">
+                            <span class="fw-bold">${dynamicFolderUniv}</span>
+                        </div>
+                        <input type="text" class="form-control rounded-pill mb-3" id="folderSearch" placeholder="Cari nama program studi..." onkeyup="filterFolderSearch('folder-prodi-item')">
+                        <div class="table-responsive border rounded-3 custom-scroll" style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-hover table-bordered align-middle mb-0">
+                                <thead class="table-light" style="position: sticky; top: 0; z-index: 1;"><tr><th>Nama Program Studi</th><th class="text-center">Daya Tampung</th><th class="text-center">Peminat Th Lalu</th></tr></thead>
+                                <tbody>${prodiTableRows}</tbody>
+                            </table>
+                        </div>`;
+                }
+            }
+        };
+
+        const toggleProdiStatic = (pr, max, dIdx, i) => {
+            const cb = document.getElementById(`cb_${dIdx}_${i}`);
+            const badge = document.getElementById(`badge_${dIdx}_${i}`);
+            const idx = currentDetailProdiSelection.indexOf(pr);
+            if(idx > -1) {
+                currentDetailProdiSelection.splice(idx, 1); cb.checked = false; badge.style.display = 'none';
+            } else {
+                if(currentDetailProdiSelection.length >= max) return showToast(`Maksimal ${max} pilihan.`, "warning");
+                currentDetailProdiSelection.push(pr); cb.checked = true; badge.style.display = 'inline-block';
+            }
+            (dataKatalog[dIdx].prodi_list || []).forEach((p, j) => {
+                const b = document.getElementById(`badge_${dIdx}_${j}`);
+                const pos = currentDetailProdiSelection.indexOf(p);
+                if(b) { if(pos > -1) { b.innerText = pos + 1; b.style.display = 'inline-block'; } else { b.style.display = 'none'; } }
+            });
+        };
+
+        // Folder Navigations
+        const openFolderUniv = (slotIdx, dataIndex) => { activeSlotIndex = slotIdx; dynamicFolderUniv = null; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
+        const openFolderProdi = (univName, dataIndex) => { dynamicFolderUniv = univName; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
+        const closeFolderSlots = (dataIndex) => { activeSlotIndex = -1; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
+        const selectProdiForSlot = (val, dataIndex) => { currentDetailProdiSelection[activeSlotIndex] = val; activeSlotIndex = -1; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); showToast("Jurusan dipilih!", "success"); };
+        const clearSlot = (slotIdx, dataIndex) => { currentDetailProdiSelection[slotIdx] = ""; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
+        const filterFolderSearch = (className) => {
+            const query = document.getElementById('folderSearch').value.toLowerCase();
+            document.querySelectorAll('.' + className).forEach(el => { el.style.display = el.innerText.toLowerCase().includes(query) ? '' : 'none'; });
         };
 
         const openDetail = (dataIndex, isEdit = false, stuId = null, stuItemIdx = null) => {
@@ -1243,6 +1198,7 @@
             editStudentId = isEdit ? stuId : null;
             editItemIndex = isEdit ? stuItemIdx : -1;
             currentDetailProdiSelection = [];
+            activeSlotIndex = -1; // Reset to slots view
             
             if(isEdit) {
                 const s = students.find(x => x.id === stuId);
@@ -1251,33 +1207,11 @@
 
             document.getElementById('detailModeBadge').style.display = isEdit ? 'inline-block' : 'none';
 
-            let prodiTableRows = '';
-            const prodiList = item.prodi_list || [];
-            const hasDayaTampung = !!item.daya_tampung;
-            const thDayaTampung = hasDayaTampung ? `<th class="text-center">Daya Tampung</th><th class="text-center">Peminat Th Lalu</th>` : '';
-
-            prodiList.forEach((prodi, i) => {
-                const isChecked = currentDetailProdiSelection.includes(prodi);
-                const orderIndex = isChecked ? currentDetailProdiSelection.indexOf(prodi) + 1 : '';
-                const badgeHtml = isChecked ? `<span class="badge bg-primary rounded-circle order-badge" id="badge_${dataIndex}_${i}">${orderIndex}</span>` : `<span class="badge bg-primary rounded-circle order-badge" id="badge_${dataIndex}_${i}" style="display:none;"></span>`;
-                const tdDayaTampung = hasDayaTampung ? `<td class="text-center">${item.daya_tampung || '-'}</td><td class="text-center">-</td>` : '';
-
-                prodiTableRows += `
-                    <tr onclick="toggleProdi('${prodi}', ${item.prodi_select || 2}, ${dataIndex}, ${i})">
-                        <td class="text-center" style="width: 50px;"><input class="form-check-input prodi-checkbox" type="checkbox" value="${prodi}" id="cb_${dataIndex}_${i}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleProdi('${prodi}', ${item.prodi_select || 2}, ${dataIndex}, ${i})"></td>
-                        <td><label class="form-check-label w-100 mb-0 fw-semibold" style="cursor:pointer">${prodi} ${badgeHtml}</label></td>
-                        ${tdDayaTampung}
-                    </tr>`;
-            });
-            if(prodiList.length === 0) prodiTableRows = `<tr><td colspan="${hasDayaTampung?4:2}" class="text-center text-muted py-3">Data Program Studi Belum Tersedia</td></tr>`;
-
             const hasTahap2 = !!item.ujian2_start || !!item.pengumuman2;
-
             let timelineHTML = `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Masa Pendaftaran</h6><small class="text-muted">${formatDate(item.pendaftaran_start)} - ${formatDate(item.pendaftaran_end)}</small></div>`;
-            
-            if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">${hasTahap2 ? 'Ujian/Seleksi Tahap 1' : 'Ujian/Seleksi'}</h6><small class="text-muted">${formatDate(item.ujian1_start)} ${item.ujian1_end && item.ujian1_end !== item.ujian1_start ? 's/d ' + formatDate(item.ujian1_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
+            if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">${hasTahap2 ? 'Ujian Tahap 1' : 'Ujian'}</h6><small class="text-muted">${formatDate(item.ujian1_start)} ${item.ujian1_end && item.ujian1_end !== item.ujian1_start ? 's/d ' + formatDate(item.ujian1_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
             if(item.pengumuman1) timelineHTML += `<div class="list-timeline-item ${!hasTahap2 ? 'border-success' : ''}"><h6 class="fw-bold mb-0 ${!hasTahap2 ? 'text-success' : ''}">${hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman Hasil'}</h6><small class="text-muted">${formatDate(item.pengumuman1)}</small><p class="small mb-0 mt-1">${item.pengumuman1_keterangan || ''}</p></div>`;
-            if(item.ujian2_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian/Seleksi Tahap 2</h6><small class="text-muted">${formatDate(item.ujian2_start)} ${item.ujian2_end && item.ujian2_end !== item.ujian2_start ? 's/d ' + formatDate(item.ujian2_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian2_keterangan || ''}</p></div>`;
+            if(item.ujian2_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian Tahap 2</h6><small class="text-muted">${formatDate(item.ujian2_start)} ${item.ujian2_end && item.ujian2_end !== item.ujian2_start ? 's/d ' + formatDate(item.ujian2_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian2_keterangan || ''}</p></div>`;
             if(item.pengumuman2) timelineHTML += `<div class="list-timeline-item border-success"><h6 class="fw-bold mb-0 text-success">Pengumuman Tahap 2</h6><small class="text-muted">${formatDate(item.pengumuman2)}</small><p class="small mb-0 mt-1">${item.pengumuman2_keterangan || ''}</p></div>`;
 
             const syaratHtml = item.syarat ? item.syarat.replace(/\n/g, '<br>') : '-';
@@ -1291,8 +1225,8 @@
                 <button class="btn btn-gradient w-100 py-3 fs-5" onclick="checkoutPath(${dataIndex})"><i class="fas fa-save me-2"></i>Simpan Perubahan</button>
             ` : `
                 <h6 class="fw-bold text-primary mb-2">Tambahkan ke Akun Siswa:</h6>
-                <select class="form-select rounded-pill mb-4 border-primary" id="selectStudentCheckout" style="height: 50px;">${studentOpts}</select>
-                <button class="btn btn-gradient w-100 py-3 fs-5" onclick="checkoutPath(${dataIndex})"><i class="fas fa-bookmark me-2"></i>Simpan Pilihan Jurusan</button>
+                <select class="form-select rounded-pill mb-4 border-primary shadow-sm" id="selectStudentCheckout" style="height: 50px;">${studentOpts}</select>
+                <button class="btn btn-gradient w-100 py-3 fs-5 shadow-sm" onclick="checkoutPath(${dataIndex})"><i class="fas fa-bookmark me-2"></i>Simpan Pilihan Jurusan</button>
             `;
 
             let biayaNum = Number(item.biaya) || 0;
@@ -1300,7 +1234,7 @@
             document.getElementById('detailContent').innerHTML = `
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-4"><img src="${item.logo_link || 'https://via.placeholder.com/60'}" class="card-logo me-3" style="width:60px;height:60px"><div><h4 class="fw-bold mb-0">${item.nama_jalur}</h4><p class="text-muted mb-0">${item.universitas || ''} (${item.akronim || ''})</p></div></div>
+                        <div class="d-flex align-items-center mb-4"><img src="${item.logo_link || 'https://via.placeholder.com/60'}" class="card-logo me-3" style="width:60px;height:60px"><div><h4 class="fw-bold mb-0">${item.nama_jalur}</h4><p class="text-muted mb-0">${item.universitas || 'Jalur Nasional'} ${item.akronim ? '('+item.akronim+')' : ''}</p></div></div>
                         <div class="row g-4">
                             <div class="col-md-7">
                                 <h6 class="fw-bold text-primary border-bottom pb-2">Informasi Umum</h6><p>${item.keterangan || '-'}</p>
@@ -1322,48 +1256,27 @@
                 
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-list-ul text-primary me-2"></i>Daftar Program Studi</h5>
-                        <div class="alert alert-info border-0 bg-primary bg-opacity-10 py-2"><i class="fas fa-info-circle text-primary me-2"></i>Maksimal memilih <strong>${item.prodi_select || '-'} Prodi</strong>. Urutan klik menentukan prioritas.</div>
-                        <div class="table-responsive border rounded-3" style="max-height: 350px; overflow-y: auto;">
-                            <table class="table table-hover table-bordered table-prodi align-middle mb-0">
-                                <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
-                                    <tr><th class="text-center">Pilih</th><th>Nama Program Studi</th>${thDayaTampung}</tr>
-                                </thead>
-                                <tbody>${prodiTableRows}</tbody>
-                            </table>
-                        </div>
+                        <h5 class="fw-bold mb-3"><i class="fas fa-list-ul text-primary me-2"></i>Pilihan Program Studi</h5>
+                        <div id="prodiSelectionContainer"></div>
                         <div class="mt-4 p-3 bg-light rounded-4 border">
                             ${actionSection}
                         </div>
                     </div>
                 </div>`;
+            
+            renderProdiSelectionArea(item, dataIndex); // Call the dynamic/static renderer
             switchView('detail');
-        };
-
-        const toggleProdi = (pr, max, dIdx, i) => {
-            const cb = document.getElementById(`cb_${dIdx}_${i}`);
-            const badge = document.getElementById(`badge_${dIdx}_${i}`);
-            const idx = currentDetailProdiSelection.indexOf(pr);
-            if(idx > -1) {
-                currentDetailProdiSelection.splice(idx, 1); cb.checked = false; badge.style.display = 'none';
-            } else {
-                if(currentDetailProdiSelection.length >= max) return cb.checked = false;
-                currentDetailProdiSelection.push(pr); cb.checked = true; badge.style.display = 'inline-block';
-            }
-            (dataKatalog[dIdx].prodi_list || []).forEach((p, j) => {
-                const b = document.getElementById(`badge_${dIdx}_${j}`);
-                const pos = currentDetailProdiSelection.indexOf(p);
-                if(b) { if(pos > -1) { b.innerText = pos + 1; b.style.display = 'inline-block'; } else { b.style.display = 'none'; } }
-            });
         };
 
         const checkoutPath = (dataIndex) => {
             const item = dataKatalog[dataIndex];
-            if(currentDetailProdiSelection.length === 0) return showToast("Pilih minimal 1 prodi.", "warning");
+            const cleanSelection = currentDetailProdiSelection.filter(x => x && x !== "");
+
+            if(cleanSelection.length === 0) return showToast("Pilih minimal 1 prodi.", "warning");
             
             if(editStudentId !== null) {
                 const s = students.find(x => x.id === editStudentId);
-                s.items[editItemIndex].prodiTerpilih = [...currentDetailProdiSelection];
+                s.items[editItemIndex].prodiTerpilih = [...cleanSelection];
                 syncStudentToDB(s); 
                 showToast("Perubahan jurusan untuk " + s.nama + " berhasil disimpan!", "success");
             } else {
@@ -1373,7 +1286,7 @@
                 const s = students.find(x => x.id == sId);
                 if(s.items.find(x => x.jalur.nama_jalur === item.nama_jalur)) return showToast("Siswa ini sudah didaftarkan pada jalur tersebut.", "warning");
 
-                s.items.push({ jalur: item, prodiTerpilih: [...currentDetailProdiSelection], statusDaftar: false, statusUjian: false });
+                s.items.push({ jalur: item, prodiTerpilih: [...cleanSelection], statusDaftar: false, statusUjian: false });
                 syncStudentToDB(s);
                 showToast(`Berhasil disimpan ke profil ${s.panggilan}!`, "success");
             }
@@ -1569,22 +1482,14 @@
         };
 
         // RUN ON LOAD
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(error => console.error('Pendaftaran ServiceWorker gagal:', error));
+            });
+        }
         document.addEventListener('DOMContentLoaded', () => { 
             initData(); 
         });
-
-        // Registrasi Service Worker untuk PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then((registration) => {
-                        console.log('ServiceWorker terdaftar dengan scope:', registration.scope);
-                    })
-                    .catch((error) => {
-                        console.error('Pendaftaran ServiceWorker gagal:', error);
-                    });
-            });
-        }
     </script>
 </body>
 </html>
