@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PTN Wali">
-    <link rel="apple-touch-icon" href="https://via.placeholder.com/192x192.png?text=PTN">
+    <link rel="apple-touch-icon" href="./192x192.png">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -107,7 +107,6 @@
         .custom-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
         
-        /* Folder UI Slots */
         .slot-btn { border: 2px dashed #dee2e6; background: #f8f9fa; color: #6c757d; font-weight: 600; padding: 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: center; }
         .slot-btn:hover { border-color: var(--primary-blue); color: var(--primary-blue); background: #eef5ff; }
         .slot-filled { border: 2px solid var(--primary-blue); background: #f0f7ff; color: var(--primary-dark); text-align: left; }
@@ -238,7 +237,7 @@
 
             <ul class="nav nav-pills nav-fill mb-4 bg-white p-1 rounded-pill shadow-sm">
                 <li class="nav-item"><button class="nav-link active rounded-pill" data-bs-toggle="pill" data-bs-target="#sd-tab-daftar" type="button">Jalur Pilihan</button></li>
-                <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="pill" data-bs-target="#sd-tab-timeline" type="button" onclick="renderStudentTimeline()">Timeline</button></li>
+                <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="pill" data-bs-target="#sd-tab-timeline" type="button" onclick="renderStudentTimeline(); renderStudentCalendar();">Timeline</button></li>
             </ul>
 
             <div class="tab-content">
@@ -252,8 +251,28 @@
                     </div>
                 </div>
                 <div class="tab-pane fade" id="sd-tab-timeline">
-                    <div class="card border-0 shadow-sm rounded-4">
-                        <div class="card-body" id="sdTimelineContainer"></div>
+                    <ul class="nav nav-pills nav-fill mb-3 bg-light p-1 rounded-pill shadow-sm" style="font-size:0.85rem;">
+                        <li class="nav-item"><button class="nav-link active rounded-pill py-1" data-bs-toggle="pill" data-bs-target="#sd-tl-list" type="button">Daftar</button></li>
+                        <li class="nav-item"><button class="nav-link rounded-pill py-1" data-bs-toggle="pill" data-bs-target="#sd-tl-cal" type="button" onclick="renderStudentCalendar()">Kalender</button></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="sd-tl-list">
+                            <div class="card border-0 shadow-sm rounded-4">
+                                <div class="card-body" id="sdTimelineContainer"></div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="sd-tl-cal">
+                            <div class="card border-0 shadow-sm rounded-4 p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <button class="btn btn-sm btn-light" onclick="changeStudentMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                                    <h6 class="fw-bold mb-0" id="sdCalMonthYear">Bulan Tahun</h6>
+                                    <button class="btn btn-sm btn-light" onclick="changeStudentMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="calendar-scroll-wrapper custom-scroll">
+                                    <div class="calendar-inner-container" id="sdCalendarGridContainer"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -263,6 +282,9 @@
         <section id="catalog-view" class="view-section">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="fw-bold mb-0"><i class="fas fa-th-large text-primary me-2"></i>Katalog Jalur</h4>
+                <button class="btn btn-primary rounded-pill btn-sm shadow-sm px-3" onclick="openAddKatalog()">
+                    <i class="fas fa-plus me-1"></i> Tambah Jalur
+                </button>
             </div>
 
             <div class="row g-2 mb-3">
@@ -307,11 +329,196 @@
 
         <!-- ==================== VIEW: DETAIL JALUR & CHECKOUT ==================== -->
         <section id="detail-view" class="view-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="goBack()"><i class="fas fa-arrow-left me-1"></i> Kembali</button>
-                <span class="badge bg-warning text-dark" id="detailModeBadge" style="display: none;"><i class="fas fa-edit me-1"></i>Mode Edit Jurusan Siswa</span>
+            <div class="d-flex justify-content-between align-items-center mb-3" id="detailHeaderControls">
+                <!-- Injected via JS to include Edit button -->
             </div>
             <div id="detailContent"></div>
+        </section>
+
+        <!-- ==================== VIEW: TAMBAH/EDIT KATALOG BARU ==================== -->
+        <section id="add-katalog-view" class="view-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="goBack()"><i class="fas fa-arrow-left me-1"></i> Batal</button>
+                <h5 class="fw-bold mb-0" id="formKatalogTitle">Tambah Jalur Baru</h5>
+            </div>
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <form id="formAddKatalog">
+                        <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Informasi Umum</h6>
+                        <div class="row g-3 mb-3 align-items-end">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted fw-bold">Universitas</label>
+                                <select class="form-select shadow-sm" id="inpKatUnivSelect" onchange="handleUnivSelectChange()"></select>
+                                <input type="text" class="form-control mt-2" id="inpKatUnivNew" placeholder="Nama Universitas Baru..." style="display:none;">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">Kode Universitas</label>
+                                <input type="text" class="form-control bg-light" id="inpKatUnivCode" readonly placeholder="Otomatis terisi...">
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <label class="form-label small text-muted d-block">Logo Preview</label>
+                                <img id="previewKatLogo" src="https://via.placeholder.com/45" style="width:45px;height:45px;object-fit:contain;" class="border rounded bg-white shadow-sm p-1">
+                                <input type="hidden" id="inpKatLogoLink">
+                            </div>
+                            
+                            <div class="col-md-6 mt-3">
+                                <label class="form-label small text-muted">Nama Jalur</label>
+                                <input type="text" class="form-control" id="inpKatNama" required>
+                            </div>
+                            <div class="col-md-6 mt-3">
+                                <label class="form-label small text-muted">Jenis Jalur</label>
+                                <select class="form-select" id="inpKatJalur">
+                                    <option value="Nasional">Nasional</option>
+                                    <option value="Mandiri">Mandiri</option>
+                                    <option value="IUP/KKI">IUP/KKI</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Tipe Ujian</label>
+                                <select class="form-select" id="inpKatTipe">
+                                    <option value="Tes Tulis">Tes Tulis</option>
+                                    <option value="Prestasi">Prestasi</option>
+                                    <option value="Afirmasi">Afirmasi</option>
+                                    <option value="Mitra">Mitra</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Skema</label>
+                                <select class="form-select" id="inpKatSkema">
+                                    <option value="Pemberkasan">Pemberkasan</option>
+                                    <option value="Tes Daring">Tes Daring</option>
+                                    <option value="Tes Luring">Tes Luring</option>
+                                    <option value="Tes Hybrid">Tes Hybrid</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Materi Ujian (Pilih Lebih Dari Satu)</label>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center bg-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                                        <span id="materiSelectText">Pilih Materi...</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <ul class="dropdown-menu w-100 p-2 shadow custom-scroll" id="materiDropdownMenu" style="max-height: 200px; overflow-y: auto;">
+                                        <!-- Injected via JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Keterangan Singkat</label>
+                                <textarea class="form-control" id="inpKatKet" rows="2"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Persyaratan</label>
+                                <textarea class="form-control" id="inpKatSyarat" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Biaya Pendaftaran (Min)</label>
+                                <input type="number" class="form-control" id="inpKatBiaya" value="0">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Biaya Pendaftaran (Max)</label>
+                                <input type="number" class="form-control" id="inpKatBiayaMax" value="0">
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-primary border-bottom pb-2 mb-3 mt-4">Informasi Program Studi</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Maksimal Pilihan Prodi</label>
+                                <input type="number" class="form-control" id="inpKatProdiSel" value="2">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-white d-none d-md-block">.</label>
+                                <div class="form-check form-switch pt-2">
+                                    <input class="form-check-input" type="checkbox" id="toggleProdiMode" onchange="toggleProdiInputMode()">
+                                    <label class="form-check-label fw-bold text-primary">Gunakan Mode Database Nasional</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 mt-3 p-3 bg-light rounded border">
+                                <!-- Table Mode (Static - Spreadsheet Like) -->
+                                <div id="prodiTableMode">
+                                    <label class="form-label small text-muted mb-2"><i class="fas fa-info-circle me-1"></i>Anda dapat mem-paste langsung daftar prodi dan daya tampung dari Excel ke dalam tabel ini.</label>
+                                    <table class="table table-bordered table-sm bg-white" id="prodiInputTable">
+                                        <thead class="table-light"><tr><th>Nama Program Studi</th><th style="width:120px;">Daya Tampung</th><th style="width:40px;" class="text-center"><i class="fas fa-cog"></i></th></tr></thead>
+                                        <tbody id="prodiInputTbody"></tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-sm btn-outline-primary shadow-sm" onclick="addProdiInputRow()"><i class="fas fa-plus"></i> Tambah Baris Prodi</button>
+                                </div>
+
+                                <!-- Sheet Mode (Dynamic) -->
+                                <div id="prodiSheetMode" style="display:none;">
+                                    <label class="form-label small text-muted">Nama Sheet (Contoh: [SNBT])</label>
+                                    <input type="text" class="form-control border-primary" id="inpKatProdiSheet" placeholder="Ketik format [NAMA_SHEET]...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-primary border-bottom pb-2 mb-3 mt-4">Jadwal & Tanggal</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-12"><h6 class="text-primary fw-bold mb-0">Masa Pendaftaran</h6></div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-primary fw-bold">Daftar Buka</label>
+                                <input type="date" class="form-control border-primary text-primary shadow-sm bg-primary bg-opacity-10" id="inpKatDaftarStart">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-danger fw-bold">Daftar Tutup</label>
+                                <input type="date" class="form-control border-danger text-danger shadow-sm bg-danger bg-opacity-10" id="inpKatDaftarEnd">
+                            </div>
+                            
+                            <div class="col-12 mt-4"><h6 class="text-warning text-dark fw-bold mb-0">Pelaksanaan Ujian</h6></div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-warning text-dark fw-bold">Ujian 1 Mulai</label>
+                                <input type="date" class="form-control border-warning shadow-sm" style="background-color: #fffdf5;" id="inpKatUjian1Start">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-warning text-dark fw-bold">Ujian 1 Selesai</label>
+                                <input type="date" class="form-control border-warning shadow-sm" style="background-color: #fffdf5;" id="inpKatUjian1End">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Keterangan Ujian 1</label>
+                                <input type="text" class="form-control" id="inpKatUjian1Ket">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small text-warning text-dark fw-bold">Ujian 2 Mulai (Opsional)</label>
+                                <input type="date" class="form-control border-warning shadow-sm" style="background-color: #fffdf5;" id="inpKatUjian2Start">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-warning text-dark fw-bold">Ujian 2 Selesai</label>
+                                <input type="date" class="form-control border-warning shadow-sm" style="background-color: #fffdf5;" id="inpKatUjian2End">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Keterangan Ujian 2</label>
+                                <input type="text" class="form-control" id="inpKatUjian2Ket">
+                            </div>
+                            
+                            <div class="col-12 mt-4"><h6 class="text-success fw-bold mb-0">Pengumuman Hasil</h6></div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-success fw-bold">Pengumuman Tahap 1</label>
+                                <input type="date" class="form-control border-success text-success shadow-sm bg-success bg-opacity-10" id="inpKatPengumuman1">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Ket. Pengumuman 1</label>
+                                <input type="text" class="form-control" id="inpKatPengumuman1Ket">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label small text-success fw-bold">Pengumuman Tahap 2 (Opsional)</label>
+                                <input type="date" class="form-control border-success text-success shadow-sm bg-success bg-opacity-10" id="inpKatPengumuman2">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Ket. Pengumuman 2</label>
+                                <input type="text" class="form-control" id="inpKatPengumuman2Ket">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary w-100 rounded-pill py-3 fs-5 mt-4 shadow" onclick="submitKatalogForm()">
+                            <i class="fas fa-save me-2"></i><span id="btnSubmitKatalogText">Simpan Jalur ke Database</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
         </section>
 
         <!-- ==================== VIEW: TIMELINE ALL ==================== -->
@@ -461,23 +668,31 @@
         // --- STATE GLOBAL ---
         let dataKatalog = [];
         let students = JSON.parse(localStorage.getItem('wali_students_db')) || [];
+        let daftarKampus = [];
+        let dropdownMateri = [];
         
         let viewHistory = ['home'];
         let currentStudentId = null; 
-        
-        // State for dynamic slots (Nasional)
         let currentDetailProdiSelection = []; 
         let activeSlotIndex = 0; 
         let dynamicFolderUniv = null; 
-
         let editItemIndex = -1; 
         let editStudentId = null; 
         let currentSortType = 'nama';
         let editingStudentIdForModal = null; 
+        let editingKatalogIndex = null; 
+        
+        let sdCurrentMonth = new Date().getMonth(); 
+        let sdCurrentYear = new Date().getFullYear();
 
         // --- UTILITIES ---
         const formatRupiah = (angka) => angka === 0 ? "Gratis" : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
         const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : "-";
+        const formatDateForInput = (dateString) => {
+            if(!dateString) return "";
+            const d = new Date(dateString);
+            return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0');
+        };
         
         const showToast = (msg, iconType = 'success') => {
             Swal.fire({ toast: true, position: 'top-end', icon: iconType, title: msg, showConfirmButton: false, timer: 3000, timerProgressBar: true });
@@ -495,7 +710,12 @@
                 const response = await fetch(API_URL);
                 const result = await response.json();
                 if(result.status === "success") {
-                    if(result.data) dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
+                    if(result.data) {
+                        dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
+                        extractUniversitasData();
+                        renderUnivDropdownOptions();
+                        renderMateriDropdown();
+                    }
                     if(result.students) { students = result.students; localStorage.setItem('wali_students_db', JSON.stringify(students)); }
                 }
             } catch (error) { console.error("API Error:", error); } 
@@ -513,7 +733,11 @@
                 const response = await fetch(API_URL + "?action=force_sync");
                 const result = await response.json();
                 if(result.status === "success") {
-                    if(result.data) dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
+                    if(result.data) {
+                        dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
+                        extractUniversitasData();
+                        renderUnivDropdownOptions();
+                    }
                     if(result.students) { students = result.students; localStorage.setItem('wali_students_db', JSON.stringify(students)); }
                     showToast("Sinkronisasi berhasil!");
                 } else {
@@ -552,6 +776,300 @@
             window.scrollTo(0, 0);
         };
         const goBack = () => { if(viewHistory.length > 1) { viewHistory.pop(); switchView(viewHistory[viewHistory.length - 1], false); } else { switchView('home'); } };
+
+        // --- TAMBAH / EDIT KATALOG LOGIC ---
+        const extractUniversitasData = () => {
+            mapUniversitas = {};
+            dataKatalog.forEach(d => {
+                if(d.universitas && !mapUniversitas[d.universitas]) {
+                    mapUniversitas[d.universitas] = { code: d.univ_code, logo: d.logo_link };
+                }
+            });
+        };
+
+        const renderUnivDropdownOptions = () => {
+            const sel = document.getElementById('inpKatUnivSelect');
+            let opts = `<option value="">-- Pilih Universitas --</option>`;
+            Object.keys(mapUniversitas).sort().forEach(u => {
+                opts += `<option value="${u}">${u}</option>`;
+            });
+            opts += `<option value="NEW" class="fw-bold text-primary">+ Tambah Kampus Baru</option>`;
+            sel.innerHTML = opts;
+        };
+
+        const handleUnivSelectChange = () => {
+            const sel = document.getElementById('inpKatUnivSelect');
+            const val = sel.value;
+            const inpNew = document.getElementById('inpKatUnivNew');
+            const inpCode = document.getElementById('inpKatUnivCode');
+            const inpLogo = document.getElementById('inpKatLogoLink');
+            const previewLogo = document.getElementById('previewKatLogo');
+
+            if(val === 'NEW') {
+                inpNew.style.display = 'block';
+                inpNew.value = ''; inpCode.value = ''; inpLogo.value = '';
+                inpCode.removeAttribute('readonly');
+                previewLogo.src = 'https://via.placeholder.com/45';
+            } else if (val !== '') {
+                inpNew.style.display = 'none';
+                inpCode.setAttribute('readonly', true);
+                inpCode.value = mapUniversitas[val].code || '';
+                inpLogo.value = mapUniversitas[val].logo || '';
+                previewLogo.src = mapUniversitas[val].logo || 'https://via.placeholder.com/45';
+            } else {
+                inpNew.style.display = 'none'; inpCode.value = ''; inpLogo.value = '';
+                previewLogo.src = 'https://via.placeholder.com/45';
+            }
+        };
+
+        const renderMateriDropdown = () => {
+            const menu = document.getElementById('materiDropdownMenu');
+            let html = '';
+            defaultMateri.forEach(m => {
+                html += `
+                    <li><div class="form-check px-3 py-1">
+                        <input class="form-check-input materi-cb" type="checkbox" value="${m}" id="mat_${m.replace(/\s/g,'')}">
+                        <label class="form-check-label w-100" for="mat_${m.replace(/\s/g,'')}">${m}</label>
+                    </div></li>`;
+            });
+            menu.innerHTML = html;
+            
+            document.querySelectorAll('.materi-cb').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const checked = Array.from(document.querySelectorAll('.materi-cb:checked')).map(x => x.value);
+                    document.getElementById('materiSelectText').innerText = checked.length > 0 ? `${checked.length} Materi Dipilih` : 'Pilih Materi...';
+                });
+            });
+        };
+
+        const setMateriCheckboxes = (materiArray) => {
+            document.querySelectorAll('.materi-cb').forEach(cb => cb.checked = false);
+            if(materiArray && Array.isArray(materiArray)) {
+                materiArray.forEach(m => {
+                    const cb = document.querySelector(`.materi-cb[value="${m}"]`);
+                    if(cb) cb.checked = true;
+                });
+            }
+            const checked = Array.from(document.querySelectorAll('.materi-cb:checked')).map(x => x.value);
+            document.getElementById('materiSelectText').innerText = checked.length > 0 ? `${checked.length} Materi Dipilih` : 'Pilih Materi...';
+        };
+
+        const toggleProdiInputMode = () => {
+            const isSheetMode = document.getElementById('toggleProdiMode').checked;
+            document.getElementById('prodiTableMode').style.display = isSheetMode ? 'none' : 'block';
+            document.getElementById('prodiSheetMode').style.display = isSheetMode ? 'block' : 'none';
+        };
+
+        const addProdiInputRow = (nama = "", dt = "") => {
+            const tbody = document.getElementById('prodiInputTbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="form-control form-control-sm prodi-manual-val" placeholder="Nama Prodi" value="${nama}"></td>
+                <td><input type="text" class="form-control form-control-sm prodi-dt-val text-center" placeholder="DT" value="${dt}"></td>
+                <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+        };
+
+        document.getElementById('prodiInputTbody').addEventListener('paste', function(e) {
+            const target = e.target;
+            if(!target.classList.contains('prodi-manual-val') && !target.classList.contains('prodi-dt-val')) return;
+            
+            e.preventDefault();
+            const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+            const rows = text.split(/\r?\n/);
+            
+            const tbody = document.getElementById('prodiInputTbody');
+            const currentTr = target.closest('tr');
+            let currentIdx = Array.from(tbody.children).indexOf(currentTr);
+            
+            const isPastingIntoDT = target.classList.contains('prodi-dt-val');
+
+            rows.forEach((row) => {
+                if(!row.trim()) return;
+                const cols = row.split('\t'); 
+                
+                if(currentIdx >= tbody.children.length) {
+                    addProdiInputRow();
+                }
+                
+                const tr = tbody.children[currentIdx];
+                const inputProdi = tr.querySelector('.prodi-manual-val');
+                const inputDT = tr.querySelector('.prodi-dt-val');
+
+                if (isPastingIntoDT) {
+                    if(inputDT && cols[0]) inputDT.value = cols[0].trim();
+                } else {
+                    if(inputProdi && cols[0]) inputProdi.value = cols[0].trim();
+                    if(inputDT && cols[1]) inputDT.value = cols[1].trim();
+                }
+                
+                currentIdx++;
+            });
+        });
+
+        const openAddKatalog = () => {
+            editingKatalogIndex = null;
+            document.getElementById('formAddKatalog').reset();
+            document.getElementById('formKatalogTitle').innerText = "Tambah Jalur Baru";
+            document.getElementById('btnSubmitKatalogText').innerText = "Simpan Jalur Baru";
+            document.getElementById('prodiInputTbody').innerHTML = '';
+            addProdiInputRow();
+            handleUnivSelectChange();
+            setMateriCheckboxes([]);
+            document.getElementById('toggleProdiMode').checked = false;
+            toggleProdiInputMode();
+            switchView('add-katalog');
+        };
+
+        const openEditKatalog = (dataIndex) => {
+            const item = dataKatalog[dataIndex];
+            editingKatalogIndex = item.index;
+            
+            document.getElementById('formKatalogTitle').innerText = "Edit Jalur";
+            document.getElementById('btnSubmitKatalogText').innerText = "Simpan Perubahan Jalur";
+            
+            const selUniv = document.getElementById('inpKatUnivSelect');
+            let univFound = false;
+            for(let i=0; i<selUniv.options.length; i++) {
+                if(selUniv.options[i].value === item.universitas) {
+                    selUniv.selectedIndex = i; univFound = true; break;
+                }
+            }
+            if(!univFound) {
+                selUniv.value = "NEW";
+                document.getElementById('inpKatUnivNew').value = item.universitas || '';
+            }
+            handleUnivSelectChange();
+            if(item.univ_code) document.getElementById('inpKatUnivCode').value = item.univ_code;
+            if(item.logo_link) {
+                document.getElementById('inpKatLogoLink').value = item.logo_link;
+                document.getElementById('previewKatLogo').src = item.logo_link;
+            }
+
+            document.getElementById('inpKatNama').value = item.nama_jalur || '';
+            document.getElementById('inpKatJalur').value = item.jalur || 'Mandiri';
+            document.getElementById('inpKatTipe').value = item.tipe_ujian || 'Tes Tulis';
+            document.getElementById('inpKatSkema').value = item.skema || 'Tes Luring';
+            setMateriCheckboxes(item.materi_ujian);
+            
+            document.getElementById('inpKatKet').value = item.keterangan || '';
+            document.getElementById('inpKatSyarat').value = item.syarat || '';
+            document.getElementById('inpKatBiaya').value = item.biaya || 0;
+            document.getElementById('inpKatBiayaMax').value = item.biaya_maxx || 0;
+            
+            document.getElementById('inpKatProdiSel').value = item.prodi_select || 2;
+
+            document.getElementById('prodiInputTbody').innerHTML = '';
+            if (item.prodi_list && item.prodi_list.is_dynamic) {
+                document.getElementById('toggleProdiMode').checked = true;
+                document.getElementById('inpKatProdiSheet').value = "[SNBT]"; 
+            } else {
+                document.getElementById('toggleProdiMode').checked = false;
+                const prodis = Array.isArray(item.prodi_list) ? item.prodi_list : (typeof item.prodi_list === 'string' && item.prodi_list ? item.prodi_list.split(',') : []);
+                const dts = item.daya_tampung ? item.daya_tampung.toString().split(',') : [];
+                
+                if(prodis.length > 0) {
+                    prodis.forEach((p, idx) => { addProdiInputRow(p.trim(), dts[idx] ? dts[idx].trim() : ""); });
+                } else { addProdiInputRow(); }
+            }
+            toggleProdiInputMode();
+
+            document.getElementById('inpKatDaftarStart').value = formatDateForInput(item.pendaftaran_start);
+            document.getElementById('inpKatDaftarEnd').value = formatDateForInput(item.pendaftaran_end);
+            document.getElementById('inpKatUjian1Start').value = formatDateForInput(item.ujian1_start);
+            document.getElementById('inpKatUjian1End').value = formatDateForInput(item.ujian1_end);
+            document.getElementById('inpKatUjian1Ket').value = item.ujian1_keterangan || '';
+            document.getElementById('inpKatPengumuman1').value = formatDateForInput(item.pengumuman1);
+            document.getElementById('inpKatPengumuman1Ket').value = item.pengumuman1_keterangan || '';
+            document.getElementById('inpKatUjian2Start').value = formatDateForInput(item.ujian2_start);
+            document.getElementById('inpKatUjian2End').value = formatDateForInput(item.ujian2_end);
+            document.getElementById('inpKatUjian2Ket').value = item.ujian2_keterangan || '';
+            document.getElementById('inpKatPengumuman2').value = formatDateForInput(item.pengumuman2);
+            document.getElementById('inpKatPengumuman2Ket').value = item.pengumuman2_keterangan || '';
+
+            switchView('add-katalog');
+        };
+
+        const submitKatalogForm = async () => {
+            const selUniv = document.getElementById('inpKatUnivSelect').value;
+            const universitas = selUniv === 'NEW' ? document.getElementById('inpKatUnivNew').value : selUniv;
+            const nama_jalur = document.getElementById('inpKatNama').value;
+            
+            if(!universitas || !nama_jalur) return showToast("Universitas dan Nama Jalur wajib diisi!", "warning");
+
+            const isSheetMode = document.getElementById('toggleProdiMode').checked;
+            let finalProdiVal = ""; let finalDtVal = ""; let prodiNum = 0;
+            
+            if (isSheetMode) {
+                finalProdiVal = document.getElementById('inpKatProdiSheet').value;
+            } else {
+                let pNames = []; let pDt = [];
+                document.querySelectorAll('#prodiInputTbody tr').forEach(tr => {
+                    const name = tr.querySelector('.prodi-manual-val').value.trim();
+                    const dt = tr.querySelector('.prodi-dt-val').value.trim();
+                    if(name) { pNames.push(name); pDt.push(dt || "-"); }
+                });
+                finalProdiVal = pNames.join(',');
+                finalDtVal = pDt.join(',');
+                prodiNum = pNames.length;
+            }
+
+            const materiChecked = Array.from(document.querySelectorAll('.materi-cb:checked')).map(x => x.value);
+
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingText').innerText = editingKatalogIndex ? "Mengupdate Jalur..." : "Menyimpan Jalur Baru...";
+
+            const payload = {
+                type: editingKatalogIndex ? 'edit_katalog' : 'add_katalog',
+                edit_index: editingKatalogIndex, 
+                katalogData: {
+                    univ_code: document.getElementById('inpKatUnivCode').value,
+                    universitas: universitas,
+                    nama_jalur: nama_jalur,
+                    jalur: document.getElementById('inpKatJalur').value,
+                    tipe_ujian: document.getElementById('inpKatTipe').value,
+                    skema: document.getElementById('inpKatSkema').value,
+                    materi_ujian: materiChecked.join(','),
+                    keterangan: document.getElementById('inpKatKet').value,
+                    syarat: document.getElementById('inpKatSyarat').value,
+                    biaya: document.getElementById('inpKatBiaya').value,
+                    biaya_maxx: document.getElementById('inpKatBiayaMax').value,
+                    daya_tampung: finalDtVal, 
+                    prodi_number: prodiNum, 
+                    prodi_list: finalProdiVal,
+                    prodi_select: document.getElementById('inpKatProdiSel').value,
+                    pendaftaran_start: document.getElementById('inpKatDaftarStart').value,
+                    pendaftaran_end: document.getElementById('inpKatDaftarEnd').value,
+                    ujian1_start: document.getElementById('inpKatUjian1Start').value,
+                    ujian1_end: document.getElementById('inpKatUjian1End').value,
+                    ujian1_keterangan: document.getElementById('inpKatUjian1Ket').value,
+                    pengumuman1: document.getElementById('inpKatPengumuman1').value,
+                    pengumuman1_keterangan: document.getElementById('inpKatPengumuman1Ket').value,
+                    ujian2_start: document.getElementById('inpKatUjian2Start').value,
+                    ujian2_end: document.getElementById('inpKatUjian2End').value,
+                    ujian2_keterangan: document.getElementById('inpKatUjian2Ket').value,
+                    pengumuman2: document.getElementById('inpKatPengumuman2').value,
+                    pengumuman2_keterangan: document.getElementById('inpKatPengumuman2Ket').value
+                }
+            };
+
+            try {
+                const response = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                if(result.status === "success") {
+                    showToast(editingKatalogIndex ? "Perubahan disimpan!" : "Jalur berhasil ditambahkan!", "success");
+                    switchView('catalog', false); 
+                    forceSync(); 
+                } else {
+                    showToast("Gagal menyimpan jalur: " + result.message, "error");
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }
+            } catch (error) {
+                showToast("Terjadi kesalahan jaringan saat simpan.", "error");
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        };
 
         // --- SISWA LOGIC ---
         const showAddStudentModal = () => {
@@ -638,7 +1156,7 @@
                     <div class="col-12 col-md-6">
                         <div class="card siswa-card p-3 h-100" onclick="openStudentDetail(${s.id})">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div><h6 class="fw-bold mb-1 text-primary">${s.nama}</h6><small class="text-muted"><i class="fas fa-clipboard-list me-1"></i>${s.items.length} Jalur Terdaftar</small></div>
+                                <div><h6 class="fw-bold mb-1 text-primary">${s.nama}</h6><small class="text-muted"><i class="fas fa-bookmark me-1"></i>${s.items.length} Jalur Terdaftar</small></div>
                                 <div class="d-flex flex-column align-items-end gap-1">
                                     <span class="badge ${classColor} fs-6 shadow-sm">${s.kelas}</span>
                                     <div>
@@ -678,7 +1196,10 @@
                         <div class="card mb-3 rounded-4 shadow-sm border-0 bg-white">
                             <div class="card-body p-3">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h6 class="fw-bold mb-0 text-primary pe-2">${p.jalur.nama_jalur}</h6>
+                                    <div class="d-flex align-items-center">
+                                        <img src="${p.jalur.logo_link || 'https://via.placeholder.com/30'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded">
+                                        <h6 class="fw-bold mb-0 text-primary pe-2">${p.jalur.nama_jalur}</h6>
+                                    </div>
                                     <div class="text-nowrap">
                                         <button class="btn btn-sm btn-light text-primary me-1" onclick="editStudentItem(${s.id}, ${idx})"><i class="fas fa-edit"></i></button>
                                         <button class="btn btn-sm btn-light text-danger" onclick="deleteStudentItem(${s.id}, ${idx})"><i class="fas fa-trash"></i></button>
@@ -722,6 +1243,48 @@
             document.getElementById('sdTimelineContainer').innerHTML = generateTimelineListHTML(events);
         };
 
+        const changeStudentMonth = (dir) => {
+            sdCurrentMonth += dir;
+            if(sdCurrentMonth > 11) { sdCurrentMonth = 0; sdCurrentYear++; }
+            if(sdCurrentMonth < 0) { sdCurrentMonth = 11; sdCurrentYear--; }
+            renderStudentCalendar();
+        };
+
+        const renderStudentCalendar = () => {
+            const s = students.find(x => x.id === currentStudentId);
+            if(!s) return;
+            const studentJalurs = s.items.map(it => it.jalur);
+
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const eMonthYear = document.getElementById('sdCalMonthYear');
+            if(eMonthYear) eMonthYear.innerText = `${monthNames[sdCurrentMonth]} ${sdCurrentYear}`;
+            
+            const firstDay = new Date(sdCurrentYear, sdCurrentMonth, 1).getDay();
+            const daysInMonth = new Date(sdCurrentYear, sdCurrentMonth + 1, 0).getDate();
+            
+            let calHtml = `
+                <div class="calendar-header border-bottom">Min</div><div class="calendar-header border-bottom">Sen</div><div class="calendar-header border-bottom">Sel</div>
+                <div class="calendar-header border-bottom">Rab</div><div class="calendar-header border-bottom">Kam</div><div class="calendar-header border-bottom">Jum</div><div class="calendar-header border-bottom">Sab</div>
+            `;
+            
+            for(let i=0; i<firstDay; i++) calHtml += '<div class="calendar-day empty"></div>';
+            
+            const today = new Date();
+            for(let i=1; i<=daysInMonth; i++) {
+                const curDate = new Date(sdCurrentYear, sdCurrentMonth, i);
+                let isToday = (today.getDate()===i && today.getMonth()===sdCurrentMonth && today.getFullYear()===sdCurrentYear) ? 'today' : '';
+                
+                let eventsHtml = getCalendarEventsHtml(studentJalurs, curDate);
+                
+                calHtml += `
+                    <div class="calendar-day ${isToday}" onclick="openCalEvent(${i}, true)">
+                        <span class="fw-bold mb-1" style="font-size:0.8rem">${i}</span>
+                        <div class="w-100 d-flex flex-column gap-1 overflow-hidden px-1">${eventsHtml}</div>
+                    </div>`;
+            }
+            const eCalGrid = document.getElementById('sdCalendarGridContainer');
+            if(eCalGrid) eCalGrid.innerHTML = `<div class="calendar-grid">${calHtml}</div>`;
+        };
 
         // --- HOME VIEW LOGIC & ANALYTICS ---
         setInterval(() => {
@@ -733,7 +1296,6 @@
             const now = new Date(); 
             let allStudentJalurs = []; students.forEach(s => { s.items.forEach(it => { allStudentJalurs.push({...it.jalur, _siswa: s}); }); });
             
-            // 1. Countdown Nearest Exam/Registration Close
             let nextEvent = null;
             if(allStudentJalurs.length > 0) {
                 let evts = [];
@@ -756,7 +1318,6 @@
                 cdBox.innerHTML = `<div class="bg-white text-primary rounded-3 p-2" style="min-width: 60px;"><h3 class="fw-bold mb-0">${diffDays}</h3><small>Hari</small></div><div class="align-self-center text-white text-start lh-1"><small class="d-block opacity-75">Menuju tanggal</small><span class="fw-bold">${formatDate(nextEvent.date)}</span></div>`;
             } else { titleBox.innerHTML = "Belum ada agenda terdekat"; cdBox.innerHTML = `-`; }
 
-            // 2. Open Registrations (Cards)
             const pendaftaranPaths = dataKatalog.filter(d => {
                 if(!d.pendaftaran_start) return false;
                 const pStart = new Date(d.pendaftaran_start); pStart.setHours(0,0,0,0);
@@ -788,7 +1349,6 @@
             });
             document.getElementById('homeOpenRegistrations').innerHTML = openHtml;
 
-            // 3. Upcoming Exams
             const upcomingExams = dataKatalog.filter(d => {
                 if(!d.ujian1_start) return false;
                 const uEnd = new Date(d.ujian1_end || d.ujian1_start); uEnd.setHours(23,59,59,999);
@@ -818,7 +1378,6 @@
             });
             document.getElementById('homeUpcomingExams').innerHTML = examHtml;
 
-            // 4. Timeline Siswa (All future grouped)
             let allEvents = [];
             allStudentJalurs.forEach(j => {
                 const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
@@ -833,6 +1392,7 @@
 
             let tlHtml = allEvents.length === 0 ? '<p class="text-muted small">Tidak ada agenda masa depan.</p>' : '';
             let grouped = {};
+            
             allEvents.forEach(e => {
                 const key = e.d.getTime() + '_' + e.t + '_' + e.j.index;
                 if(!grouped[key]) { grouped[key] = { date: e.d, type: e.t, j: e.j, color: e.c, bg: e.bg, students: [] }; }
@@ -841,13 +1401,16 @@
 
             let flatGrouped = Object.values(grouped).sort((a,b) => a.date - b.date);
             let currentMonthGroup = '';
+
             flatGrouped.forEach(ev => {
                 const mStr = ev.date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
                 if(mStr !== currentMonthGroup) {
                     tlHtml += `<h6 class="fw-bold mt-3 mb-2 border-bottom pb-1 text-secondary sticky-top bg-white" style="font-size:0.85rem; top:-15px; padding-top:10px; z-index:2;">${mStr}</h6>`;
                     currentMonthGroup = mStr;
                 }
+                
                 const safeStudentsStr = encodeURIComponent(JSON.stringify(ev.students));
+                
                 tlHtml += `
                     <div class="card agenda-card border-0 border-start border-4 ${ev.bg} shadow-sm mb-2 rounded-end-3 bg-light" onclick="openAgendaStudentsModal('${ev.type}', '${ev.j.nama_jalur}', '${ev.date.toISOString()}', '${safeStudentsStr}')">
                         <div class="card-body py-2 px-3">
@@ -1049,18 +1612,21 @@
         const renderProdiSelectionArea = (item, dataIndex, isEdit) => {
             const container = document.getElementById('prodiSelectionContainer');
             
-            // If it's a regular array (Static)
-            if(Array.isArray(item.prodi_list)) {
+            if(Array.isArray(item.prodi_list) || (typeof item.prodi_list === 'string' && item.prodi_list && !item.prodi_list.startsWith('['))) {
                 let prodiTableRows = '';
-                const prodiList = item.prodi_list || [];
-                const hasDayaTampung = !!item.daya_tampung;
-                const thDayaTampung = hasDayaTampung ? `<th class="text-center">Daya Tampung</th><th class="text-center">Peminat Th Lalu</th>` : '';
+                const prodiList = Array.isArray(item.prodi_list) ? item.prodi_list : (item.prodi_list ? item.prodi_list.split(',') : []);
+                const dtList = item.daya_tampung ? item.daya_tampung.toString().split(',') : [];
+                
+                // Cek ketersediaan daya_tampung
+                const hasDayaTampung = !!item.daya_tampung && dtList.length > 0;
+                const thDayaTampung = hasDayaTampung ? `<th class="text-center">Daya Tampung</th>` : '';
 
-                prodiList.forEach((prodi, i) => {
+                prodiList.forEach((prodiRaw, i) => {
+                    const prodi = prodiRaw.trim();
                     const isChecked = currentDetailProdiSelection.includes(prodi);
                     const orderIndex = isChecked ? currentDetailProdiSelection.indexOf(prodi) + 1 : '';
                     const badgeHtml = isChecked ? `<span class="badge bg-primary rounded-circle order-badge" id="badge_${dataIndex}_${i}">${orderIndex}</span>` : `<span class="badge bg-primary rounded-circle order-badge" id="badge_${dataIndex}_${i}" style="display:none;"></span>`;
-                    const tdDayaTampung = hasDayaTampung ? `<td class="text-center">${item.daya_tampung || '-'}</td><td class="text-center">-</td>` : '';
+                    const tdDayaTampung = hasDayaTampung ? `<td class="text-center">${dtList[i] ? dtList[i].trim() : '-'}</td>` : '';
 
                     prodiTableRows += `
                         <tr onclick="toggleProdiStatic('${prodi}', ${item.prodi_select || 2}, ${dataIndex}, ${i})">
@@ -1069,7 +1635,7 @@
                             ${tdDayaTampung}
                         </tr>`;
                 });
-                if(prodiList.length === 0) prodiTableRows = `<tr><td colspan="${hasDayaTampung?4:2}" class="text-center text-muted py-3">Data Program Studi Belum Tersedia</td></tr>`;
+                if(prodiList.length === 0) prodiTableRows = `<tr><td colspan="${hasDayaTampung?3:2}" class="text-center text-muted py-3">Data Program Studi Belum Tersedia</td></tr>`;
 
                 container.innerHTML = `
                     <div class="alert alert-info border-0 bg-primary bg-opacity-10 py-2"><i class="fas fa-info-circle text-primary me-2"></i>Maksimal memilih <strong>${item.prodi_select || '-'} Prodi</strong>. Urutan klik menentukan prioritas.</div>
@@ -1082,9 +1648,7 @@
                 return;
             }
 
-            // If it's Dynamic Folder (Nasional)
-            if(item.prodi_list.is_dynamic) {
-                // Ensure currentDetailProdiSelection has exact slots
+            if(item.prodi_list && item.prodi_list.is_dynamic) {
                 if(currentDetailProdiSelection.length !== item.prodi_select) {
                     const temp = [...currentDetailProdiSelection];
                     currentDetailProdiSelection = Array(item.prodi_select).fill("");
@@ -1092,7 +1656,6 @@
                 }
 
                 if(activeSlotIndex === -1) {
-                    // MODE: SLOTS
                     let slotsHtml = `<div class="alert alert-info border-0 bg-primary bg-opacity-10 py-2 mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Jalur ini mengharuskan Anda memilih <strong>${item.prodi_select}</strong> jurusan lintas kampus.</div>`;
                     for(let i=0; i<item.prodi_select; i++) {
                         const val = currentDetailProdiSelection[i];
@@ -1112,7 +1675,6 @@
                     container.innerHTML = slotsHtml;
                 } 
                 else if (dynamicFolderUniv === null) {
-                    // MODE: UNIVS
                     const dynData = item.prodi_list.data;
                     let univListHtml = '';
                     Object.keys(dynData).forEach(uName => {
@@ -1135,7 +1697,6 @@
                         <div class="row g-2 custom-scroll" style="max-height:350px; overflow-y:auto;">${univListHtml}</div>`;
                 } 
                 else {
-                    // MODE: PRODIS
                     const prodis = item.prodi_list.data[dynamicFolderUniv].prodis;
                     let prodiTableRows = '';
                     prodis.forEach(p => {
@@ -1173,14 +1734,13 @@
                 if(currentDetailProdiSelection.length >= max) return showToast(`Maksimal ${max} pilihan.`, "warning");
                 currentDetailProdiSelection.push(pr); cb.checked = true; badge.style.display = 'inline-block';
             }
-            (dataKatalog[dIdx].prodi_list || []).forEach((p, j) => {
+            (Array.isArray(dataKatalog[dIdx].prodi_list) ? dataKatalog[dIdx].prodi_list : (dataKatalog[dIdx].prodi_list ? dataKatalog[dIdx].prodi_list.split(',') : [])).forEach((p, j) => {
                 const b = document.getElementById(`badge_${dIdx}_${j}`);
-                const pos = currentDetailProdiSelection.indexOf(p);
+                const pos = currentDetailProdiSelection.indexOf(p.trim());
                 if(b) { if(pos > -1) { b.innerText = pos + 1; b.style.display = 'inline-block'; } else { b.style.display = 'none'; } }
             });
         };
 
-        // Folder Navigations
         const openFolderUniv = (slotIdx, dataIndex) => { activeSlotIndex = slotIdx; dynamicFolderUniv = null; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
         const openFolderProdi = (univName, dataIndex) => { dynamicFolderUniv = univName; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
         const closeFolderSlots = (dataIndex) => { activeSlotIndex = -1; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
@@ -1198,24 +1758,20 @@
             editStudentId = isEdit ? stuId : null;
             editItemIndex = isEdit ? stuItemIdx : -1;
             currentDetailProdiSelection = [];
-            activeSlotIndex = -1; // Reset to slots view
+            activeSlotIndex = -1;
             
             if(isEdit) {
                 const s = students.find(x => x.id === stuId);
                 currentDetailProdiSelection = [...s.items[stuItemIdx].prodiTerpilih];
             }
 
-            document.getElementById('detailModeBadge').style.display = isEdit ? 'inline-block' : 'none';
-
-            const hasTahap2 = !!item.ujian2_start || !!item.pengumuman2;
-            let timelineHTML = `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Masa Pendaftaran</h6><small class="text-muted">${formatDate(item.pendaftaran_start)} - ${formatDate(item.pendaftaran_end)}</small></div>`;
-            if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">${hasTahap2 ? 'Ujian Tahap 1' : 'Ujian'}</h6><small class="text-muted">${formatDate(item.ujian1_start)} ${item.ujian1_end && item.ujian1_end !== item.ujian1_start ? 's/d ' + formatDate(item.ujian1_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
-            if(item.pengumuman1) timelineHTML += `<div class="list-timeline-item ${!hasTahap2 ? 'border-success' : ''}"><h6 class="fw-bold mb-0 ${!hasTahap2 ? 'text-success' : ''}">${hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman Hasil'}</h6><small class="text-muted">${formatDate(item.pengumuman1)}</small><p class="small mb-0 mt-1">${item.pengumuman1_keterangan || ''}</p></div>`;
-            if(item.ujian2_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian Tahap 2</h6><small class="text-muted">${formatDate(item.ujian2_start)} ${item.ujian2_end && item.ujian2_end !== item.ujian2_start ? 's/d ' + formatDate(item.ujian2_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian2_keterangan || ''}</p></div>`;
-            if(item.pengumuman2) timelineHTML += `<div class="list-timeline-item border-success"><h6 class="fw-bold mb-0 text-success">Pengumuman Tahap 2</h6><small class="text-muted">${formatDate(item.pengumuman2)}</small><p class="small mb-0 mt-1">${item.pengumuman2_keterangan || ''}</p></div>`;
-
-            const syaratHtml = item.syarat ? item.syarat.replace(/\n/g, '<br>') : '-';
-            const materiHtml = item.materi_ujian ? item.materi_ujian.map(m => `<span class="badge bg-secondary me-1">${m}</span>`).join('') : '-';
+            let headerControls = `<button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="goBack()"><i class="fas fa-arrow-left me-1"></i> Kembali</button>`;
+            if(isEdit) {
+                headerControls += `<span class="badge bg-warning text-dark"><i class="fas fa-edit me-1"></i>Mode Edit Jurusan Siswa</span>`;
+            } else {
+                headerControls += `<button class="btn btn-sm btn-light text-primary border shadow-sm" onclick="openEditKatalog(${dataIndex})"><i class="fas fa-pencil-alt me-1"></i> Edit Data Jalur</button>`;
+            }
+            document.getElementById('detailHeaderControls').innerHTML = headerControls;
 
             let studentOpts = '<option value="">-- Pilih Siswa yang Akan Didaftarkan --</option>';
             students.forEach(s => { studentOpts += `<option value="${s.id}">${s.nama} (${s.kelas})</option>`; });
@@ -1230,6 +1786,16 @@
             `;
 
             let biayaNum = Number(item.biaya) || 0;
+            const hasTahap2 = !!item.ujian2_start || !!item.pengumuman2;
+
+            let timelineHTML = `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Masa Pendaftaran</h6><small class="text-muted">${formatDate(item.pendaftaran_start)} - ${formatDate(item.pendaftaran_end)}</small></div>`;
+            if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">${hasTahap2 ? 'Ujian Tahap 1' : 'Ujian'}</h6><small class="text-muted">${formatDate(item.ujian1_start)} ${item.ujian1_end && item.ujian1_end !== item.ujian1_start ? 's/d ' + formatDate(item.ujian1_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
+            if(item.pengumuman1) timelineHTML += `<div class="list-timeline-item ${!hasTahap2 ? 'border-success' : ''}"><h6 class="fw-bold mb-0 ${!hasTahap2 ? 'text-success' : ''}">${hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman Hasil'}</h6><small class="text-muted">${formatDate(item.pengumuman1)}</small><p class="small mb-0 mt-1">${item.pengumuman1_keterangan || ''}</p></div>`;
+            if(item.ujian2_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian Tahap 2</h6><small class="text-muted">${formatDate(item.ujian2_start)} ${item.ujian2_end && item.ujian2_end !== item.ujian2_start ? 's/d ' + formatDate(item.ujian2_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian2_keterangan || ''}</p></div>`;
+            if(item.pengumuman2) timelineHTML += `<div class="list-timeline-item border-success"><h6 class="fw-bold mb-0 text-success">Pengumuman Tahap 2</h6><small class="text-muted">${formatDate(item.pengumuman2)}</small><p class="small mb-0 mt-1">${item.pengumuman2_keterangan || ''}</p></div>`;
+
+            const syaratHtml = item.syarat ? item.syarat.replace(/\n/g, '<br>') : '-';
+            const materiHtml = item.materi_ujian ? item.materi_ujian.map(m => `<span class="badge bg-secondary me-1">${m}</span>`).join('') : '-';
 
             document.getElementById('detailContent').innerHTML = `
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -1264,7 +1830,7 @@
                     </div>
                 </div>`;
             
-            renderProdiSelectionArea(item, dataIndex); // Call the dynamic/static renderer
+            renderProdiSelectionArea(item, dataIndex, isEdit);
             switchView('detail');
         };
 
@@ -1294,6 +1860,39 @@
         };
 
         // --- ALL TIMELINE ---
+        const getCalendarEventsHtml = (jalurs, curDate) => {
+            let eventsHtml = '';
+            jalurs.forEach(j => {
+                const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
+                
+                const checkRange = (ds, de, t, c, isPendaftaran = false) => {
+                    if(!ds) return;
+                    let s = new Date(ds); s.setHours(0,0,0,0);
+                    let e = de ? new Date(de) : new Date(s); e.setHours(23,59,59,999);
+                    
+                    if (isPendaftaran) {
+                        let endDayStart = new Date(e); endDayStart.setHours(0,0,0,0);
+                        if (curDate >= s && curDate < endDayStart) {
+                            eventsHtml += `<div class="cal-event-bar bg-primary" title="Masa Daftar: ${j.nama_jalur}">${j.nama_jalur}</div>`;
+                        } else if (curDate >= endDayStart && curDate <= e) {
+                            eventsHtml += `<div class="cal-event-bar bg-danger" title="Tutup Daftar: ${j.nama_jalur}">${j.nama_jalur}</div>`;
+                        }
+                    } else {
+                        if(curDate >= s && curDate <= e) {
+                            eventsHtml += `<div class="cal-event-bar ${c}" title="${t}: ${j.nama_jalur}">${j.nama_jalur}</div>`;
+                        }
+                    }
+                };
+
+                checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary', true);
+                checkRange(j.ujian1_start, j.ujian1_end, hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', 'bg-warning text-dark');
+                checkRange(j.pengumuman1, j.pengumuman1, hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', 'bg-success');
+                checkRange(j.ujian2_start, j.ujian2_end, 'Ujian Tahap 2', 'bg-warning text-dark');
+                checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman Tahap 2', 'bg-success');
+            });
+            return eventsHtml;
+        };
+
         const getTimelineEvents = (sourceArray) => {
             let events = [];
             sourceArray.forEach(item => {
@@ -1419,26 +2018,10 @@
                 const curDate = new Date(currentYear, currentMonth, i);
                 let isToday = (today.getDate()===i && today.getMonth()===currentMonth && today.getFullYear()===currentYear) ? 'today' : '';
                 
-                let eventsHtml = '';
-                dataKatalog.forEach(j => {
-                    const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
-                    const checkRange = (ds, de, t, c) => {
-                        if(!ds) return;
-                        let s = new Date(ds); s.setHours(0,0,0,0);
-                        let e = de ? new Date(de) : s; e.setHours(23,59,59,999);
-                        if(curDate >= s && curDate <= e) {
-                            eventsHtml += `<div class="cal-event-bar ${c}" title="${t}: ${j.nama_jalur}">${j.nama_jalur}</div>`;
-                        }
-                    };
-                    checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary');
-                    checkRange(j.ujian1_start, j.ujian1_end, hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', 'bg-warning text-dark');
-                    checkRange(j.pengumuman1, j.pengumuman1, hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', 'bg-success');
-                    checkRange(j.ujian2_start, j.ujian2_end, 'Ujian Tahap 2', 'bg-warning text-dark');
-                    checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman Tahap 2', 'bg-success');
-                });
+                let eventsHtml = getCalendarEventsHtml(dataKatalog, curDate);
                 
                 calHtml += `
-                    <div class="calendar-day ${isToday}" onclick="openCalEvent(${i})">
+                    <div class="calendar-day ${isToday}" onclick="openCalEvent(${i}, false)">
                         <span class="fw-bold mb-1" style="font-size:0.8rem">${i}</span>
                         <div class="w-100 d-flex flex-column gap-1 overflow-hidden px-1">${eventsHtml}</div>
                     </div>`;
@@ -1447,38 +2030,55 @@
             if(eCalGrid) eCalGrid.innerHTML = `<div class="calendar-grid">${calHtml}</div>`;
         };
 
-        const openCalEvent = (day) => {
-            const curDate = new Date(currentYear, currentMonth, day);
-            const eCalDate = document.getElementById('calEventDate');
-            if(eCalDate) eCalDate.innerText = formatDate(curDate);
-            
+        const getCalEventListHtml = (jalurs, curDate) => {
             let html = '';
-            dataKatalog.forEach(j => {
+            jalurs.forEach(j => {
                 const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
-                const checkRange = (ds, de, t, c) => {
+                const checkRange = (ds, de, t, c, isPendaftaran = false) => {
                     if(!ds) return;
                     let s = new Date(ds); s.setHours(0,0,0,0);
-                    let e = de ? new Date(de) : s; e.setHours(23,59,59,999);
-                    if(curDate >= s && curDate <= e) {
-                        html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-${c.split('-')[1] || c.split(' ')[0].replace('bg-','')}"><span class="badge ${c} me-2">${t}</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
+                    let e = de ? new Date(de) : new Date(s); e.setHours(23,59,59,999);
+                    
+                    if (isPendaftaran) {
+                        let endDayStart = new Date(e); endDayStart.setHours(0,0,0,0);
+                        if (curDate >= s && curDate < endDayStart) {
+                            html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-primary"><span class="badge bg-primary me-2">Masa Daftar</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
+                        } else if (curDate >= endDayStart && curDate <= e) {
+                            html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-danger"><span class="badge bg-danger me-2">Tutup Daftar</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
+                        }
+                    } else {
+                        if(curDate >= s && curDate <= e) {
+                            html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-${c.split('-')[1] || c.split(' ')[0].replace('bg-','')}"><span class="badge ${c} me-2">${t}</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
+                        }
                     }
                 };
-                checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary');
+                checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary', true);
                 checkRange(j.ujian1_start, j.ujian1_end, hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', 'bg-warning text-dark');
                 checkRange(j.pengumuman1, j.pengumuman1, hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', 'bg-success');
                 checkRange(j.ujian2_start, j.ujian2_end, 'Ujian Tahap 2', 'bg-warning text-dark');
                 checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman Tahap 2', 'bg-success');
             });
+            return html;
+        };
 
+        const openCalEvent = (day, isStudent = false) => {
+            let y = isStudent ? sdCurrentYear : currentYear;
+            let m = isStudent ? sdCurrentMonth : currentMonth;
+            const curDate = new Date(y, m, day);
+            
+            const eCalDate = document.getElementById('calEventDate');
+            if(eCalDate) eCalDate.innerText = formatDate(curDate);
+            
+            let jalurs = isStudent ? students.find(x => x.id === currentStudentId).items.map(it => it.jalur) : dataKatalog;
+            
+            let html = getCalEventListHtml(jalurs, curDate);
             if(html === '') html = '<p class="text-muted text-center small">Tidak ada agenda.</p>';
             
             const eCalList = document.getElementById('calEventList');
             if(eCalList) eCalList.innerHTML = html;
             
             const calModalEl = document.getElementById('calEventModal');
-            if(calModalEl) {
-                new bootstrap.Modal(calModalEl).show();
-            }
+            if(calModalEl) new bootstrap.Modal(calModalEl).show();
         };
 
         // RUN ON LOAD
