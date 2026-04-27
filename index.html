@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTNPlanner - Edisi Wali Kelas</title>
+    <title>PTNPlanner</title>
     
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -11,11 +11,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PTN Wali">
-    <link rel="apple-touch-icon" href="./192x192.png">
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/192x192.png?text=PTN">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase SDK & SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
         :root {
             --primary-blue: #0d6efd;
@@ -117,7 +121,7 @@
     <div id="loadingOverlay">
         <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"><span class="visually-hidden">Loading...</span></div>
         <h5 class="fw-bold text-primary" id="loadingText">Memuat Data...</h5>
-        <p class="text-muted small">Menghubungkan ke Database</p>
+        <p class="text-muted small">Menghubungkan ke Database Supabase</p>
     </div>
 
     <!-- Top Navbar -->
@@ -330,7 +334,7 @@
         <!-- ==================== VIEW: DETAIL JALUR & CHECKOUT ==================== -->
         <section id="detail-view" class="view-section">
             <div class="d-flex justify-content-between align-items-center mb-3" id="detailHeaderControls">
-                <!-- Injected via JS to include Edit button -->
+                <!-- Injected via JS -->
             </div>
             <div id="detailContent"></div>
         </section>
@@ -436,7 +440,6 @@
                             </div>
                             
                             <div class="col-12 mt-3 p-3 bg-light rounded border">
-                                <!-- Table Mode (Static - Spreadsheet Like) -->
                                 <div id="prodiTableMode">
                                     <label class="form-label small text-muted mb-2"><i class="fas fa-info-circle me-1"></i>Anda dapat mem-paste langsung daftar prodi dan daya tampung dari Excel ke dalam tabel ini.</label>
                                     <table class="table table-bordered table-sm bg-white" id="prodiInputTable">
@@ -446,10 +449,8 @@
                                     <button type="button" class="btn btn-sm btn-outline-primary shadow-sm" onclick="addProdiInputRow()"><i class="fas fa-plus"></i> Tambah Baris Prodi</button>
                                 </div>
 
-                                <!-- Sheet Mode (Dynamic) -->
                                 <div id="prodiSheetMode" style="display:none;">
-                                    <label class="form-label small text-muted">Nama Sheet (Contoh: [SNBT])</label>
-                                    <input type="text" class="form-control border-primary" id="inpKatProdiSheet" placeholder="Ketik format [NAMA_SHEET]...">
+                                    <div class="alert alert-warning small">Fitur Database Lintas Kampus aktif. Supabase akan menarik data relasional prodi otomatis jika diset dinamis.</div>
                                 </div>
                             </div>
                         </div>
@@ -568,11 +569,11 @@
         <a href="#" class="bottom-nav-item" id="nav-univ" onclick="switchView('univ'); return false;">
             <i class="fas fa-university"></i><span>By Univ</span>
         </a>
-        <a href="#" class="bottom-nav-item" id="nav-catalog" onclick="switchView('catalog'); return false;">
-            <i class="fas fa-th-large"></i><span>Katalog</span>
-        </a>
         <a href="#" class="bottom-nav-item" id="nav-siswa" onclick="switchView('siswa'); return false;">
             <i class="fas fa-users"></i><span>Siswa</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="nav-catalog" onclick="switchView('catalog'); return false;">
+            <i class="fas fa-th-large"></i><span>Katalog</span>
         </a>
         <a href="#" class="bottom-nav-item" id="nav-timeline" onclick="switchView('timeline'); return false;">
             <i class="fas fa-calendar-day"></i><span>Timeline</span>
@@ -662,14 +663,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // --- KONFIGURASI API ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbw8SXm5GP4iSuO5bg4L0n00NcBLosuHsFpn2m6zVg4RGZFiH70nWrl9ZH5mSZjYQqDc/exec";
+        // 1. SUPABASE CONFIGURATION & INIT
+        const SUPABASE_URL = "https://yilcggmhfhasvpibibcn.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpbGNnZ21oZmhhc3ZwaWJpYmNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Nzk0ODgsImV4cCI6MjA5MjU1NTQ4OH0.kp8hWTtUBeU0yu6hKFmtxPAQiKDh-4YGg22-ZsCXYhM";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- STATE GLOBAL ---
+        // 2. GLOBAL STATE VARIABLES
         let dataKatalog = [];
-        let students = JSON.parse(localStorage.getItem('wali_students_db')) || [];
+        let students = [];
         let daftarKampus = [];
-        let dropdownMateri = [];
+        let dropdownMateri = ["Penalaran Umum", "Pengetahuan Kuantitatif", "Pemahaman Bacaan Menulis", "Penalaran Matematika", "Literasi Bahasa Indonesia", "Literasi Bahasa Inggris", "TKA Saintek", "TKA Soshum", "Matematika Dasar", "Bahasa Indonesia", "Bahasa Inggris", "Wawancara", "Portofolio"];
         
         let viewHistory = ['home'];
         let currentStudentId = null; 
@@ -684,82 +687,102 @@
         
         let sdCurrentMonth = new Date().getMonth(); 
         let sdCurrentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth(); 
+        let currentYear = new Date().getFullYear();
+        
+        let currentCatalogFilter = { search: '', status: '', skema: '', type: 'Semua', univCode: null };
 
-        // --- UTILITIES ---
-        const formatRupiah = (angka) => angka === 0 ? "Gratis" : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
-        const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : "-";
-        const formatDateForInput = (dateString) => {
+        // 3. UTILITY FUNCTIONS
+        function formatRupiah(angka) { return angka === 0 ? "Gratis" : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka); }
+        function formatDate(dateString) { return dateString ? new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : "-"; }
+        function formatDateForInput(dateString) {
             if(!dateString) return "";
             const d = new Date(dateString);
             return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0');
-        };
-        
-        const showToast = (msg, iconType = 'success') => {
+        }
+        function getValOrNull(id) { return document.getElementById(id).value || null; }
+        function showToast(msg, iconType = 'success') {
             Swal.fire({ toast: true, position: 'top-end', icon: iconType, title: msg, showConfirmButton: false, timer: 3000, timerProgressBar: true });
-        };
-
-        const getBadgeColor = (str) => {
+        }
+        function getBadgeColor(str) {
             const colors = ['bg-primary', 'bg-success', 'bg-danger', 'bg-warning text-dark', 'bg-info text-dark', 'bg-secondary', 'bg-dark'];
             let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
             return colors[Math.abs(hash) % colors.length];
-        };
+        }
 
-        // --- API FETCH & SYNC ---
-        const initData = async () => {
+        // 4. SUPABASE DATA FETCHING
+        async function initData() {
             try {
-                const response = await fetch(API_URL);
-                const result = await response.json();
-                if(result.status === "success") {
-                    if(result.data) {
-                        dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
-                        extractUniversitasData();
-                        renderUnivDropdownOptions();
-                        renderMateriDropdown();
-                    }
-                    if(result.students) { students = result.students; localStorage.setItem('wali_students_db', JSON.stringify(students)); }
+                // Fetch Master Kampus
+                const { data: dbKampus } = await supabaseClient.from('kampus').select('*');
+                if (dbKampus) daftarKampus = dbKampus;
+
+                // Fetch Master Prodi
+                const { data: dbProdi } = await supabaseClient.from('prodi').select('*, kampus(nama, logo_link)');
+                let dynamicData = {};
+                if (dbProdi && dbKampus) {
+                    dbKampus.forEach(k => { dynamicData[k.nama] = { logo: k.logo_link, prodis: [] }; });
+                    dbProdi.forEach(p => {
+                        if (p.kampus && dynamicData[p.kampus.nama]) {
+                            dynamicData[p.kampus.nama].prodis.push({ nama: (p.jenjang ? p.jenjang + ' ' : '') + p.nama_prodi, peminat: p.peminat || '-', kuota: p.daya_tampung || '-' });
+                        }
+                    });
                 }
+
+                // Fetch Katalog
+                const { data: dbKatalog } = await supabaseClient.from('katalog_jalur').select('*, kampus(nama, univ_code, logo_link)');
+                if (dbKatalog) {
+                    dataKatalog = dbKatalog.map((item, idx) => {
+                        let mapped = { ...item, index: idx + 1 };
+                        mapped.universitas = item.kampus ? item.kampus.nama : 'Jalur Nasional';
+                        mapped.univ_code = item.kampus ? item.kampus.univ_code : '';
+                        mapped.logo_link = item.kampus ? item.kampus.logo_link : '';
+                        if (item.is_dynamic) mapped.prodi_list = { is_dynamic: true, data: dynamicData };
+                        return mapped;
+                    });
+                }
+
+                // Fetch Siswa + Relasi Pendaftaran
+                const { data: dbSiswa } = await supabaseClient.from('siswa').select(`*, pendaftaran_siswa ( id, prodi_terpilih, status_daftar, status_ujian, katalog_jalur ( *, kampus(nama, univ_code, logo_link) ) )`);
+                if (dbSiswa) {
+                    students = dbSiswa.map(s => {
+                        return {
+                            id: s.id, nama: s.nama, panggilan: s.panggilan, kelas: s.kelas, sekolah: s.sekolah, email: s.email, akunTO: s.akun_to,
+                            items: (s.pendaftaran_siswa || []).map(ps => {
+                                let kj = ps.katalog_jalur; 
+                                if(kj){
+                                    let mappedJalur = { ...kj };
+                                    mappedJalur.universitas = kj.kampus ? kj.kampus.nama : 'Jalur Nasional';
+                                    mappedJalur.logo_link = kj.kampus ? kj.kampus.logo_link : '';
+                                    return { id_pendaftaran: ps.id, jalur: mappedJalur, prodiTerpilih: Array.isArray(ps.prodi_terpilih) ? ps.prodi_terpilih : [], statusDaftar: ps.status_daftar, statusUjian: ps.status_ujian };
+                                }
+                                return null;
+                            }).filter(Boolean)
+                        };
+                    });
+                }
+
+                renderUnivDropdownOptions();
+                renderMateriDropdown();
+                setupPasteHandler();
             } catch (error) { console.error("API Error:", error); } 
             finally {
                 document.getElementById('loadingOverlay').style.display = 'none';
                 document.getElementById('mainContainer').style.display = 'block';
                 switchView('home');
             }
-        };
+        }
 
-        const forceSync = async () => {
+        async function forceSync() {
             document.getElementById('loadingOverlay').style.display = 'flex';
             document.getElementById('loadingText').innerText = "Sinkronisasi Paksa...";
-            try {
-                const response = await fetch(API_URL + "?action=force_sync");
-                const result = await response.json();
-                if(result.status === "success") {
-                    if(result.data) {
-                        dataKatalog = result.data.map((item, idx) => ({ ...item, index: idx + 1 }));
-                        extractUniversitasData();
-                        renderUnivDropdownOptions();
-                    }
-                    if(result.students) { students = result.students; localStorage.setItem('wali_students_db', JSON.stringify(students)); }
-                    showToast("Sinkronisasi berhasil!");
-                } else {
-                    showToast("Gagal sinkronisasi: " + result.message, "error");
-                }
-            } catch (error) { showToast("Error jaringan saat sinkronisasi.", "error"); } 
-            finally {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                document.getElementById('loadingText').innerText = "Memuat Data...";
-                switchView(viewHistory[viewHistory.length-1], false);
-            }
-        };
+            await initData();
+            showToast("Sinkronisasi berhasil!");
+            switchView(viewHistory[viewHistory.length-1], false);
+        }
 
-        const syncStudentToDB = async (studentData) => {
-            localStorage.setItem('wali_students_db', JSON.stringify(students));
-            try {
-                await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(studentData) });
-            } catch (error) { console.error("Sync POST error:", error); }
-        };
-
-        // --- VIEW MANAGEMENT ---
-        const switchView = (viewId, addToHistory = true) => {
+        // 5. VIEW MANAGEMENT
+        function switchView(viewId, addToHistory = true) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`${viewId}-view`).classList.add('active');
             document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
@@ -774,30 +797,21 @@
             if(viewId === 'catalog') renderCatalogUI();
             if(viewId === 'timeline') renderTimelineAll();
             window.scrollTo(0, 0);
-        };
-        const goBack = () => { if(viewHistory.length > 1) { viewHistory.pop(); switchView(viewHistory[viewHistory.length - 1], false); } else { switchView('home'); } };
+        }
+        function goBack() { if(viewHistory.length > 1) { viewHistory.pop(); switchView(viewHistory[viewHistory.length - 1], false); } else { switchView('home'); } }
 
-        // --- TAMBAH / EDIT KATALOG LOGIC ---
-        const extractUniversitasData = () => {
-            mapUniversitas = {};
-            dataKatalog.forEach(d => {
-                if(d.universitas && !mapUniversitas[d.universitas]) {
-                    mapUniversitas[d.universitas] = { code: d.univ_code, logo: d.logo_link };
-                }
-            });
-        };
-
-        const renderUnivDropdownOptions = () => {
+        // 6. TAMBAH/EDIT KATALOG & DROPDOWNS
+        function renderUnivDropdownOptions() {
             const sel = document.getElementById('inpKatUnivSelect');
             let opts = `<option value="">-- Pilih Universitas --</option>`;
-            Object.keys(mapUniversitas).sort().forEach(u => {
-                opts += `<option value="${u}">${u}</option>`;
+            daftarKampus.sort((a,b) => a.nama.localeCompare(b.nama)).forEach(u => {
+                opts += `<option value="${u.nama}" data-id="${u.id}" data-code="${u.univ_code}" data-logo="${u.logo_link}">${u.nama}</option>`;
             });
             opts += `<option value="NEW" class="fw-bold text-primary">+ Tambah Kampus Baru</option>`;
             sel.innerHTML = opts;
-        };
+        }
 
-        const handleUnivSelectChange = () => {
+        function handleUnivSelectChange() {
             const sel = document.getElementById('inpKatUnivSelect');
             const val = sel.value;
             const inpNew = document.getElementById('inpKatUnivNew');
@@ -806,61 +820,50 @@
             const previewLogo = document.getElementById('previewKatLogo');
 
             if(val === 'NEW') {
-                inpNew.style.display = 'block';
-                inpNew.value = ''; inpCode.value = ''; inpLogo.value = '';
-                inpCode.removeAttribute('readonly');
-                previewLogo.src = 'https://via.placeholder.com/45';
+                inpNew.style.display = 'block'; inpNew.value = ''; inpCode.value = ''; inpLogo.value = '';
+                inpCode.removeAttribute('readonly'); previewLogo.src = 'https://via.placeholder.com/45';
             } else if (val !== '') {
-                inpNew.style.display = 'none';
-                inpCode.setAttribute('readonly', true);
-                inpCode.value = mapUniversitas[val].code || '';
-                inpLogo.value = mapUniversitas[val].logo || '';
-                previewLogo.src = mapUniversitas[val].logo || 'https://via.placeholder.com/45';
+                const option = sel.options[sel.selectedIndex];
+                inpNew.style.display = 'none'; inpCode.setAttribute('readonly', true);
+                inpCode.value = option.getAttribute('data-code') || ''; inpLogo.value = option.getAttribute('data-logo') || '';
+                previewLogo.src = option.getAttribute('data-logo') || 'https://via.placeholder.com/45';
             } else {
                 inpNew.style.display = 'none'; inpCode.value = ''; inpLogo.value = '';
                 previewLogo.src = 'https://via.placeholder.com/45';
             }
-        };
+        }
 
-        const renderMateriDropdown = () => {
+        function renderMateriDropdown() {
             const menu = document.getElementById('materiDropdownMenu');
             let html = '';
-            defaultMateri.forEach(m => {
-                html += `
-                    <li><div class="form-check px-3 py-1">
-                        <input class="form-check-input materi-cb" type="checkbox" value="${m}" id="mat_${m.replace(/\s/g,'')}">
-                        <label class="form-check-label w-100" for="mat_${m.replace(/\s/g,'')}">${m}</label>
-                    </div></li>`;
+            dropdownMateri.forEach(m => {
+                html += `<li><div class="form-check px-3 py-1"><input class="form-check-input materi-cb" type="checkbox" value="${m}" id="mat_${m.replace(/\s/g,'')}"><label class="form-check-label w-100" for="mat_${m.replace(/\s/g,'')}">${m}</label></div></li>`;
             });
             menu.innerHTML = html;
-            
             document.querySelectorAll('.materi-cb').forEach(cb => {
                 cb.addEventListener('change', () => {
                     const checked = Array.from(document.querySelectorAll('.materi-cb:checked')).map(x => x.value);
                     document.getElementById('materiSelectText').innerText = checked.length > 0 ? `${checked.length} Materi Dipilih` : 'Pilih Materi...';
                 });
             });
-        };
+        }
 
-        const setMateriCheckboxes = (materiArray) => {
+        function setMateriCheckboxes(materiArray) {
             document.querySelectorAll('.materi-cb').forEach(cb => cb.checked = false);
             if(materiArray && Array.isArray(materiArray)) {
-                materiArray.forEach(m => {
-                    const cb = document.querySelector(`.materi-cb[value="${m}"]`);
-                    if(cb) cb.checked = true;
-                });
+                materiArray.forEach(m => { const cb = document.querySelector(`.materi-cb[value="${m}"]`); if(cb) cb.checked = true; });
             }
             const checked = Array.from(document.querySelectorAll('.materi-cb:checked')).map(x => x.value);
             document.getElementById('materiSelectText').innerText = checked.length > 0 ? `${checked.length} Materi Dipilih` : 'Pilih Materi...';
-        };
+        }
 
-        const toggleProdiInputMode = () => {
+        function toggleProdiInputMode() {
             const isSheetMode = document.getElementById('toggleProdiMode').checked;
             document.getElementById('prodiTableMode').style.display = isSheetMode ? 'none' : 'block';
             document.getElementById('prodiSheetMode').style.display = isSheetMode ? 'block' : 'none';
-        };
+        }
 
-        const addProdiInputRow = (nama = "", dt = "") => {
+        function addProdiInputRow(nama = "", dt = "") {
             const tbody = document.getElementById('prodiInputTbody');
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -869,62 +872,54 @@
                 <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
             `;
             tbody.appendChild(tr);
-        };
+        }
 
-        document.getElementById('prodiInputTbody').addEventListener('paste', function(e) {
-            const target = e.target;
-            if(!target.classList.contains('prodi-manual-val') && !target.classList.contains('prodi-dt-val')) return;
-            
-            e.preventDefault();
-            const text = (e.originalEvent || e).clipboardData.getData('text/plain');
-            const rows = text.split(/\r?\n/);
-            
+        function setupPasteHandler() {
             const tbody = document.getElementById('prodiInputTbody');
-            const currentTr = target.closest('tr');
-            let currentIdx = Array.from(tbody.children).indexOf(currentTr);
-            
-            const isPastingIntoDT = target.classList.contains('prodi-dt-val');
+            if (!tbody.hasAttribute('data-paste-setup')) {
+                tbody.addEventListener('paste', function(e) {
+                    const target = e.target;
+                    if(!target.classList.contains('prodi-manual-val') && !target.classList.contains('prodi-dt-val')) return;
+                    e.preventDefault();
+                    const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+                    const rows = text.split(/\r?\n/);
+                    const currentTr = target.closest('tr');
+                    let currentIdx = Array.from(tbody.children).indexOf(currentTr);
+                    const isPastingIntoDT = target.classList.contains('prodi-dt-val');
 
-            rows.forEach((row) => {
-                if(!row.trim()) return;
-                const cols = row.split('\t'); 
-                
-                if(currentIdx >= tbody.children.length) {
-                    addProdiInputRow();
-                }
-                
-                const tr = tbody.children[currentIdx];
-                const inputProdi = tr.querySelector('.prodi-manual-val');
-                const inputDT = tr.querySelector('.prodi-dt-val');
+                    rows.forEach((row) => {
+                        if(!row.trim()) return;
+                        const cols = row.split('\t'); 
+                        if(currentIdx >= tbody.children.length) addProdiInputRow();
+                        
+                        const tr = tbody.children[currentIdx];
+                        const inputProdi = tr.querySelector('.prodi-manual-val'); const inputDT = tr.querySelector('.prodi-dt-val');
+                        if (isPastingIntoDT) { if(inputDT && cols[0]) inputDT.value = cols[0].trim(); } 
+                        else {
+                            if(inputProdi && cols[0]) inputProdi.value = cols[0].trim();
+                            if(inputDT && cols[1]) inputDT.value = cols[1].trim();
+                        }
+                        currentIdx++;
+                    });
+                });
+                tbody.setAttribute('data-paste-setup', 'true');
+            }
+        }
 
-                if (isPastingIntoDT) {
-                    if(inputDT && cols[0]) inputDT.value = cols[0].trim();
-                } else {
-                    if(inputProdi && cols[0]) inputProdi.value = cols[0].trim();
-                    if(inputDT && cols[1]) inputDT.value = cols[1].trim();
-                }
-                
-                currentIdx++;
-            });
-        });
-
-        const openAddKatalog = () => {
+        function openAddKatalog() {
             editingKatalogIndex = null;
             document.getElementById('formAddKatalog').reset();
             document.getElementById('formKatalogTitle').innerText = "Tambah Jalur Baru";
             document.getElementById('btnSubmitKatalogText').innerText = "Simpan Jalur Baru";
             document.getElementById('prodiInputTbody').innerHTML = '';
-            addProdiInputRow();
-            handleUnivSelectChange();
-            setMateriCheckboxes([]);
-            document.getElementById('toggleProdiMode').checked = false;
-            toggleProdiInputMode();
+            addProdiInputRow(); handleUnivSelectChange(); setMateriCheckboxes([]);
+            document.getElementById('toggleProdiMode').checked = false; toggleProdiInputMode();
             switchView('add-katalog');
-        };
+        }
 
-        const openEditKatalog = (dataIndex) => {
+        function openEditKatalog(dataIndex) {
             const item = dataKatalog[dataIndex];
-            editingKatalogIndex = item.index;
+            editingKatalogIndex = item.id; // DB UUID
             
             document.getElementById('formKatalogTitle').innerText = "Edit Jalur";
             document.getElementById('btnSubmitKatalogText').innerText = "Simpan Perubahan Jalur";
@@ -932,23 +927,17 @@
             const selUniv = document.getElementById('inpKatUnivSelect');
             let univFound = false;
             for(let i=0; i<selUniv.options.length; i++) {
-                if(selUniv.options[i].value === item.universitas) {
-                    selUniv.selectedIndex = i; univFound = true; break;
-                }
+                if(selUniv.options[i].value === item.universitas) { selUniv.selectedIndex = i; univFound = true; break; }
             }
-            if(!univFound) {
-                selUniv.value = "NEW";
-                document.getElementById('inpKatUnivNew').value = item.universitas || '';
+            if(!univFound && item.universitas && item.universitas !== 'Jalur Nasional') {
+                selUniv.value = "NEW"; document.getElementById('inpKatUnivNew').value = item.universitas;
             }
             handleUnivSelectChange();
             if(item.univ_code) document.getElementById('inpKatUnivCode').value = item.univ_code;
-            if(item.logo_link) {
-                document.getElementById('inpKatLogoLink').value = item.logo_link;
-                document.getElementById('previewKatLogo').src = item.logo_link;
-            }
+            if(item.logo_link) { document.getElementById('inpKatLogoLink').value = item.logo_link; document.getElementById('previewKatLogo').src = item.logo_link; }
 
             document.getElementById('inpKatNama').value = item.nama_jalur || '';
-            document.getElementById('inpKatJalur').value = item.jalur || 'Mandiri';
+            document.getElementById('inpKatJalur').value = item.jenis_jalur || 'Mandiri';
             document.getElementById('inpKatTipe').value = item.tipe_ujian || 'Tes Tulis';
             document.getElementById('inpKatSkema').value = item.skema || 'Tes Luring';
             setMateriCheckboxes(item.materi_ujian);
@@ -961,17 +950,12 @@
             document.getElementById('inpKatProdiSel').value = item.prodi_select || 2;
 
             document.getElementById('prodiInputTbody').innerHTML = '';
-            if (item.prodi_list && item.prodi_list.is_dynamic) {
+            if (item.is_dynamic) {
                 document.getElementById('toggleProdiMode').checked = true;
-                document.getElementById('inpKatProdiSheet').value = "[SNBT]"; 
             } else {
                 document.getElementById('toggleProdiMode').checked = false;
-                const prodis = Array.isArray(item.prodi_list) ? item.prodi_list : (typeof item.prodi_list === 'string' && item.prodi_list ? item.prodi_list.split(',') : []);
-                const dts = item.daya_tampung ? item.daya_tampung.toString().split(',') : [];
-                
-                if(prodis.length > 0) {
-                    prodis.forEach((p, idx) => { addProdiInputRow(p.trim(), dts[idx] ? dts[idx].trim() : ""); });
-                } else { addProdiInputRow(); }
+                const prodis = Array.isArray(item.prodi_list) ? item.prodi_list : [];
+                if(prodis.length > 0) { prodis.forEach(p => addProdiInputRow(p, "")); } else { addProdiInputRow(); }
             }
             toggleProdiInputMode();
 
@@ -989,549 +973,86 @@
             document.getElementById('inpKatPengumuman2Ket').value = item.pengumuman2_keterangan || '';
 
             switchView('add-katalog');
-        };
+        }
 
-        const submitKatalogForm = async () => {
-            const selUniv = document.getElementById('inpKatUnivSelect').value;
-            const universitas = selUniv === 'NEW' ? document.getElementById('inpKatUnivNew').value : selUniv;
+        async function submitKatalogForm() {
+            const selUniv = document.getElementById('inpKatUnivSelect');
+            const universitas = selUniv.value === 'NEW' ? document.getElementById('inpKatUnivNew').value : selUniv.value;
             const nama_jalur = document.getElementById('inpKatNama').value;
             
-            if(!universitas || !nama_jalur) return showToast("Universitas dan Nama Jalur wajib diisi!", "warning");
-
-            const isSheetMode = document.getElementById('toggleProdiMode').checked;
-            let finalProdiVal = ""; let finalDtVal = ""; let prodiNum = 0;
-            
-            if (isSheetMode) {
-                finalProdiVal = document.getElementById('inpKatProdiSheet').value;
-            } else {
-                let pNames = []; let pDt = [];
-                document.querySelectorAll('#prodiInputTbody tr').forEach(tr => {
-                    const name = tr.querySelector('.prodi-manual-val').value.trim();
-                    const dt = tr.querySelector('.prodi-dt-val').value.trim();
-                    if(name) { pNames.push(name); pDt.push(dt || "-"); }
-                });
-                finalProdiVal = pNames.join(',');
-                finalDtVal = pDt.join(',');
-                prodiNum = pNames.length;
-            }
-
-            const materiChecked = Array.from(document.querySelectorAll('.materi-cb:checked')).map(x => x.value);
+            if(!nama_jalur) return showToast("Nama Jalur wajib diisi!", "warning");
 
             document.getElementById('loadingOverlay').style.display = 'flex';
             document.getElementById('loadingText').innerText = editingKatalogIndex ? "Mengupdate Jalur..." : "Menyimpan Jalur Baru...";
 
-            const payload = {
-                type: editingKatalogIndex ? 'edit_katalog' : 'add_katalog',
-                edit_index: editingKatalogIndex, 
-                katalogData: {
-                    univ_code: document.getElementById('inpKatUnivCode').value,
-                    universitas: universitas,
+            try {
+                let kampus_id = null;
+                if (selUniv.value === 'NEW' && universitas) {
+                    const { data: newK } = await supabaseClient.from('kampus').insert([{ nama: universitas, univ_code: document.getElementById('inpKatUnivCode').value, logo_link: document.getElementById('inpKatLogoLink').value }]).select();
+                    if(newK && newK.length > 0) kampus_id = newK[0].id;
+                } else if (selUniv.value !== '') {
+                    const kOpt = selUniv.options[selUniv.selectedIndex];
+                    kampus_id = kOpt.getAttribute('data-id');
+                }
+
+                const isSheetMode = document.getElementById('toggleProdiMode').checked;
+                let finalProdiVal = null;
+                if (!isSheetMode) {
+                    let pNames = [];
+                    document.querySelectorAll('#prodiInputTbody tr').forEach(tr => {
+                        const name = tr.querySelector('.prodi-manual-val').value.trim();
+                        if(name) pNames.push(name);
+                    });
+                    finalProdiVal = pNames;
+                }
+
+                const materiChecked = Array.from(document.querySelectorAll('.materi-cb:checked')).map(x => x.value);
+
+                const payload = {
+                    kampus_id: kampus_id,
                     nama_jalur: nama_jalur,
-                    jalur: document.getElementById('inpKatJalur').value,
+                    jenis_jalur: document.getElementById('inpKatJalur').value,
                     tipe_ujian: document.getElementById('inpKatTipe').value,
                     skema: document.getElementById('inpKatSkema').value,
-                    materi_ujian: materiChecked.join(','),
+                    materi_ujian: materiChecked,
                     keterangan: document.getElementById('inpKatKet').value,
                     syarat: document.getElementById('inpKatSyarat').value,
-                    biaya: document.getElementById('inpKatBiaya').value,
-                    biaya_maxx: document.getElementById('inpKatBiayaMax').value,
-                    daya_tampung: finalDtVal, 
-                    prodi_number: prodiNum, 
+                    biaya: parseInt(document.getElementById('inpKatBiaya').value) || 0,
+                    biaya_maxx: parseInt(document.getElementById('inpKatBiayaMax').value) || 0,
+                    prodi_select: parseInt(document.getElementById('inpKatProdiSel').value) || 2,
+                    is_dynamic: isSheetMode,
                     prodi_list: finalProdiVal,
-                    prodi_select: document.getElementById('inpKatProdiSel').value,
-                    pendaftaran_start: document.getElementById('inpKatDaftarStart').value,
-                    pendaftaran_end: document.getElementById('inpKatDaftarEnd').value,
-                    ujian1_start: document.getElementById('inpKatUjian1Start').value,
-                    ujian1_end: document.getElementById('inpKatUjian1End').value,
+                    pendaftaran_start: getValOrNull('inpKatDaftarStart'),
+                    pendaftaran_end: getValOrNull('inpKatDaftarEnd'),
+                    ujian1_start: getValOrNull('inpKatUjian1Start'),
+                    ujian1_end: getValOrNull('inpKatUjian1End'),
                     ujian1_keterangan: document.getElementById('inpKatUjian1Ket').value,
-                    pengumuman1: document.getElementById('inpKatPengumuman1').value,
+                    pengumuman1: getValOrNull('inpKatPengumuman1'),
                     pengumuman1_keterangan: document.getElementById('inpKatPengumuman1Ket').value,
-                    ujian2_start: document.getElementById('inpKatUjian2Start').value,
-                    ujian2_end: document.getElementById('inpKatUjian2End').value,
+                    ujian2_start: getValOrNull('inpKatUjian2Start'),
+                    ujian2_end: getValOrNull('inpKatUjian2End'),
                     ujian2_keterangan: document.getElementById('inpKatUjian2Ket').value,
-                    pengumuman2: document.getElementById('inpKatPengumuman2').value,
+                    pengumuman2: getValOrNull('inpKatPengumuman2'),
                     pengumuman2_keterangan: document.getElementById('inpKatPengumuman2Ket').value
-                }
-            };
+                };
 
-            try {
-                const response = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
-                const result = await response.json();
-                if(result.status === "success") {
-                    showToast(editingKatalogIndex ? "Perubahan disimpan!" : "Jalur berhasil ditambahkan!", "success");
-                    switchView('catalog', false); 
-                    forceSync(); 
+                if (editingKatalogIndex) {
+                    await supabaseClient.from('katalog_jalur').update(payload).eq('id', editingKatalogIndex);
+                    showToast("Perubahan disimpan!", "success");
                 } else {
-                    showToast("Gagal menyimpan jalur: " + result.message, "error");
-                    document.getElementById('loadingOverlay').style.display = 'none';
+                    await supabaseClient.from('katalog_jalur').insert([payload]);
+                    showToast("Jalur berhasil ditambahkan!", "success");
                 }
+                switchView('catalog', false); 
+                await initData(); 
             } catch (error) {
                 showToast("Terjadi kesalahan jaringan saat simpan.", "error");
                 document.getElementById('loadingOverlay').style.display = 'none';
             }
-        };
+        }
 
-        // --- SISWA LOGIC ---
-        const showAddStudentModal = () => {
-            editingStudentIdForModal = null;
-            document.getElementById('formAddStudent').reset();
-            document.getElementById('modalStudentTitle').innerText = "Tambah Data Siswa";
-            new bootstrap.Modal(document.getElementById('addStudentModal')).show();
-        };
-
-        const editStudentInfo = (id) => {
-            editingStudentIdForModal = id;
-            const s = students.find(x => x.id === id);
-            document.getElementById('inpNama').value = s.nama;
-            document.getElementById('inpPanggilan').value = s.panggilan;
-            document.getElementById('inpKelas').value = s.kelas;
-            document.getElementById('inpSekolah').value = s.sekolah;
-            document.getElementById('inpEmail').value = s.email !== '-' ? s.email : '';
-            document.getElementById('inpAkunTO').value = s.akunTO !== '-' ? s.akunTO : '';
-            
-            document.getElementById('modalStudentTitle').innerText = "Edit Data Siswa";
-            new bootstrap.Modal(document.getElementById('addStudentModal')).show();
-        };
-
-        const deleteStudent = (id) => {
-            event.stopPropagation();
-            Swal.fire({ title: 'Hapus Data Siswa?', text: "Data siswa ini beserta seluruh pilihan jalurnya akan dihapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Ya, Hapus!' })
-            .then((result) => {
-                if (result.isConfirmed) {
-                    const s = students.find(x => x.id === id);
-                    s.action = 'delete'; 
-                    syncStudentToDB(s); 
-                    students = students.filter(x => x.id !== id);
-                    localStorage.setItem('wali_students_db', JSON.stringify(students));
-                    renderSiswaList(currentSortType);
-                    showToast("Data siswa berhasil dihapus.");
-                }
-            });
-        };
-        
-        const saveNewStudent = () => {
-            const nama = document.getElementById('inpNama').value;
-            const panggilan = document.getElementById('inpPanggilan').value;
-            const kelas = document.getElementById('inpKelas').value;
-            const sekolah = document.getElementById('inpSekolah').value;
-            const email = document.getElementById('inpEmail').value || '-';
-            const akunTO = document.getElementById('inpAkunTO').value || '-';
-            
-            if(!nama || !panggilan || !kelas) return showToast("Lengkapi data penting (Nama, Panggilan, Kelas).", "warning");
-            
-            if(editingStudentIdForModal) {
-                const s = students.find(x => x.id === editingStudentIdForModal);
-                s.nama = nama; s.panggilan = panggilan; s.kelas = kelas; s.sekolah = sekolah; s.email = email; s.akunTO = akunTO; s.action = 'update';
-                syncStudentToDB(s); showToast("Data siswa diperbarui!");
-            } else {
-                const newStudent = { id: Date.now(), nama, panggilan, kelas, sekolah, email, akunTO, items: [], action: 'create' };
-                students.push(newStudent); syncStudentToDB(newStudent); showToast("Siswa berhasil ditambahkan!");
-            }
-            bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide();
-            renderSiswaList(currentSortType);
-        };
-
-        const renderSiswaList = (sortType = currentSortType) => {
-            currentSortType = sortType;
-            document.querySelectorAll('.sort-btn').forEach(btn => { btn.classList.remove('btn-secondary', 'text-white'); btn.classList.add('btn-outline-secondary'); });
-            event?.target?.closest('.sort-btn')?.classList.replace('btn-outline-secondary', 'btn-secondary');
-            event?.target?.closest('.sort-btn')?.classList.add('text-white');
-
-            const query = (document.getElementById('searchSiswa')?.value || '').toLowerCase();
-            const container = document.getElementById('siswaGridContainer'); container.innerHTML = '';
-            
-            let filtered = students.filter(s => s.nama.toLowerCase().includes(query) || s.panggilan.toLowerCase().includes(query));
-            if(sortType === 'nama') filtered.sort((a,b) => a.nama.localeCompare(b.nama));
-            if(sortType === 'kelas') filtered.sort((a,b) => a.kelas.localeCompare(b.kelas));
-            if(sortType === 'jalur') filtered.sort((a,b) => b.items.length - a.items.length);
-
-            if(filtered.length === 0) return container.innerHTML = '<div class="col-12 text-center text-muted py-5">Tidak ada siswa ditemukan.</div>';
-
-            filtered.forEach(s => {
-                const classColor = getBadgeColor(s.kelas);
-                let badgeJalursHtml = s.items.length > 0 ? s.items.slice(0, 3).map(it => `<span class="badge bg-light text-dark border me-1 mb-1 fw-normal" style="font-size:0.6rem;">${it.jalur.nama_jalur.substring(0, 20)}...</span>`).join('') : `<span class="text-muted" style="font-size:0.65rem;">Belum ada jalur yang didaftarkan.</span>`;
-                if(s.items.length > 3) badgeJalursHtml += `<span class="badge bg-secondary mb-1" style="font-size:0.6rem;">+${s.items.length - 3}</span>`;
-
-                container.innerHTML += `
-                    <div class="col-12 col-md-6">
-                        <div class="card siswa-card p-3 h-100" onclick="openStudentDetail(${s.id})">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div><h6 class="fw-bold mb-1 text-primary">${s.nama}</h6><small class="text-muted"><i class="fas fa-bookmark me-1"></i>${s.items.length} Jalur Terdaftar</small></div>
-                                <div class="d-flex flex-column align-items-end gap-1">
-                                    <span class="badge ${classColor} fs-6 shadow-sm">${s.kelas}</span>
-                                    <div>
-                                        <button class="btn btn-sm btn-light text-primary px-2 py-1 border" onclick="event.stopPropagation(); editStudentInfo(${s.id})"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-light text-danger px-2 py-1 border" onclick="event.stopPropagation(); deleteStudent(${s.id})"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-2 pt-2 border-top">${badgeJalursHtml}</div>
-                        </div>
-                    </div>`;
-            });
-        };
-
-        const openStudentDetail = (id) => {
-            currentStudentId = id; const s = students.find(x => x.id === id);
-            document.getElementById('sdName').innerText = s.nama; document.getElementById('sdClassSchool').innerText = `${s.kelas} | ${s.sekolah}`;
-            document.getElementById('sdEmail').innerText = s.email; document.getElementById('sdAkunTO').innerText = s.akunTO;
-            renderStudentItems(); switchView('siswa-detail');
-        };
-
-        const renderStudentItems = () => {
-            const s = students.find(x => x.id === currentStudentId);
-            const container = document.getElementById('sdItemsContainer');
-            let total = 0;
-
-            if(s.items.length === 0) {
-                container.innerHTML = `<div class="text-center py-5 text-muted"><p>Siswa belum didaftarkan ke jalur manapun.</p><button class="btn btn-outline-primary rounded-pill" onclick="switchView('catalog')">Cari Jalur Sekarang</button></div>`;
-            } else {
-                let html = '';
-                s.items.forEach((p, idx) => {
-                    const biayaNum = Number(p.jalur.biaya) || 0; total += biayaNum;
-                    const bDaftar = p.statusDaftar ? `<button class="btn btn-success status-btn me-1 small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'daftar')"><i class="fas fa-check"></i> Daftar</button>` : `<button class="btn btn-outline-primary status-btn me-1 small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'daftar')">Konfirmasi Daftar</button>`;
-                    const bUjian = !p.jalur.ujian1_start ? '' : (p.statusUjian ? `<button class="btn btn-success status-btn small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'ujian')"><i class="fas fa-check"></i> Ujian</button>` : `<button class="btn btn-outline-warning text-dark status-btn small" style="font-size:0.75rem;" onclick="toggleStudentStatus(${s.id}, ${idx}, 'ujian')">Konfirmasi Ujian</button>`);
-                    
-                    html += `
-                        <div class="card mb-3 rounded-4 shadow-sm border-0 bg-white">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div class="d-flex align-items-center">
-                                        <img src="${p.jalur.logo_link || 'https://via.placeholder.com/30'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded">
-                                        <h6 class="fw-bold mb-0 text-primary pe-2">${p.jalur.nama_jalur}</h6>
-                                    </div>
-                                    <div class="text-nowrap">
-                                        <button class="btn btn-sm btn-light text-primary me-1" onclick="editStudentItem(${s.id}, ${idx})"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-light text-danger" onclick="deleteStudentItem(${s.id}, ${idx})"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </div>
-                                <div class="small mb-2">${p.prodiTerpilih.map((pr, i) => `<span class="badge bg-secondary border me-1 mb-1"><span class="text-warning">${i+1}.</span> ${pr}</span>`).join('')}</div>
-                                <div class="d-flex justify-content-between pt-2 border-top align-items-center flex-wrap gap-2"><div>${bDaftar}${bUjian}</div><span class="text-warning fw-bold small">${formatRupiah(biayaNum)}</span></div>
-                            </div>
-                        </div>`;
-                });
-                container.innerHTML = html;
-            }
-            document.getElementById('sdTotalBiaya').innerText = formatRupiah(total);
-        };
-
-        const toggleStudentStatus = (sId, idx, type) => {
-            const s = students.find(x => x.id === sId);
-            if(type === 'daftar') s.items[idx].statusDaftar = !s.items[idx].statusDaftar;
-            if(type === 'ujian') s.items[idx].statusUjian = !s.items[idx].statusUjian;
-            syncStudentToDB(s); renderStudentItems();
-        };
-
-        const deleteStudentItem = (sId, idx) => {
-            Swal.fire({ title: 'Hapus Pilihan Jalur?', text: "Jalur ini akan dihapus dari profil siswa.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Ya, Hapus!' })
-            .then((result) => {
-                if (result.isConfirmed) {
-                    const s = students.find(x => x.id === sId); s.items.splice(idx,1); syncStudentToDB(s); renderStudentItems(); showToast('Jalur berhasil dihapus dari siswa');
-                }
-            });
-        };
-
-        const editStudentItem = (sId, idx) => {
-            const s = students.find(x => x.id === sId); const item = s.items[idx];
-            const catIndex = dataKatalog.findIndex(d => d.index === item.jalur.index);
-            if(catIndex > -1) { openDetail(catIndex, true, sId, idx); } else { showToast("Data jalur ini tidak ditemukan di katalog.", "error"); }
-        };
-
-        const renderStudentTimeline = () => {
-            const s = students.find(x => x.id === currentStudentId);
-            let events = getTimelineEvents(s.items.map(it => it.jalur));
-            document.getElementById('sdTimelineContainer').innerHTML = generateTimelineListHTML(events);
-        };
-
-        const changeStudentMonth = (dir) => {
-            sdCurrentMonth += dir;
-            if(sdCurrentMonth > 11) { sdCurrentMonth = 0; sdCurrentYear++; }
-            if(sdCurrentMonth < 0) { sdCurrentMonth = 11; sdCurrentYear--; }
-            renderStudentCalendar();
-        };
-
-        const renderStudentCalendar = () => {
-            const s = students.find(x => x.id === currentStudentId);
-            if(!s) return;
-            const studentJalurs = s.items.map(it => it.jalur);
-
-            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-            const eMonthYear = document.getElementById('sdCalMonthYear');
-            if(eMonthYear) eMonthYear.innerText = `${monthNames[sdCurrentMonth]} ${sdCurrentYear}`;
-            
-            const firstDay = new Date(sdCurrentYear, sdCurrentMonth, 1).getDay();
-            const daysInMonth = new Date(sdCurrentYear, sdCurrentMonth + 1, 0).getDate();
-            
-            let calHtml = `
-                <div class="calendar-header border-bottom">Min</div><div class="calendar-header border-bottom">Sen</div><div class="calendar-header border-bottom">Sel</div>
-                <div class="calendar-header border-bottom">Rab</div><div class="calendar-header border-bottom">Kam</div><div class="calendar-header border-bottom">Jum</div><div class="calendar-header border-bottom">Sab</div>
-            `;
-            
-            for(let i=0; i<firstDay; i++) calHtml += '<div class="calendar-day empty"></div>';
-            
-            const today = new Date();
-            for(let i=1; i<=daysInMonth; i++) {
-                const curDate = new Date(sdCurrentYear, sdCurrentMonth, i);
-                let isToday = (today.getDate()===i && today.getMonth()===sdCurrentMonth && today.getFullYear()===sdCurrentYear) ? 'today' : '';
-                
-                let eventsHtml = getCalendarEventsHtml(studentJalurs, curDate);
-                
-                calHtml += `
-                    <div class="calendar-day ${isToday}" onclick="openCalEvent(${i}, true)">
-                        <span class="fw-bold mb-1" style="font-size:0.8rem">${i}</span>
-                        <div class="w-100 d-flex flex-column gap-1 overflow-hidden px-1">${eventsHtml}</div>
-                    </div>`;
-            }
-            const eCalGrid = document.getElementById('sdCalendarGridContainer');
-            if(eCalGrid) eCalGrid.innerHTML = `<div class="calendar-grid">${calHtml}</div>`;
-        };
-
-        // --- HOME VIEW LOGIC & ANALYTICS ---
-        setInterval(() => {
-            const now = new Date(); const el = document.getElementById('currentDateTime');
-            if(el) el.innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'}) + ' | ' + now.toLocaleTimeString('id-ID');
-        }, 1000);
-
-        const renderHome = () => {
-            const now = new Date(); 
-            let allStudentJalurs = []; students.forEach(s => { s.items.forEach(it => { allStudentJalurs.push({...it.jalur, _siswa: s}); }); });
-            
-            let nextEvent = null;
-            if(allStudentJalurs.length > 0) {
-                let evts = [];
-                allStudentJalurs.forEach(j => {
-                    const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
-                    if(j.pendaftaran_end) evts.push({ type: 'Tutup Daftar', date: new Date(j.pendaftaran_end), j: j, s: j._siswa});
-                    if(j.ujian1_start) evts.push({ type: hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', date: new Date(j.ujian1_start), j: j, s: j._siswa});
-                    if(j.pengumuman1) evts.push({ type: hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', date: new Date(j.pengumuman1), j: j, s: j._siswa});
-                    if(j.ujian2_start) evts.push({ type: 'Ujian Tahap 2', date: new Date(j.ujian2_start), j: j, s: j._siswa});
-                    if(j.pengumuman2) evts.push({ type: 'Pengumuman Tahap 2', date: new Date(j.pengumuman2), j: j, s: j._siswa});
-                });
-                evts = evts.filter(e => e.date >= now).sort((a,b) => a.date - b.date);
-                if(evts.length > 0) nextEvent = evts[0];
-            }
-
-            const cdBox = document.getElementById('homeCountdown'); const titleBox = document.getElementById('homeNextAgendaTitle');
-            if(nextEvent) {
-                titleBox.innerHTML = `${nextEvent.j.nama_jalur || nextEvent.j.akronim} - ${nextEvent.type}`;
-                const diffTime = Math.abs(nextEvent.date - now); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                cdBox.innerHTML = `<div class="bg-white text-primary rounded-3 p-2" style="min-width: 60px;"><h3 class="fw-bold mb-0">${diffDays}</h3><small>Hari</small></div><div class="align-self-center text-white text-start lh-1"><small class="d-block opacity-75">Menuju tanggal</small><span class="fw-bold">${formatDate(nextEvent.date)}</span></div>`;
-            } else { titleBox.innerHTML = "Belum ada agenda terdekat"; cdBox.innerHTML = `-`; }
-
-            const pendaftaranPaths = dataKatalog.filter(d => {
-                if(!d.pendaftaran_start) return false;
-                const pStart = new Date(d.pendaftaran_start); pStart.setHours(0,0,0,0);
-                const pEnd = new Date(d.pendaftaran_end); pEnd.setHours(23,59,59,999);
-                const diffStart = (pStart - now) / (1000 * 60 * 60 * 24);
-                return (now >= pStart && now <= pEnd) || (diffStart > 0 && diffStart <= 7);
-            }).sort((a, b) => new Date(a.pendaftaran_start) - new Date(b.pendaftaran_start));
-
-            let openHtml = ''; if(pendaftaranPaths.length === 0) openHtml = '<div class="card border-0 shadow-sm rounded-4 bg-white"><div class="card-body p-3 text-muted small">Tidak ada pendaftaran dalam waktu dekat.</div></div>';
-            pendaftaranPaths.forEach(path => {
-                const pIdx = dataKatalog.findIndex(d => d.index === path.index);
-                const pStart = new Date(path.pendaftaran_start); pStart.setHours(0,0,0,0);
-                const pEnd = new Date(path.pendaftaran_end); pEnd.setHours(23,59,59,999);
-                let cdHtml = '';
-                if (now < pStart) {
-                    const diff = Math.ceil((pStart - now) / (1000 * 60 * 60 * 24)); cdHtml = `<span class="badge bg-secondary text-white border p-2 shadow-sm">Dibuka ${diff} hari lagi</span>`;
-                } else {
-                    const diffEnd = Math.ceil((pEnd - now) / (1000 * 60 * 60 * 24));
-                    if (diffEnd <= 7) cdHtml = `<span class="badge bg-danger text-white border p-2 shadow-sm">Ditutup ${diffEnd} hari lagi</span>`;
-                    else cdHtml = `<span class="badge bg-primary text-white border p-2 shadow-sm">Sedang Dibuka</span>`;
-                }
-                openHtml += `
-                    <div class="card agenda-card border-0 border-start border-4 border-primary shadow-sm mb-2 rounded-end-3 bg-white" onclick="openDetail(${pIdx})">
-                        <div class="card-body p-3 d-flex justify-content-between align-items-center">
-                            <div><h6 class="fw-bold mb-1 text-dark">${path.nama_jalur}</h6><small class="text-muted d-block"><i class="far fa-calendar-alt me-1"></i>${formatDate(path.pendaftaran_start)} - ${formatDate(path.pendaftaran_end)}</small></div>
-                            <div class="text-end">${cdHtml}</div>
-                        </div>
-                    </div>`;
-            });
-            document.getElementById('homeOpenRegistrations').innerHTML = openHtml;
-
-            const upcomingExams = dataKatalog.filter(d => {
-                if(!d.ujian1_start) return false;
-                const uEnd = new Date(d.ujian1_end || d.ujian1_start); uEnd.setHours(23,59,59,999);
-                return now <= uEnd; 
-            }).sort((a,b) => new Date(a.ujian1_start) - new Date(b.ujian1_start));
-            
-            let examHtml = ''; if(upcomingExams.length === 0) examHtml = '<div class="card border-0 shadow-sm rounded-4 bg-white"><div class="card-body p-3 text-muted small">Tidak ada ujian dalam waktu dekat.</div></div>';
-            upcomingExams.forEach(path => {
-                const pIdx = dataKatalog.findIndex(d => d.index === path.index);
-                const uStart = new Date(path.ujian1_start); uStart.setHours(0,0,0,0);
-                const isOngoing = now >= uStart;
-                let cdHtml = '';
-                if(isOngoing) cdHtml = `<span class="badge bg-success shadow-sm p-2"><i class="fas fa-circle-notch fa-spin me-1"></i>Sedang Berlangsung</span>`;
-                else { const diff = Math.ceil((uStart - now) / (1000 * 60 * 60 * 24)); cdHtml = `<span class="badge bg-warning text-dark border p-2 shadow-sm">H-${diff}</span>`; }
-
-                examHtml += `
-                    <div class="card agenda-card border-0 border-start border-4 border-warning shadow-sm mb-2 rounded-end-3 bg-white" onclick="openDetail(${pIdx})">
-                        <div class="card-body p-3 d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="fw-bold mb-1 text-dark">${path.nama_jalur}</h6>
-                                <small class="text-muted d-block mb-1"><i class="far fa-calendar-alt me-1"></i>${formatDate(path.ujian1_start)} ${path.ujian1_end && path.ujian1_end !== path.ujian1_start ? '- ' + formatDate(path.ujian1_end) : ''}</small>
-                                <div>${(path.materi_ujian||[]).map(m => `<span class="badge bg-light text-dark border me-1" style="font-size:0.6rem">${m}</span>`).join('')}</div>
-                            </div>
-                            <div class="text-end">${cdHtml}</div>
-                        </div>
-                    </div>`;
-            });
-            document.getElementById('homeUpcomingExams').innerHTML = examHtml;
-
-            let allEvents = [];
-            allStudentJalurs.forEach(j => {
-                const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
-                if(j.pendaftaran_start) allEvents.push({d: new Date(j.pendaftaran_start), t: 'Buka Daftar', c: 'text-primary', bg: 'border-primary', j: j, s: j._siswa});
-                if(j.pendaftaran_end) allEvents.push({d: new Date(j.pendaftaran_end), t: 'Tutup Daftar', c: 'text-danger', bg: 'border-danger', j: j, s: j._siswa});
-                if(j.ujian1_start) allEvents.push({d: new Date(j.ujian1_start), t: hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', c: 'text-warning', bg: 'border-warning', j: j, s: j._siswa});
-                if(j.pengumuman1) allEvents.push({d: new Date(j.pengumuman1), t: hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', c: 'text-success', bg: 'border-success', j: j, s: j._siswa});
-                if(j.ujian2_start) allEvents.push({d: new Date(j.ujian2_start), t: 'Ujian Tahap 2', c: 'text-warning', bg: 'border-warning', j: j, s: j._siswa});
-                if(j.pengumuman2) allEvents.push({d: new Date(j.pengumuman2), t: 'Pengumuman Tahap 2', c: 'text-success', bg: 'border-success', j: j, s: j._siswa});
-            });
-            allEvents = allEvents.filter(e => e.d >= now).sort((a,b) => a.d - b.d);
-
-            let tlHtml = allEvents.length === 0 ? '<p class="text-muted small">Tidak ada agenda masa depan.</p>' : '';
-            let grouped = {};
-            
-            allEvents.forEach(e => {
-                const key = e.d.getTime() + '_' + e.t + '_' + e.j.index;
-                if(!grouped[key]) { grouped[key] = { date: e.d, type: e.t, j: e.j, color: e.c, bg: e.bg, students: [] }; }
-                if(!grouped[key].students.find(s => s.id === e.s.id)) { grouped[key].students.push(e.s); }
-            });
-
-            let flatGrouped = Object.values(grouped).sort((a,b) => a.date - b.date);
-            let currentMonthGroup = '';
-
-            flatGrouped.forEach(ev => {
-                const mStr = ev.date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-                if(mStr !== currentMonthGroup) {
-                    tlHtml += `<h6 class="fw-bold mt-3 mb-2 border-bottom pb-1 text-secondary sticky-top bg-white" style="font-size:0.85rem; top:-15px; padding-top:10px; z-index:2;">${mStr}</h6>`;
-                    currentMonthGroup = mStr;
-                }
-                
-                const safeStudentsStr = encodeURIComponent(JSON.stringify(ev.students));
-                
-                tlHtml += `
-                    <div class="card agenda-card border-0 border-start border-4 ${ev.bg} shadow-sm mb-2 rounded-end-3 bg-light" onclick="openAgendaStudentsModal('${ev.type}', '${ev.j.nama_jalur}', '${ev.date.toISOString()}', '${safeStudentsStr}')">
-                        <div class="card-body py-2 px-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <div><small class="${ev.color} fw-bold d-block mb-1" style="font-size:0.7rem;">${ev.type}</small><span class="fw-semibold d-block" style="font-size:0.85rem">${ev.j.nama_jalur}</span></div>
-                                <div class="text-end"><span class="badge bg-white text-dark border"><i class="far fa-calendar-alt me-1"></i>${ev.date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span></div>
-                            </div>
-                            <div class="mt-1">${ev.students.map(st => `<span class="badge bg-secondary student-badge me-1">${st.panggilan}</span>`).join('')}</div>
-                        </div>
-                    </div>`;
-            });
-            document.getElementById('homeStudentTimeline').innerHTML = tlHtml;
-
-            renderAnalytics(allStudentJalurs);
-        };
-
-        const renderAnalytics = (allJalurs) => {
-            const container = document.getElementById('analyticAccordion');
-            if(allJalurs.length === 0) return container.innerHTML = '<div class="p-4 text-center text-muted">Belum ada data pendaftaran siswa.</div>';
-
-            let analytics = {}; let maxTotalUniv = 0;
-            allJalurs.forEach(j => {
-                const uName = j.akronim || j.universitas || 'Lainnya';
-                if(!analytics[uName]) analytics[uName] = { logo: j.logo_link, total: 0, jalurs: {} };
-                analytics[uName].total += 1;
-                if(analytics[uName].total > maxTotalUniv) maxTotalUniv = analytics[uName].total;
-                if(!analytics[uName].jalurs[j.nama_jalur]) analytics[uName].jalurs[j.nama_jalur] = { count: 0, students: [] };
-                analytics[uName].jalurs[j.nama_jalur].count += 1;
-                analytics[uName].jalurs[j.nama_jalur].students.push(j._siswa);
-            });
-
-            const sortedUnivs = Object.keys(analytics).sort((a,b) => analytics[b].total - analytics[a].total);
-            let html = '';
-            sortedUnivs.forEach((uName, idx) => {
-                const uData = analytics[uName]; const percentage = (uData.total / maxTotalUniv) * 100; const colId = `collapseAnalytic${idx}`;
-                
-                let jalurAccordionHtml = `<div class="accordion accordion-flush" id="accUniv_${idx}">`;
-                const sortedJalurs = Object.keys(uData.jalurs).sort((a,b) => uData.jalurs[b].count - uData.jalurs[a].count);
-                
-                sortedJalurs.forEach((jName, jIdx) => {
-                    const jData = uData.jalurs[jName]; const colJalurId = `colUniv_${idx}_Jalur_${jIdx}`;
-                    jalurAccordionHtml += `
-                        <div class="accordion-item bg-transparent border-0 border-bottom border-dashed">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed py-2 px-1 small bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#${colJalurId}">
-                                    <div class="d-flex justify-content-between align-items-center w-100 pe-2"><span class="text-dark fw-semibold" style="font-size:0.85rem">${jName}</span><span class="badge bg-secondary">${jData.count} Siswa</span></div>
-                                </button>
-                            </h2>
-                            <div id="${colJalurId}" class="accordion-collapse collapse" data-bs-parent="#accUniv_${idx}">
-                                <div class="accordion-body p-2 pt-0 pb-3"><div class="d-flex flex-wrap gap-1">${jData.students.map(s => `<span class="badge bg-light text-dark border fw-normal" onclick="openStudentDetail(${s.id})" style="cursor:pointer;">${s.nama} (${s.kelas})</span>`).join('')}</div></div>
-                            </div>
-                        </div>`;
-                });
-                jalurAccordionHtml += `</div>`;
-
-                html += `
-                    <div class="accordion-item border-0 border-bottom">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed px-3 py-3" type="button" data-bs-toggle="collapse" data-bs-target="#${colId}">
-                                <div class="w-100 pe-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1"><div class="d-flex align-items-center"><img src="${uData.logo || 'https://via.placeholder.com/20'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded"><span class="fw-bold text-dark">${uName}</span></div><span class="fw-bold text-primary">${uData.total}</span></div>
-                                    <div class="analytic-bar-bg"><div class="analytic-bar-fill" style="width: ${percentage}%"></div></div>
-                                </div>
-                            </button>
-                        </h2>
-                        <div id="${colId}" class="accordion-collapse collapse" data-bs-parent="#analyticAccordion"><div class="accordion-body bg-light rounded-bottom px-3 py-2">${jalurAccordionHtml}</div></div>
-                    </div>`;
-            });
-            container.innerHTML = html;
-        };
-
-        const openAgendaStudentsModal = (type, jalurNama, dateISO, safeStudentsStr) => {
-            const studentsArr = JSON.parse(decodeURIComponent(safeStudentsStr));
-            document.getElementById('asmTitle').innerText = `${type} - ${jalurNama}`;
-            document.getElementById('asmDate').innerText = formatDate(dateISO);
-            
-            let html = '';
-            studentsArr.forEach(s => {
-                html += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center py-3 px-1">
-                        <div><h6 class="fw-bold mb-0">${s.nama}</h6><small class="text-muted d-block">${s.kelas} | ${s.sekolah}</small></div>
-                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="bootstrap.Modal.getInstance(document.getElementById('agendaStudentsModal')).hide(); setTimeout(()=>openStudentDetail(${s.id}), 300)">Profil</button>
-                    </li>`;
-            });
-            document.getElementById('asmList').innerHTML = html;
-            new bootstrap.Modal(document.getElementById('agendaStudentsModal')).show();
-        };
-
-        // --- BY UNIV VIEW ---
-        const renderUnivList = () => {
-            const query = (document.getElementById('searchUniv')?.value || '').toLowerCase();
-            const container = document.getElementById('univGridContainer'); container.innerHTML = '';
-            let univs = []; let seen = new Set();
-            dataKatalog.forEach(d => { if(!seen.has(d.univ_code)) { seen.add(d.univ_code); univs.push({code: d.univ_code, nama: d.universitas, akronim: d.akronim, logo: d.logo_link}); } });
-
-            const filtered = univs.filter(u => u.nama.toLowerCase().includes(query) || (u.akronim && u.akronim.toLowerCase().includes(query)));
-            filtered.forEach(u => {
-                container.innerHTML += `<div class="col-6"><div class="card univ-card p-3 text-center" onclick="filterCatalogByUniv('${u.code}')"><img src="${u.logo || 'https://via.placeholder.com/60'}" class="card-logo mx-auto"><h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${u.akronim || 'UNIV'}</h6><small class="text-muted" style="font-size: 0.7rem;">${u.nama}</small></div></div>`;
-            });
-        };
-
-        // --- CATALOG LOGIC ---
-        let currentCatalogFilter = { search: '', status: '', skema: '', type: 'Semua', univCode: null };
-        const filterCatalogType = (type) => { currentCatalogFilter.type = type; currentCatalogFilter.univCode = null; renderCatalogUI(); };
-        const filterCatalogByUniv = (univCode) => { currentCatalogFilter.univCode = univCode; switchView('catalog'); renderCatalogUI(); };
-        
-        const filterCatalogAdv = () => {
-            currentCatalogFilter.search = document.getElementById('searchKatalog').value.toLowerCase();
-            currentCatalogFilter.status = document.getElementById('filterStatus').value;
-            currentCatalogFilter.skema = document.getElementById('filterSkema').value;
-            currentCatalogFilter.univCode = null; renderCatalogUI();
-        };
-
-        const resetKatalogFilter = () => {
-            document.getElementById('searchKatalog').value = ''; document.getElementById('filterStatus').value = ''; document.getElementById('filterSkema').value = '';
-            currentCatalogFilter = { search: '', status: '', skema: '', type: 'Semua', univCode: null };
-            document.querySelectorAll('.btn-filter').forEach(btn => { btn.classList.replace('btn-primary', 'btn-outline-primary'); if(btn.innerText === 'Semua') btn.classList.replace('btn-outline-primary', 'btn-primary'); });
-            renderCatalogUI();
-        };
-
-        const getJalurStatus = (item, now) => {
+        // 7. CATALOG LIST & DETAIL LOGIC
+        function getJalurStatus(item, now) {
             const pStart = new Date(item.pendaftaran_start);
             const pEnd = new Date(item.pendaftaran_end); pEnd.setHours(23,59,59,999);
             const uStart = item.ujian1_start ? new Date(item.ujian1_start) : pEnd;
@@ -1557,9 +1078,25 @@
                 infoHTML = `<div class="col-12 text-muted">Telah Diumumkan: <span class="fw-semibold">${formatDate(item.pengumuman1)}</span></div>`;
             }
             return { status, badgeClass, weight, opacityClass, infoHTML };
-        };
+        }
 
-        const renderCatalogUI = () => {
+        function filterCatalogType(type) { currentCatalogFilter.type = type; currentCatalogFilter.univCode = null; renderCatalogUI(); }
+        function filterCatalogByUniv(univCode) { currentCatalogFilter.univCode = univCode; switchView('catalog'); renderCatalogUI(); }
+        function filterCatalogAdv() {
+            currentCatalogFilter.search = document.getElementById('searchKatalog').value.toLowerCase();
+            currentCatalogFilter.status = document.getElementById('filterStatus').value;
+            currentCatalogFilter.skema = document.getElementById('filterSkema').value;
+            currentCatalogFilter.univCode = null; renderCatalogUI();
+        }
+
+        function resetKatalogFilter() {
+            document.getElementById('searchKatalog').value = ''; document.getElementById('filterStatus').value = ''; document.getElementById('filterSkema').value = '';
+            currentCatalogFilter = { search: '', status: '', skema: '', type: 'Semua', univCode: null };
+            document.querySelectorAll('.btn-filter').forEach(btn => { btn.classList.replace('btn-primary', 'btn-outline-primary'); if(btn.innerText === 'Semua') btn.classList.replace('btn-outline-primary', 'btn-primary'); });
+            renderCatalogUI();
+        }
+
+        function renderCatalogUI() {
             const container = document.getElementById('katalogContainer'); container.innerHTML = ''; const now = new Date();
 
             let catalogWithStatus = dataKatalog.map(item => ({ ...item, ...getJalurStatus(item, now) }));
@@ -1567,8 +1104,8 @@
             if(currentCatalogFilter.univCode) {
                 catalogWithStatus = catalogWithStatus.filter(d => d.univ_code === currentCatalogFilter.univCode);
             } else {
-                if(currentCatalogFilter.type && currentCatalogFilter.type !== 'Semua') catalogWithStatus = catalogWithStatus.filter(d => d.jalur === currentCatalogFilter.type);
-                if(currentCatalogFilter.search) catalogWithStatus = catalogWithStatus.filter(d => d.nama_jalur.toLowerCase().includes(currentCatalogFilter.search) || (d.universitas && d.universitas.toLowerCase().includes(currentCatalogFilter.search)) || (d.akronim && d.akronim.toLowerCase().includes(currentCatalogFilter.search)));
+                if(currentCatalogFilter.type && currentCatalogFilter.type !== 'Semua') catalogWithStatus = catalogWithStatus.filter(d => d.jenis_jalur === currentCatalogFilter.type);
+                if(currentCatalogFilter.search) catalogWithStatus = catalogWithStatus.filter(d => d.nama_jalur.toLowerCase().includes(currentCatalogFilter.search) || (d.universitas && d.universitas.toLowerCase().includes(currentCatalogFilter.search)));
                 if(currentCatalogFilter.status) {
                     if(currentCatalogFilter.status === 'Pendaftaran Tutup') catalogWithStatus = catalogWithStatus.filter(d => d.status === 'Pendaftaran Tutup');
                     else if(currentCatalogFilter.status === 'Sedang Dibuka') catalogWithStatus = catalogWithStatus.filter(d => d.status === 'Sedang Dibuka' || d.status.includes('Penutupan'));
@@ -1585,17 +1122,17 @@
             if(catalogWithStatus.length === 0) return container.innerHTML = '<div class="col-12 text-center text-muted py-4">Jalur tidak ditemukan. Coba hapus filter.</div>';
 
             catalogWithStatus.forEach((item) => {
-                let jTipeBadge = item.jalur === 'Mandiri' ? 'bg-warning text-dark' : (item.jalur === 'Nasional' ? 'bg-primary text-white' : 'bg-danger text-white');
+                let jTipeBadge = item.jenis_jalur === 'Mandiri' ? 'bg-warning text-dark' : (item.jenis_jalur === 'Nasional' ? 'bg-primary text-white' : 'bg-danger text-white');
                 let biayaNum = Number(item.biaya) || 0; let biayaMaxxNum = Number(item.biaya_maxx) || biayaNum;
                 let hargaTeks = biayaNum === biayaMaxxNum ? formatRupiah(biayaNum) : `${formatRupiah(biayaNum)} - ${formatRupiah(biayaMaxxNum)}`;
 
                 container.innerHTML += `
                     <div class="col-12 col-md-6 d-flex align-items-stretch">
-                        <div class="card katalog-card w-100 p-3 position-relative ${item.opacityClass}" onclick="openDetailByItemId(${item.index})">
+                        <div class="card katalog-card w-100 p-3 position-relative ${item.opacityClass}" onclick="openDetailByItemId('${item.index}')">
                             <span class="position-absolute top-0 end-0 badge ${item.badgeClass} m-3 shadow-sm">${item.status}</span>
                             <div class="d-flex align-items-center mb-3 mt-1">
                                 <img src="${item.logo_link || 'https://via.placeholder.com/45'}" class="card-logo me-3">
-                                <div><div class="d-flex align-items-center gap-2 mb-1"><h6 class="fw-bold mb-0 text-dark">${item.akronim || ''}</h6><span class="badge badge-jalur ${jTipeBadge}">${item.jalur || ''}</span></div><h5 class="card-title fw-bold text-primary mb-0 pe-4" style="font-size: 1.1rem; line-height: 1.2;">${item.nama_jalur}</h5></div>
+                                <div><div class="d-flex align-items-center gap-2 mb-1"><h6 class="fw-bold mb-0 text-dark">${item.universitas === 'Jalur Nasional' ? 'NASIONAL' : item.universitas.substring(0,10)}</h6><span class="badge badge-jalur ${jTipeBadge}">${item.jenis_jalur || ''}</span></div><h5 class="card-title fw-bold text-primary mb-0 pe-4" style="font-size: 1.1rem; line-height: 1.2;">${item.nama_jalur}</h5></div>
                             </div>
                             <div class="d-flex flex-wrap gap-1 mb-3"><span class="badge bg-light text-secondary border"><i class="fas fa-file-alt me-1"></i>${item.tipe_ujian || '-'}</span><span class="badge bg-light text-secondary border"><i class="fas fa-desktop me-1"></i>${item.skema || '-'}</span></div>
                             <div class="bg-white border rounded p-2 mb-3 small flex-grow-1"><div class="row g-1">${item.infoHTML}</div></div>
@@ -1604,21 +1141,19 @@
                         </div>
                     </div>`;
             });
-        };
+        }
 
-        const openDetailByItemId = (itemId) => { const dataIndex = dataKatalog.findIndex(d => d.index === itemId); if(dataIndex > -1) openDetail(dataIndex); };
+        function openDetailByItemId(itemId) { const dataIndex = dataKatalog.findIndex(d => d.index == itemId); if(dataIndex > -1) openDetail(dataIndex); }
 
-        // --- RENDER DYNAMIC PRODI FOLDER UI ---
-        const renderProdiSelectionArea = (item, dataIndex, isEdit) => {
+        function renderProdiSelectionArea(item, dataIndex, isEdit) {
             const container = document.getElementById('prodiSelectionContainer');
             
             if(Array.isArray(item.prodi_list) || (typeof item.prodi_list === 'string' && item.prodi_list && !item.prodi_list.startsWith('['))) {
                 let prodiTableRows = '';
                 const prodiList = Array.isArray(item.prodi_list) ? item.prodi_list : (item.prodi_list ? item.prodi_list.split(',') : []);
-                const dtList = item.daya_tampung ? item.daya_tampung.toString().split(',') : [];
+                const dtList = Array.isArray(item.daya_tampung) ? item.daya_tampung : (item.daya_tampung ? item.daya_tampung.toString().split(',') : []);
                 
-                // Cek ketersediaan daya_tampung
-                const hasDayaTampung = !!item.daya_tampung && dtList.length > 0;
+                const hasDayaTampung = dtList.length > 0;
                 const thDayaTampung = hasDayaTampung ? `<th class="text-center">Daya Tampung</th>` : '';
 
                 prodiList.forEach((prodiRaw, i) => {
@@ -1722,9 +1257,9 @@
                         </div>`;
                 }
             }
-        };
+        }
 
-        const toggleProdiStatic = (pr, max, dIdx, i) => {
+        function toggleProdiStatic(pr, max, dIdx, i) {
             const cb = document.getElementById(`cb_${dIdx}_${i}`);
             const badge = document.getElementById(`badge_${dIdx}_${i}`);
             const idx = currentDetailProdiSelection.indexOf(pr);
@@ -1739,19 +1274,19 @@
                 const pos = currentDetailProdiSelection.indexOf(p.trim());
                 if(b) { if(pos > -1) { b.innerText = pos + 1; b.style.display = 'inline-block'; } else { b.style.display = 'none'; } }
             });
-        };
+        }
 
-        const openFolderUniv = (slotIdx, dataIndex) => { activeSlotIndex = slotIdx; dynamicFolderUniv = null; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
-        const openFolderProdi = (univName, dataIndex) => { dynamicFolderUniv = univName; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
-        const closeFolderSlots = (dataIndex) => { activeSlotIndex = -1; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
-        const selectProdiForSlot = (val, dataIndex) => { currentDetailProdiSelection[activeSlotIndex] = val; activeSlotIndex = -1; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); showToast("Jurusan dipilih!", "success"); };
-        const clearSlot = (slotIdx, dataIndex) => { currentDetailProdiSelection[slotIdx] = ""; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); };
-        const filterFolderSearch = (className) => {
+        function openFolderUniv(slotIdx, dataIndex) { activeSlotIndex = slotIdx; dynamicFolderUniv = null; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); }
+        function openFolderProdi(univName, dataIndex) { dynamicFolderUniv = univName; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); }
+        function closeFolderSlots(dataIndex) { activeSlotIndex = -1; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); }
+        function selectProdiForSlot(val, dataIndex) { currentDetailProdiSelection[activeSlotIndex] = val; activeSlotIndex = -1; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); showToast("Jurusan dipilih!", "success"); }
+        function clearSlot(slotIdx, dataIndex) { currentDetailProdiSelection[slotIdx] = ""; renderProdiSelectionArea(dataKatalog[dataIndex], dataIndex); }
+        function filterFolderSearch(className) {
             const query = document.getElementById('folderSearch').value.toLowerCase();
             document.querySelectorAll('.' + className).forEach(el => { el.style.display = el.innerText.toLowerCase().includes(query) ? '' : 'none'; });
-        };
+        }
 
-        const openDetail = (dataIndex, isEdit = false, stuId = null, stuItemIdx = null) => {
+        function openDetail(dataIndex, isEdit = false, stuId = null, stuItemIdx = null) {
             const item = dataKatalog[dataIndex];
             if(!item) return;
 
@@ -1795,7 +1330,7 @@
             if(item.pengumuman2) timelineHTML += `<div class="list-timeline-item border-success"><h6 class="fw-bold mb-0 text-success">Pengumuman Tahap 2</h6><small class="text-muted">${formatDate(item.pengumuman2)}</small><p class="small mb-0 mt-1">${item.pengumuman2_keterangan || ''}</p></div>`;
 
             const syaratHtml = item.syarat ? item.syarat.replace(/\n/g, '<br>') : '-';
-            const materiHtml = item.materi_ujian ? item.materi_ujian.map(m => `<span class="badge bg-secondary me-1">${m}</span>`).join('') : '-';
+            const materiHtml = Array.isArray(item.materi_ujian) ? item.materi_ujian.map(m => `<span class="badge bg-secondary me-1">${m}</span>`).join('') : '-';
 
             document.getElementById('detailContent').innerHTML = `
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -1814,7 +1349,6 @@
                             <div class="col-md-5">
                                 <h6 class="fw-bold text-primary border-bottom pb-2">Jadwal Penting</h6><div class="mt-3">${timelineHTML}</div>
                                 <div class="p-3 bg-light rounded mt-3"><small class="text-muted d-block mb-1">Biaya Pendaftaran</small><h4 class="text-warning fw-bold mb-0">${biayaNum === 0 ? 'Gratis' : formatRupiah(biayaNum)}</h4></div>
-                                ${item.web ? `<a href="${item.web}" target="_blank" class="btn btn-outline-primary w-100 rounded-pill mt-3"><i class="fas fa-globe me-1"></i> Web Resmi</a>` : ''}
                             </div>
                         </div>
                     </div>
@@ -1832,39 +1366,248 @@
             
             renderProdiSelectionArea(item, dataIndex, isEdit);
             switchView('detail');
-        };
+        }
 
-        const checkoutPath = (dataIndex) => {
+        async function checkoutPath(dataIndex) {
             const item = dataKatalog[dataIndex];
             const cleanSelection = currentDetailProdiSelection.filter(x => x && x !== "");
 
             if(cleanSelection.length === 0) return showToast("Pilih minimal 1 prodi.", "warning");
             
+            document.getElementById('loadingOverlay').style.display = 'flex';
             if(editStudentId !== null) {
                 const s = students.find(x => x.id === editStudentId);
-                s.items[editItemIndex].prodiTerpilih = [...cleanSelection];
-                syncStudentToDB(s); 
-                showToast("Perubahan jurusan untuk " + s.nama + " berhasil disimpan!", "success");
+                const ps = s.items[editItemIndex];
+                await supabaseClient.from('pendaftaran_siswa').update({ prodi_terpilih: cleanSelection }).eq('id', ps.id_pendaftaran);
+                showToast("Perubahan jurusan berhasil disimpan!", "success");
             } else {
                 const sId = document.getElementById('selectStudentCheckout').value;
-                if(!sId) return showToast("Silakan pilih siswa dari dropdown.", "warning");
+                if(!sId) { document.getElementById('loadingOverlay').style.display = 'none'; return showToast("Silakan pilih siswa dari dropdown.", "warning"); }
 
-                const s = students.find(x => x.id == sId);
-                if(s.items.find(x => x.jalur.nama_jalur === item.nama_jalur)) return showToast("Siswa ini sudah didaftarkan pada jalur tersebut.", "warning");
+                const s = students.find(x => x.id === sId);
+                if(s.items.find(x => x.jalur.id === item.id)) { document.getElementById('loadingOverlay').style.display = 'none'; return showToast("Siswa ini sudah didaftarkan pada jalur tersebut.", "warning"); }
 
-                s.items.push({ jalur: item, prodiTerpilih: [...cleanSelection], statusDaftar: false, statusUjian: false });
-                syncStudentToDB(s);
+                await supabaseClient.from('pendaftaran_siswa').insert([{ siswa_id: sId, jalur_id: item.id, prodi_terpilih: cleanSelection }]);
                 showToast(`Berhasil disimpan ke profil ${s.panggilan}!`, "success");
             }
             goBack();
-        };
+            await initData();
+        }
 
-        // --- ALL TIMELINE ---
-        const getCalendarEventsHtml = (jalurs, curDate) => {
+        // 8. SISWA LOGIC
+        function renderSiswaList(sortType = currentSortType) {
+            currentSortType = sortType;
+            document.querySelectorAll('.sort-btn').forEach(btn => { btn.classList.remove('btn-secondary', 'text-white'); btn.classList.add('btn-outline-secondary'); });
+            event?.target?.closest('.sort-btn')?.classList.replace('btn-outline-secondary', 'btn-secondary');
+            event?.target?.closest('.sort-btn')?.classList.add('text-white');
+
+            const query = (document.getElementById('searchSiswa')?.value || '').toLowerCase();
+            const container = document.getElementById('siswaGridContainer'); container.innerHTML = '';
+            
+            let filtered = students.filter(s => s.nama.toLowerCase().includes(query) || s.panggilan.toLowerCase().includes(query));
+            if(sortType === 'nama') filtered.sort((a,b) => a.nama.localeCompare(b.nama));
+            if(sortType === 'kelas') filtered.sort((a,b) => a.kelas.localeCompare(b.kelas));
+            if(sortType === 'jalur') filtered.sort((a,b) => b.items.length - a.items.length);
+
+            if(filtered.length === 0) return container.innerHTML = '<div class="col-12 text-center text-muted py-5">Tidak ada siswa ditemukan.</div>';
+
+            filtered.forEach(s => {
+                const classColor = getBadgeColor(s.kelas);
+                let badgeJalursHtml = s.items.length > 0 ? s.items.slice(0, 3).map(it => `<span class="badge bg-light text-dark border me-1 mb-1 fw-normal" style="font-size:0.6rem;">${it.jalur.nama_jalur.substring(0, 20)}...</span>`).join('') : `<span class="text-muted" style="font-size:0.65rem;">Belum ada jalur yang didaftarkan.</span>`;
+                if(s.items.length > 3) badgeJalursHtml += `<span class="badge bg-secondary mb-1" style="font-size:0.6rem;">+${s.items.length - 3}</span>`;
+
+                container.innerHTML += `
+                    <div class="col-12 col-md-6">
+                        <div class="card siswa-card p-3 h-100" onclick="openStudentDetail('${s.id}')">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div><h6 class="fw-bold mb-1 text-primary">${s.nama}</h6><small class="text-muted"><i class="fas fa-bookmark me-1"></i>${s.items.length} Jalur Terdaftar</small></div>
+                                <div class="d-flex flex-column align-items-end gap-1">
+                                    <span class="badge ${classColor} fs-6 shadow-sm">${s.kelas}</span>
+                                    <div>
+                                        <button class="btn btn-sm btn-light text-primary px-2 py-1 border" onclick="event.stopPropagation(); editStudentInfo('${s.id}')"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-light text-danger px-2 py-1 border" onclick="event.stopPropagation(); deleteStudent('${s.id}')"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 pt-2 border-top">${badgeJalursHtml}</div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function showAddStudentModal() {
+            editingStudentIdForModal = null;
+            document.getElementById('formAddStudent').reset();
+            document.getElementById('modalStudentTitle').innerText = "Tambah Data Siswa";
+            new bootstrap.Modal(document.getElementById('addStudentModal')).show();
+        }
+
+        function editStudentInfo(id) {
+            editingStudentIdForModal = id;
+            const s = students.find(x => x.id === id);
+            document.getElementById('inpNama').value = s.nama;
+            document.getElementById('inpPanggilan').value = s.panggilan;
+            document.getElementById('inpKelas').value = s.kelas;
+            document.getElementById('inpSekolah').value = s.sekolah;
+            document.getElementById('inpEmail').value = s.email !== '-' ? s.email : '';
+            document.getElementById('inpAkunTO').value = s.akunTO !== '-' ? s.akunTO : '';
+            
+            document.getElementById('modalStudentTitle').innerText = "Edit Data Siswa";
+            new bootstrap.Modal(document.getElementById('addStudentModal')).show();
+        }
+
+        function deleteStudent(id) {
+            event.stopPropagation();
+            Swal.fire({ title: 'Hapus Data Siswa?', text: "Data siswa ini beserta seluruh pilihan jalurnya akan dihapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Ya, Hapus!' })
+            .then(async (result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    await supabaseClient.from('siswa').delete().eq('id', id);
+                    showToast("Data siswa berhasil dihapus.");
+                    await initData();
+                }
+            });
+        }
+        
+        async function saveNewStudent() {
+            const nama = document.getElementById('inpNama').value;
+            const panggilan = document.getElementById('inpPanggilan').value;
+            const kelas = document.getElementById('inpKelas').value;
+            const sekolah = document.getElementById('inpSekolah').value;
+            const email = document.getElementById('inpEmail').value || '-';
+            const akunTO = document.getElementById('inpAkunTO').value || '-';
+            
+            if(!nama || !panggilan || !kelas) return showToast("Lengkapi data penting (Nama, Panggilan, Kelas).", "warning");
+            
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            if(editingStudentIdForModal) {
+                await supabaseClient.from('siswa').update({ nama, panggilan, kelas, sekolah, email, akun_to: akunTO }).eq('id', editingStudentIdForModal);
+                showToast("Data siswa diperbarui!");
+            } else {
+                await supabaseClient.from('siswa').insert([{ nama, panggilan, kelas, sekolah, email, akun_to: akunTO }]);
+                showToast("Siswa berhasil ditambahkan!");
+            }
+            bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide();
+            await initData();
+        }
+
+        function openStudentDetail(id) {
+            currentStudentId = id; const s = students.find(x => x.id === id);
+            document.getElementById('sdName').innerText = s.nama; document.getElementById('sdClassSchool').innerText = `${s.kelas} | ${s.sekolah}`;
+            document.getElementById('sdEmail').innerText = s.email; document.getElementById('sdAkunTO').innerText = s.akunTO;
+            renderStudentItems(); switchView('siswa-detail');
+        }
+
+        function renderStudentItems() {
+            const s = students.find(x => x.id === currentStudentId);
+            const container = document.getElementById('sdItemsContainer');
+            let total = 0;
+
+            if(s.items.length === 0) {
+                container.innerHTML = `<div class="text-center py-5 text-muted"><p>Siswa belum didaftarkan ke jalur manapun.</p><button class="btn btn-outline-primary rounded-pill" onclick="switchView('catalog')">Cari Jalur Sekarang</button></div>`;
+            } else {
+                let html = '';
+                s.items.forEach((p, idx) => {
+                    const biayaNum = Number(p.jalur.biaya) || 0; total += biayaNum;
+                    const bDaftar = p.statusDaftar ? `<button class="btn btn-success status-btn me-1 small" style="font-size:0.75rem;" onclick="toggleStudentStatus('${s.id}', ${idx}, 'daftar')"><i class="fas fa-check"></i> Daftar</button>` : `<button class="btn btn-outline-primary status-btn me-1 small" style="font-size:0.75rem;" onclick="toggleStudentStatus('${s.id}', ${idx}, 'daftar')">Konfirmasi Daftar</button>`;
+                    const bUjian = !p.jalur.ujian1_start ? '' : (p.statusUjian ? `<button class="btn btn-success status-btn small" style="font-size:0.75rem;" onclick="toggleStudentStatus('${s.id}', ${idx}, 'ujian')"><i class="fas fa-check"></i> Ujian</button>` : `<button class="btn btn-outline-warning text-dark status-btn small" style="font-size:0.75rem;" onclick="toggleStudentStatus('${s.id}', ${idx}, 'ujian')">Konfirmasi Ujian</button>`);
+                    
+                    html += `
+                        <div class="card mb-3 rounded-4 shadow-sm border-0 bg-white">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <img src="${p.jalur.logo_link || 'https://via.placeholder.com/30'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded">
+                                        <h6 class="fw-bold mb-0 text-primary pe-2">${p.jalur.nama_jalur}</h6>
+                                    </div>
+                                    <div class="text-nowrap">
+                                        <button class="btn btn-sm btn-light text-primary me-1" onclick="editStudentItem('${s.id}', ${idx})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-light text-danger" onclick="deleteStudentItem('${s.id}', ${idx})"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div class="small mb-2">${p.prodiTerpilih.map((pr, i) => `<span class="badge bg-secondary border me-1 mb-1"><span class="text-warning">${i+1}.</span> ${pr}</span>`).join('')}</div>
+                                <div class="d-flex justify-content-between pt-2 border-top align-items-center flex-wrap gap-2"><div>${bDaftar}${bUjian}</div><span class="text-warning fw-bold small">${formatRupiah(biayaNum)}</span></div>
+                            </div>
+                        </div>`;
+                });
+                container.innerHTML = html;
+            }
+            document.getElementById('sdTotalBiaya').innerText = formatRupiah(total);
+        }
+
+        async function toggleStudentStatus(sId, idx, type) {
+            const s = students.find(x => x.id === sId); const ps = s.items[idx];
+            let updateData = {};
+            if(type === 'daftar') updateData = { status_daftar: !ps.statusDaftar };
+            if(type === 'ujian') updateData = { status_ujian: !ps.statusUjian };
+            ps[type === 'daftar' ? 'statusDaftar' : 'statusUjian'] = !ps[type === 'daftar' ? 'statusDaftar' : 'statusUjian'];
+            renderStudentItems(); 
+            await supabaseClient.from('pendaftaran_siswa').update(updateData).eq('id', ps.id_pendaftaran);
+        }
+
+        function deleteStudentItem(sId, idx) {
+            Swal.fire({ title: 'Hapus Pilihan Jalur?', text: "Jalur ini akan dihapus dari profil siswa.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Ya, Hapus!' })
+            .then(async (result) => {
+                if (result.isConfirmed) {
+                    const s = students.find(x => x.id === sId); const ps = s.items[idx];
+                    s.items.splice(idx,1); renderStudentItems(); 
+                    await supabaseClient.from('pendaftaran_siswa').delete().eq('id', ps.id_pendaftaran);
+                    showToast('Jalur berhasil dihapus dari siswa');
+                }
+            });
+        }
+
+        function editStudentItem(sId, idx) {
+            const s = students.find(x => x.id === sId); const item = s.items[idx];
+            const catIndex = dataKatalog.findIndex(d => d.id === item.jalur.id);
+            if(catIndex > -1) { openDetail(catIndex, true, sId, idx); } else { showToast("Data jalur ini tidak ditemukan di katalog.", "error"); }
+        }
+
+        // 9. TIMELINES (STUDENT & ALL)
+        function renderStudentTimeline() {
+            const s = students.find(x => x.id === currentStudentId);
+            let events = getTimelineEvents(s.items.map(it => it.jalur));
+            document.getElementById('sdTimelineContainer').innerHTML = generateTimelineListHTML(events);
+        }
+
+        function changeStudentMonth(dir) {
+            sdCurrentMonth += dir;
+            if(sdCurrentMonth > 11) { sdCurrentMonth = 0; sdCurrentYear++; }
+            if(sdCurrentMonth < 0) { sdCurrentMonth = 11; sdCurrentYear--; }
+            renderStudentCalendar();
+        }
+
+        function renderStudentCalendar() {
+            const s = students.find(x => x.id === currentStudentId);
+            if(!s) return;
+            const studentJalurs = s.items.map(it => it.jalur);
+
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const eMonthYear = document.getElementById('sdCalMonthYear');
+            if(eMonthYear) eMonthYear.innerText = `${monthNames[sdCurrentMonth]} ${sdCurrentYear}`;
+            
+            const firstDay = new Date(sdCurrentYear, sdCurrentMonth, 1).getDay();
+            const daysInMonth = new Date(sdCurrentYear, sdCurrentMonth + 1, 0).getDate();
+            
+            let calHtml = `<div class="calendar-header border-bottom">Min</div><div class="calendar-header border-bottom">Sen</div><div class="calendar-header border-bottom">Sel</div><div class="calendar-header border-bottom">Rab</div><div class="calendar-header border-bottom">Kam</div><div class="calendar-header border-bottom">Jum</div><div class="calendar-header border-bottom">Sab</div>`;
+            for(let i=0; i<firstDay; i++) calHtml += '<div class="calendar-day empty"></div>';
+            
+            const today = new Date();
+            for(let i=1; i<=daysInMonth; i++) {
+                const curDate = new Date(sdCurrentYear, sdCurrentMonth, i);
+                let isToday = (today.getDate()===i && today.getMonth()===sdCurrentMonth && today.getFullYear()===sdCurrentYear) ? 'today' : '';
+                let eventsHtml = getCalendarEventsHtml(studentJalurs, curDate);
+                
+                calHtml += `<div class="calendar-day ${isToday}" onclick="openCalEvent(${i}, true)"><span class="fw-bold mb-1" style="font-size:0.8rem">${i}</span><div class="w-100 d-flex flex-column gap-1 overflow-hidden px-1">${eventsHtml}</div></div>`;
+            }
+            const eCalGrid = document.getElementById('sdCalendarGridContainer');
+            if(eCalGrid) eCalGrid.innerHTML = `<div class="calendar-grid">${calHtml}</div>`;
+        }
+
+        function getCalendarEventsHtml(jalurs, curDate) {
             let eventsHtml = '';
             jalurs.forEach(j => {
                 const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
-                
                 const checkRange = (ds, de, t, c, isPendaftaran = false) => {
                     if(!ds) return;
                     let s = new Date(ds); s.setHours(0,0,0,0);
@@ -1891,9 +1634,9 @@
                 checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman Tahap 2', 'bg-success');
             });
             return eventsHtml;
-        };
+        }
 
-        const getTimelineEvents = (sourceArray) => {
+        function getTimelineEvents(sourceArray) {
             let events = [];
             sourceArray.forEach(item => {
                 const hasTahap2 = !!item.ujian2_start || !!item.pengumuman2;
@@ -1907,9 +1650,9 @@
                 if(item.pengumuman2) events.push({ type: 'Pengumuman Tahap 2', date: new Date(item.pengumuman2), item: item, color: 'text-success', bg: 'border-success' });
             });
             return events.sort((a, b) => a.date - b.date);
-        };
+        }
 
-        const generateTimelineListHTML = (events) => {
+        function generateTimelineListHTML(events) {
             if(events.length === 0) return '<p class="text-muted text-center py-3">Tidak ada agenda.</p>';
             let html = '', currentMonth = '';
             events.forEach(ev => {
@@ -1927,12 +1670,9 @@
                     </div>`;
             });
             return html;
-        };
+        }
 
-        let currentMonth = new Date().getMonth(); 
-        let currentYear = new Date().getFullYear();
-
-        const renderTimelineAll = () => {
+        function renderTimelineAll() {
             document.getElementById('listTimelineAllContainer').innerHTML = generateTimelineListHTML(getTimelineEvents(dataKatalog));
 
             let sortedKatalog = [...dataKatalog].sort((a, b) => new Date(a.pendaftaran_start) - new Date(b.pendaftaran_start));
@@ -1989,16 +1729,16 @@
             document.getElementById('ganttContainer').innerHTML = `<div class="gantt-wrapper"><table class="gantt-table"><thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody></table></div>`;
 
             renderCalendar();
-        };
+        }
 
-        const changeMonth = (dir) => {
+        function changeMonth(dir) {
             currentMonth += dir;
             if(currentMonth > 11) { currentMonth = 0; currentYear++; }
             if(currentMonth < 0) { currentMonth = 11; currentYear--; }
             renderCalendar();
-        };
+        }
 
-        const renderCalendar = () => {
+        function renderCalendar() {
             const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const eMonthYear = document.getElementById('calMonthYear');
             if(eMonthYear) eMonthYear.innerText = `${monthNames[currentMonth]} ${currentYear}`;
@@ -2006,62 +1746,22 @@
             const firstDay = new Date(currentYear, currentMonth, 1).getDay();
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             
-            let calHtml = `
-                <div class="calendar-header border-bottom">Min</div><div class="calendar-header border-bottom">Sen</div><div class="calendar-header border-bottom">Sel</div>
-                <div class="calendar-header border-bottom">Rab</div><div class="calendar-header border-bottom">Kam</div><div class="calendar-header border-bottom">Jum</div><div class="calendar-header border-bottom">Sab</div>
-            `;
-            
+            let calHtml = `<div class="calendar-header border-bottom">Min</div><div class="calendar-header border-bottom">Sen</div><div class="calendar-header border-bottom">Sel</div><div class="calendar-header border-bottom">Rab</div><div class="calendar-header border-bottom">Kam</div><div class="calendar-header border-bottom">Jum</div><div class="calendar-header border-bottom">Sab</div>`;
             for(let i=0; i<firstDay; i++) calHtml += '<div class="calendar-day empty"></div>';
             
             const today = new Date();
             for(let i=1; i<=daysInMonth; i++) {
                 const curDate = new Date(currentYear, currentMonth, i);
                 let isToday = (today.getDate()===i && today.getMonth()===currentMonth && today.getFullYear()===currentYear) ? 'today' : '';
-                
                 let eventsHtml = getCalendarEventsHtml(dataKatalog, curDate);
                 
-                calHtml += `
-                    <div class="calendar-day ${isToday}" onclick="openCalEvent(${i}, false)">
-                        <span class="fw-bold mb-1" style="font-size:0.8rem">${i}</span>
-                        <div class="w-100 d-flex flex-column gap-1 overflow-hidden px-1">${eventsHtml}</div>
-                    </div>`;
+                calHtml += `<div class="calendar-day ${isToday}" onclick="openCalEvent(${i}, false)"><span class="fw-bold mb-1" style="font-size:0.8rem">${i}</span><div class="w-100 d-flex flex-column gap-1 overflow-hidden px-1">${eventsHtml}</div></div>`;
             }
             const eCalGrid = document.getElementById('calendarGridContainer');
             if(eCalGrid) eCalGrid.innerHTML = `<div class="calendar-grid">${calHtml}</div>`;
-        };
+        }
 
-        const getCalEventListHtml = (jalurs, curDate) => {
-            let html = '';
-            jalurs.forEach(j => {
-                const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
-                const checkRange = (ds, de, t, c, isPendaftaran = false) => {
-                    if(!ds) return;
-                    let s = new Date(ds); s.setHours(0,0,0,0);
-                    let e = de ? new Date(de) : new Date(s); e.setHours(23,59,59,999);
-                    
-                    if (isPendaftaran) {
-                        let endDayStart = new Date(e); endDayStart.setHours(0,0,0,0);
-                        if (curDate >= s && curDate < endDayStart) {
-                            html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-primary"><span class="badge bg-primary me-2">Masa Daftar</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
-                        } else if (curDate >= endDayStart && curDate <= e) {
-                            html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-danger"><span class="badge bg-danger me-2">Tutup Daftar</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
-                        }
-                    } else {
-                        if(curDate >= s && curDate <= e) {
-                            html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-${c.split('-')[1] || c.split(' ')[0].replace('bg-','')}"><span class="badge ${c} me-2">${t}</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
-                        }
-                    }
-                };
-                checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary', true);
-                checkRange(j.ujian1_start, j.ujian1_end, hasTahap2 ? 'Ujian Tahap 1' : 'Ujian', 'bg-warning text-dark');
-                checkRange(j.pengumuman1, j.pengumuman1, hasTahap2 ? 'Pengumuman Tahap 1' : 'Pengumuman', 'bg-success');
-                checkRange(j.ujian2_start, j.ujian2_end, 'Ujian Tahap 2', 'bg-warning text-dark');
-                checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman Tahap 2', 'bg-success');
-            });
-            return html;
-        };
-
-        const openCalEvent = (day, isStudent = false) => {
+        function openCalEvent(day, isStudent = false) {
             let y = isStudent ? sdCurrentYear : currentYear;
             let m = isStudent ? sdCurrentMonth : currentMonth;
             const curDate = new Date(y, m, day);
@@ -2079,14 +1779,15 @@
             
             const calModalEl = document.getElementById('calEventModal');
             if(calModalEl) new bootstrap.Modal(calModalEl).show();
-        };
+        }
 
-        // RUN ON LOAD
-        if ('serviceWorker' in navigator) {
+        // 11. RUN ON LOAD
+        if ('serviceWorker' in navigator && window.location.protocol !== 'blob:') {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(error => console.error('Pendaftaran ServiceWorker gagal:', error));
+                navigator.serviceWorker.register('./sw.js').catch(error => console.log('ServiceWorker dimatikan di lingkungan Canvas.'));
             });
         }
+        
         document.addEventListener('DOMContentLoaded', () => { 
             initData(); 
         });
