@@ -293,7 +293,7 @@
                         <div class="card border-0 shadow-sm rounded-4">
                             <div class="card-body p-4">
                                 <h6 class="fw-bold text-primary mb-3"><i class="fas fa-tasks me-2"></i>Daftar Materi Ujian</h6>
-                                <p class="small text-muted mb-4">Daftar silabus materi di bawah disusun secara otomatis berdasarkan jalur yang ada di keranjang Anda.</p>
+                                <p class="small text-muted mb-4">Daftar silabus materi di bawah disusun secara otomatis berdasarkan jalur yang Anda daftarkan.</p>
                                 <div class="accordion accordion-flush" id="rekapMateriAccordion"></div>
                             </div>
                         </div>
@@ -1702,7 +1702,7 @@
                     students.forEach(s => { studentOpts += `<option value="${s.id}">${s.nama||'Siswa'} (${s.kelas||'-'})</option>`; });
                     actionSection = `<h6 class="fw-bold text-primary mb-2">Tambahkan ke Akun Siswa:</h6><select class="form-select rounded-pill mb-3" id="selectStudentCheckout">${studentOpts}</select><button class="btn btn-gradient w-100 py-3 fw-bold" onclick="checkoutPath(${dataIndex})"><i class="fas fa-bookmark me-2"></i>Simpan ke Siswa</button>`;
                 } else if (currentUserRole === 'siswa') {
-                    actionSection = `<button class="btn btn-gradient w-100 py-3 fw-bold" onclick="checkoutPathSiswa('${item.id}')"><i class="fas fa-bookmark me-2"></i>Masukkan ke Keranjang Saya</button>`;
+                    actionSection = `<button class="btn btn-gradient w-100 py-3 fw-bold" onclick="checkoutPathSiswa('${item.id}')"><i class="fas fa-bookmark me-2"></i>Daftar Jalur</button>`;
                 }
 
                 let attachHtml = '';
@@ -1900,10 +1900,10 @@
                 document.getElementById('loadingOverlay').style.display = 'flex';
                 const mySiswaId = currentUserProfile.id;
                 const { data: exist } = await supabaseClient.from('pendaftaran_siswa').select('id').eq('siswa_id', mySiswaId).eq('jalur_id', katalogId);
-                if(exist && exist.length > 0) { document.getElementById('loadingOverlay').style.display = 'none'; return showToast("Sudah ada di keranjang.", "warning"); }
+                if(exist && exist.length > 0) { document.getElementById('loadingOverlay').style.display = 'none'; return showToast("Sudah ada di daftar jalur pilihan.", "warning"); }
 
                 await supabaseClient.from('pendaftaran_siswa').insert([{ siswa_id: mySiswaId, jalur_id: katalogId, prodi_terpilih: currentDetailProdiSelection }]);
-                showToast(`Berhasil masuk ke keranjang!`, "success"); goBack(); await initData();
+                showToast(`Berhasil masuk ke daftar jalur pilihan!`, "success"); goBack(); await initData();
             } catch(e) { console.error(e); document.getElementById('loadingOverlay').style.display = 'none'; }
         }
 
@@ -2061,7 +2061,7 @@
 
         function renderRekapMateri() {
             const s = students.find(x => x.id === currentStudentId); const container = document.getElementById('rekapMateriAccordion');
-            if(!s || (s.items||[]).length === 0) return container.innerHTML = '<p class="text-muted small">Keranjang kosong, tidak ada materi yang perlu disiapkan.</p>';
+            if(!s || (s.items||[]).length === 0) return container.innerHTML = '<p class="text-muted small">Belum ada jalur dipilih, tidak ada materi yang perlu disiapkan.</p>';
 
             let aggregatedMateri = {};
             s.items.forEach(p => {
