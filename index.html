@@ -99,6 +99,8 @@
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        
+        .campus-group-header { background-color: #e9ecef; font-weight: bold; font-size: 0.85rem; padding: 5px 10px; border-radius: 5px; margin-top: 10px; margin-bottom: 5px;}
     </style>
 </head>
 <body>
@@ -369,32 +371,49 @@
                             <!-- Basic Info -->
                             <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Informasi Umum & Universitas</h6>
                             <div class="row g-3 mb-3 align-items-end">
-                                <div class="col-md-6">
-                                    <label class="form-label small text-muted fw-bold">Universitas Master</label>
-                                    <select class="form-select shadow-sm" id="inpKatUnivSelect" onchange="handleUnivSelectChange()"></select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label small text-muted">Kode Internal / Web</label>
-                                    <input type="text" class="form-control bg-light" id="inpKatUnivCode" readonly placeholder="Otomatis dari master kampus...">
-                                </div>
-                                <div class="col-md-2 text-center">
-                                    <img id="previewKatLogo" src="https://via.placeholder.com/45" style="width:45px;height:45px;object-fit:contain;" class="border rounded bg-white shadow-sm p-1">
-                                    <input type="hidden" id="inpKatLogoLink">
-                                </div>
-                                
-                                <div class="col-md-6 mt-3">
-                                    <label class="form-label small text-muted fw-bold">Nama Jalur Pendaftaran</label>
-                                    <input type="text" class="form-control" id="inpKatNama" required placeholder="Contoh: UM UGM CBT Gelombang 1">
-                                </div>
-                                <div class="col-md-6 mt-3">
-                                    <label class="form-label small text-muted">Jenis Jalur</label>
-                                    <select class="form-select" id="inpKatJalur">
-                                        <option value="Nasional">Nasional</option>
+                                <!-- Jenis Jalur Ditaruh Paling Atas agar memicu logika UI -->
+                                <div class="col-md-12">
+                                    <label class="form-label small text-muted fw-bold">Jenis Jalur Masuk</label>
+                                    <select class="form-select shadow-sm border-primary" id="inpKatJalur" onchange="handleJenisJalurChange()">
                                         <option value="Mandiri" selected>Mandiri</option>
+                                        <option value="Nasional">Nasional (SNBP/SNBT)</option>
                                         <option value="IUP/KKI">IUP/KKI</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                
+                                <!-- Single Univ Selector (Mandiri & IUP) -->
+                                <div class="col-md-6" id="wrapperUnivSingle">
+                                    <label class="form-label small text-muted">Pilih Universitas</label>
+                                    <select class="form-select shadow-sm" id="inpKatUnivSelect" onchange="handleUnivSelectChange()"></select>
+                                </div>
+
+                                <!-- Multi Univ Selector (Nasional) -->
+                                <div class="col-md-12" id="wrapperUnivMulti" style="display: none;">
+                                    <label class="form-label small text-muted">Pilih Universitas yang Tergabung (Bisa Lebih dari Satu)</label>
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center bg-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                                            <span id="univMultiSelectText">Pilih Universitas...</span><i class="fas fa-chevron-down"></i>
+                                        </button>
+                                        <ul class="dropdown-menu w-100 p-2 shadow custom-scroll" id="univMultiDropdownMenu" style="max-height: 250px; overflow-y: auto;"></ul>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4" id="wrapperUnivCode">
+                                    <label class="form-label small text-muted">Kode Internal</label>
+                                    <input type="text" class="form-control bg-light" id="inpKatUnivCode" readonly>
+                                </div>
+                                
+                                <div class="col-md-2 text-center" id="wrapperLogoPreview">
+                                    <img id="previewKatLogo" src="https://via.placeholder.com/45" style="width:45px;height:45px;object-fit:contain;" class="border rounded bg-white shadow-sm p-1" onclick="promptCustomLogo()" title="Klik untuk ubah URL Logo">
+                                    <input type="hidden" id="inpKatLogoLink">
+                                    <small class="d-block text-muted" style="font-size:0.6rem">Klik u/ Ubah</small>
+                                </div>
+                                
+                                <div class="col-md-6 mt-3" id="wrapperKatNama">
+                                    <label class="form-label small text-muted fw-bold">Nama Jalur Pendaftaran</label>
+                                    <input type="text" class="form-control" id="inpKatNama" required placeholder="Contoh: SNBT 2026">
+                                </div>
+                                <div class="col-md-3 mt-3">
                                     <label class="form-label small text-muted">Tipe Seleksi</label>
                                     <select class="form-select" id="inpKatTipe">
                                         <option value="Tes Tulis">Tes Tulis</option>
@@ -403,7 +422,7 @@
                                         <option value="Mitra">Mitra</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3 mt-3">
                                     <label class="form-label small text-muted">Skema</label>
                                     <select class="form-select" id="inpKatSkema">
                                         <option value="Tes Luring">Tes Luring</option>
@@ -413,13 +432,14 @@
                                     </select>
                                 </div>
 
-                                <div class="col-12 mt-3">
+                                <div class="col-12 mt-3" id="wrapperProgramCb">
                                     <label class="form-label small text-muted fw-bold border-bottom pb-1 w-100">Program / Jenjang yang Dibuka</label>
                                     <div class="d-flex flex-wrap gap-3">
-                                        <div class="form-check"><input class="form-check-input prog-cb" type="checkbox" value="Sarjana" id="prog_s1" checked><label class="form-check-label" for="prog_s1">Sarjana (S1)</label></div>
-                                        <div class="form-check"><input class="form-check-input prog-cb" type="checkbox" value="Sarjana Terapan" id="prog_d4"><label class="form-check-label" for="prog_d4">Sarjana Terapan (D4)</label></div>
-                                        <div class="form-check"><input class="form-check-input prog-cb" type="checkbox" value="Diploma Tiga" id="prog_d3"><label class="form-check-label" for="prog_d3">Diploma Tiga (D3)</label></div>
-                                        <div class="form-check"><input class="form-check-input prog-cb" type="checkbox" value="PSDKU" id="prog_psdku"><label class="form-check-label" for="prog_psdku">PSDKU</label></div>
+                                        <div class="form-check"><input class="form-check-input prog-cb" type="checkbox" value="sarjana" id="prog_s1" checked><label class="form-check-label" for="prog_s1">Sarjana (S1)</label></div>
+                                        <div class="form-check"><input class="form-check-input prog-cb" type="checkbox" value="sarjana terapan" id="prog_d4"><label class="form-check-label" for="prog_d4">Sarjana Terapan (D4)</label></div>
+                                        <div class="form-check"><input class="form-check-input prog-cb" type="checkbox" value="diploma tiga" id="prog_d3"><label class="form-check-label" for="prog_d3">Diploma Tiga (D3)</label></div>
+                                        <div class="form-check" id="cbIupContainer"><input class="form-check-input prog-cb" type="checkbox" value="iup" id="prog_iup"><label class="form-check-label" for="prog_iup">IUP/KKI</label></div>
+                                        <div class="form-check border-start ps-3 ms-2"><input class="form-check-input psdku-cb" type="checkbox" value="PSDKU" id="prog_psdku"><label class="form-check-label text-warning text-dark fw-semibold" for="prog_psdku">PSDKU</label></div>
                                     </div>
                                 </div>
 
@@ -465,12 +485,15 @@
                                 
                                 <div class="col-12 mt-3 p-3 bg-light rounded border">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label class="form-label small text-muted mb-0"><i class="fas fa-magic text-warning me-1"></i>Tarik otomatis daftar prodi berdasarkan Kampus & Jenjang yang dicentang.</label>
-                                        <button type="button" class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="generateProdiTable()"><i class="fas fa-sync-alt me-1"></i> Tarik Prodi Master</button>
+                                        <label class="form-label small text-muted mb-0"><i class="fas fa-magic text-warning me-1"></i>Tarik otomatis daftar prodi berdasarkan parameter di atas.</label>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm me-1" onclick="copyProdiToClipboard()" title="Copy untuk Excel"><i class="fas fa-copy"></i> Copy Data</button>
+                                            <button type="button" class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="generateProdiTable()"><i class="fas fa-sync-alt me-1"></i> Tarik Prodi Master</button>
+                                        </div>
                                     </div>
-                                    <div class="table-responsive" style="max-height: 300px;">
+                                    <div class="table-responsive" style="max-height: 350px;">
                                         <table class="table table-bordered table-sm bg-white mb-0">
-                                            <thead class="table-light" style="position:sticky; top:0;">
+                                            <thead class="table-light" style="position:sticky; top:0; z-index:2;">
                                                 <tr><th>Nama Program Studi</th><th style="width:140px;">Daya Tampung</th><th style="width:40px;" class="text-center"><i class="fas fa-cog"></i></th></tr>
                                             </thead>
                                             <tbody id="prodiInputTbody"></tbody>
@@ -622,6 +645,8 @@
         let currentSortType = 'nama'; let currentCatalogFilter = { search: '', status: '', skema: '', type: 'Semua', univCode: null }; let editingKatalogIndex = null;
         let sdCurrentMonth = new Date().getMonth(); let sdCurrentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth(); let currentYear = new Date().getFullYear();
+        
+        let currentActiveFolder = null; // Menyimpan status folder kampus yang aktif di detail nasional
 
         // ==========================================
         // 3. UTILITIES
@@ -765,28 +790,64 @@
         }
 
         // ==========================================
-        // 5. DATA FETCHING (SUPABASE)
+        // 5. DATA FETCHING (SUPABASE) - WITH PAGINATION
         // ==========================================
         async function initData() {
             try {
-                updateLoading("Menarik Data Master...");
-                const { data: dbKampus } = await supabaseClient.from('kampus').select('*');
+                updateLoading("Menarik Data Kampus & Materi...");
+                const { data: dbKampus } = await supabaseClient.from('kampus').select('*').limit(2000);
                 if (dbKampus) daftarKampus = dbKampus;
 
-                const { data: dbMateri } = await supabaseClient.from('materi_ujian').select('*');
+                const { data: dbMateri } = await supabaseClient.from('materi_ujian').select('*').limit(2000);
                 if (dbMateri) daftarMateri = dbMateri;
 
-                const { data: pData } = await supabaseClient.from('prodi').select('*');
-                masterProdi = pData || [];
+                updateLoading("Menarik Kamus Jurusan (Prodi)...");
+                let allProdi = [];
+                let fetchMore = true;
+                let from = 0;
+                const pageSize = 1000;
+                
+                // Menangani Limit 1000 Supabase dengan perulangan
+                while(fetchMore) {
+                    const { data: pData, error } = await supabaseClient
+                        .from('prodi')
+                        .select('*')
+                        .range(from, from + pageSize - 1);
+                        
+                    if (error) {
+                        console.error("Prodi fetch error:", error);
+                        break;
+                    }
+                    
+                    if (pData && pData.length > 0) {
+                        allProdi = allProdi.concat(pData);
+                        from += pageSize;
+                        if (pData.length < pageSize) fetchMore = false;
+                    } else {
+                        fetchMore = false;
+                    }
+                }
+                
+                masterProdi = allProdi.map(p => ({
+                    ...p, 
+                    is_psdku: p.is_psdku === true || String(p.is_psdku).toLowerCase() === 'true'
+                }));
 
                 updateLoading("Menarik Data Katalog...");
-                const { data: dbKatalog } = await supabaseClient.from('katalog_jalur').select('*, kampus(nama, univ_code, logo_link)');
+                const { data: dbKatalog } = await supabaseClient.from('katalog_jalur').select('*, kampus(nama, univ_code, logo_link)').limit(5000);
                 if (dbKatalog) {
                     dataKatalog = dbKatalog.map(item => {
                         let mapped = { ...item };
                         mapped.universitas = item.kampus ? item.kampus.nama : 'Jalur Nasional';
                         mapped.univ_code = item.kampus ? item.kampus.univ_code : '';
-                        mapped.logo_link = item.kampus ? item.kampus.logo_link : '';
+                        
+                        if(!item.kampus_id && typeof item.attachment === 'string' && item.attachment.includes('custom_logo')) {
+                            try { const attObj = JSON.parse(item.attachment); mapped.logo_link = attObj.custom_logo || 'https://via.placeholder.com/60'; } catch(e){ mapped.logo_link = 'https://via.placeholder.com/60'; }
+                        } else if (!item.kampus_id && item.attachment && item.attachment.custom_logo) {
+                            mapped.logo_link = item.attachment.custom_logo;
+                        } else {
+                            mapped.logo_link = item.kampus ? item.kampus.logo_link : 'https://via.placeholder.com/60';
+                        }
                         
                         mapped.materi_ujian_names = [];
                         if (item.materi_ids && Array.isArray(item.materi_ids)) {
@@ -800,7 +861,7 @@
                         if(!mapped.kuota_prodi) mapped.kuota_prodi = {};
                         
                         if(typeof mapped.attachment === 'string') { try{ mapped.attachment = JSON.parse(mapped.attachment); } catch(e){ mapped.attachment = []; } }
-                        if(!mapped.attachment) mapped.attachment = [];
+                        if(!Array.isArray(mapped.attachment)) mapped.attachment = mapped.attachment && mapped.attachment.files ? mapped.attachment.files : [];
                         
                         return mapped;
                     });
@@ -810,7 +871,7 @@
                 let querySiswa = supabaseClient.from('siswa').select(`
                     *, profil_pengguna (nama_lengkap, email),
                     pendaftaran_siswa ( id, prodi_terpilih, status_daftar, status_ujian, katalog_jalur ( *, kampus(nama, univ_code, logo_link) ) )
-                `);
+                `).limit(10000);
                 if (currentUserRole === 'siswa') querySiswa = querySiswa.eq('id', currentUserProfile.id);
 
                 const { data: dbSiswa } = await querySiswa;
@@ -823,7 +884,13 @@
                                 let kj = ps.katalog_jalur; 
                                 if(kj){
                                     let mappedJalur = { ...kj };
-                                    mappedJalur.universitas = kj.kampus ? kj.kampus.nama : 'Jalur Nasional'; mappedJalur.logo_link = kj.kampus ? kj.kampus.logo_link : '';
+                                    mappedJalur.universitas = kj.kampus ? kj.kampus.nama : 'Jalur Nasional'; 
+                                    
+                                    if(!kj.kampus_id && kj.attachment && kj.attachment.custom_logo) mappedJalur.logo_link = kj.attachment.custom_logo;
+                                    else if(!kj.kampus_id && typeof kj.attachment === 'string' && kj.attachment.includes('custom_logo')) {
+                                        try{ mappedJalur.logo_link = JSON.parse(kj.attachment).custom_logo || 'https://via.placeholder.com/60'; }catch(e){ mappedJalur.logo_link = 'https://via.placeholder.com/60'; }
+                                    } else mappedJalur.logo_link = kj.kampus ? kj.kampus.logo_link : 'https://via.placeholder.com/60';
+
                                     let pt = ps.prodi_terpilih;
                                     if (typeof pt === 'string') { try { pt = JSON.parse(pt); } catch(e) { pt = []; } }
                                     return { id_pendaftaran: ps.id, jalur: mappedJalur, prodiTerpilih: Array.isArray(pt) ? pt : [], statusDaftar: ps.status_daftar, statusUjian: ps.status_ujian };
@@ -834,6 +901,7 @@
                     });
                 }
 
+                // Render components that depend on master data
                 renderUnivDropdownOptions();
                 renderMateriDropdown();
                 setupPasteHandler();
@@ -988,7 +1056,7 @@
 
                 let analytics = {}; let maxTotalUniv = 0;
                 allJalurs.forEach(j => {
-                    const uName = j.akronim || j.universitas || 'Lainnya';
+                    const uName = j.universitas === 'Jalur Nasional' ? 'NASIONAL' : (j.akronim || j.universitas || 'Lainnya');
                     if(!analytics[uName]) analytics[uName] = { logo: j.logo_link, total: 0, jalurs: {} };
                     analytics[uName].total += 1;
                     if(analytics[uName].total > maxTotalUniv) maxTotalUniv = analytics[uName].total;
@@ -1139,30 +1207,102 @@
         // ==========================================
         // 8. ADD/EDIT KATALOG LOGIC (UI ENTRY)
         // ==========================================
-        function renderUnivDropdownOptions() {
+        function handleJenisJalurChange() {
+            const val = document.getElementById('inpKatJalur').value;
+            const wrapSingle = document.getElementById('wrapperUnivSingle');
+            const wrapMulti = document.getElementById('wrapperUnivMulti');
+            const wrapCode = document.getElementById('wrapperUnivCode');
+            const wrapNama = document.getElementById('wrapperKatNama');
+            const wrapLogo = document.getElementById('wrapperLogoPreview');
+            const cbIup = document.getElementById('cbIupContainer');
+            
+            document.querySelectorAll('.prog-cb').forEach(cb => { cb.parentElement.style.display = 'block'; });
+
+            if(val === 'Nasional') {
+                wrapSingle.style.display = 'none'; wrapCode.style.display = 'none'; wrapMulti.style.display = 'block';
+                document.getElementById('inpKatUnivSelect').value = ''; document.getElementById('inpKatUnivCode').value = '';
+                cbIup.style.display = 'block';
+                
+                wrapLogo.className = "col-md-2 text-center mt-3"; wrapNama.className = "col-md-4 mt-3";
+                renderMultiSelectUniv();
+            } else if (val === 'IUP/KKI') {
+                wrapSingle.style.display = 'block'; wrapCode.style.display = 'block'; wrapMulti.style.display = 'none';
+                wrapLogo.className = "col-md-2 text-center"; wrapNama.className = "col-md-6 mt-3";
+
+                document.querySelectorAll('.prog-cb').forEach(cb => {
+                    if(cb.value === 'iup') { cb.checked = true; cb.parentElement.style.display = 'block'; }
+                    else { cb.checked = false; cb.parentElement.style.display = 'none'; }
+                });
+                renderUnivDropdownOptions(true); 
+            } else { 
+                wrapSingle.style.display = 'block'; wrapCode.style.display = 'block'; wrapMulti.style.display = 'none';
+                cbIup.style.display = 'none'; if(document.getElementById('prog_iup')) document.getElementById('prog_iup').checked = false;
+                wrapLogo.className = "col-md-2 text-center"; wrapNama.className = "col-md-6 mt-3";
+                renderUnivDropdownOptions(false);
+            }
+        }
+
+        function renderMultiSelectUniv() {
+            const menu = document.getElementById('univMultiDropdownMenu'); if(!menu) return;
+            let html = '';
+            daftarKampus.sort((a,b) => (a.nama||'').localeCompare(b.nama||'')).forEach(u => {
+                html += `<li><div class="form-check px-3 py-1"><input class="form-check-input univ-multi-cb" type="checkbox" value="${u.id}" id="umul_${u.id}"><label class="form-check-label w-100 small" for="umul_${u.id}">${u.nama}</label></div></li>`;
+            });
+            menu.innerHTML = html;
+            document.querySelectorAll('.univ-multi-cb').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const len = document.querySelectorAll('.univ-multi-cb:checked').length;
+                    document.getElementById('univMultiSelectText').innerText = len > 0 ? `${len} Kampus Dipilih` : 'Pilih Universitas...';
+                });
+            });
+        }
+
+        function renderUnivDropdownOptions(onlyIUP = false) {
             const sel = document.getElementById('inpKatUnivSelect'); if(!sel) return;
             let opts = `<option value="">-- Pilih Universitas --</option>`;
-            daftarKampus.sort((a,b) => (a.nama||'').localeCompare(b.nama||'')).forEach(u => { opts += `<option value="${u.id}" data-code="${u.univ_code||''}" data-logo="${u.logo_link||''}">${u.nama||''}</option>`; });
+            
+            let filteredKampus = daftarKampus;
+            if (onlyIUP) {
+                const iupKampusIds = [...new Set(masterProdi.filter(p => {
+                    const pj = (p.jenjang || '').toLowerCase().trim();
+                    return pj === 'iup';
+                }).map(p => p.kampus_id))];
+                filteredKampus = daftarKampus.filter(k => iupKampusIds.includes(k.id));
+            }
+
+            filteredKampus.sort((a,b) => (a.nama||'').localeCompare(b.nama||'')).forEach(u => { 
+                opts += `<option value="${u.id}" data-code="${u.univ_code||''}" data-logo="${u.logo_link||''}">${u.nama||''}</option>`; 
+            });
             opts += `<option value="NEW" class="fw-bold text-primary">+ Tambah Kampus Baru</option>`;
             sel.innerHTML = opts;
         }
 
         function handleUnivSelectChange() {
             const sel = document.getElementById('inpKatUnivSelect');
-            const inpNew = document.getElementById('inpKatUnivNew'); const inpCode = document.getElementById('inpKatUnivCode');
-            const inpLogo = document.getElementById('inpKatLogoLink'); const previewLogo = document.getElementById('previewKatLogo');
-            if(!sel || !inpNew) return;
+            const inpCode = document.getElementById('inpKatUnivCode');
+            const inpLogo = document.getElementById('inpKatLogoLink'); 
+            const previewLogo = document.getElementById('previewKatLogo');
+            if(!sel) return;
 
-            if(sel.value === 'NEW') {
-                inpNew.style.display = 'block'; inpNew.value = ''; inpCode.value = ''; inpLogo.value = '';
-                inpCode.removeAttribute('readonly'); previewLogo.src = 'https://via.placeholder.com/45';
-            } else if (sel.value !== '') {
+            if (sel.value !== '' && sel.value !== 'NEW') {
                 const opt = sel.options[sel.selectedIndex];
-                inpNew.style.display = 'none'; inpCode.setAttribute('readonly', true);
-                inpCode.value = opt.getAttribute('data-code') || ''; inpLogo.value = opt.getAttribute('data-logo') || '';
-                previewLogo.src = opt.getAttribute('data-logo') || 'https://via.placeholder.com/45';
+                if(inpCode) inpCode.value = opt.getAttribute('data-code') || ''; 
+                if(inpLogo) inpLogo.value = opt.getAttribute('data-logo') || '';
+                if(previewLogo) previewLogo.src = opt.getAttribute('data-logo') || 'https://via.placeholder.com/45';
             } else {
-                inpNew.style.display = 'none'; inpCode.value = ''; inpLogo.value = ''; previewLogo.src = 'https://via.placeholder.com/45';
+                if(inpCode) inpCode.value = ''; if(inpLogo) inpLogo.value = ''; 
+                if(previewLogo) previewLogo.src = 'https://via.placeholder.com/45';
+            }
+        }
+
+        async function promptCustomLogo() {
+            const { value: url } = await Swal.fire({
+                title: 'URL Logo Kustom', input: 'url', inputLabel: 'Masukkan link gambar (https://...)',
+                showCancelButton: true, inputPlaceholder: 'Link logo jalur...'
+            });
+            if(url) {
+                document.getElementById('previewKatLogo').src = url;
+                document.getElementById('inpKatLogoLink').value = url;
             }
         }
 
@@ -1185,23 +1325,95 @@
         }
 
         function generateProdiTable() {
-            const kampusId = document.getElementById('inpKatUnivSelect')?.value;
-            if(!kampusId || kampusId === 'NEW') return showToast("Pilih Universitas yang sudah tersimpan.", "warning");
+            const jenisJalur = document.getElementById('inpKatJalur').value;
+            let targetKampusIds = [];
 
-            const checkedPrograms = Array.from(document.querySelectorAll('.prog-cb:checked')).map(cb => cb.value);
+            if(jenisJalur === 'Nasional') {
+                targetKampusIds = Array.from(document.querySelectorAll('.univ-multi-cb:checked')).map(cb => String(cb.value));
+                if(targetKampusIds.length === 0) return showToast("Pilih minimal 1 Universitas.", "warning");
+            } else {
+                const kId = document.getElementById('inpKatUnivSelect')?.value;
+                if(!kId || kId === 'NEW') return showToast("Pilih Universitas yang sudah tersimpan.", "warning");
+                targetKampusIds = [String(kId)];
+            }
+
+            const checkedPrograms = Array.from(document.querySelectorAll('.prog-cb:checked')).map(cb => cb.value.toLowerCase());
             if(checkedPrograms.length === 0) return showToast("Pilih minimal 1 Program/Jenjang.", "warning");
 
-            const tbody = document.getElementById('prodiInputTbody'); if(!tbody) return; tbody.innerHTML = '';
-            const filteredProdi = masterProdi.filter(p => p.kampus_id === kampusId && checkedPrograms.includes(p.jenjang));
+            const isPsdkuChecked = document.getElementById('prog_psdku').checked;
 
-            if(filteredProdi.length === 0) { showToast("Tidak ada master prodi yang cocok.", "info"); addProdiInputRow(); } 
-            else {
+            const tbody = document.getElementById('prodiInputTbody'); if(!tbody) return; tbody.innerHTML = '';
+            
+            // Filter Master Prodi dengan Standarisasi Nama Jenjang
+            let filteredProdi = masterProdi.filter(p => {
+                const matchKampus = targetKampusIds.includes(String(p.kampus_id));
+                const pJenjang = (p.jenjang || '').toLowerCase().trim();
+                
+                const matchJenjang = checkedPrograms.includes(pJenjang);
+                return matchKampus && matchJenjang;
+            });
+
+            if(!isPsdkuChecked) {
+                filteredProdi = filteredProdi.filter(p => p.is_psdku !== true && String(p.is_psdku).toLowerCase() !== 'true');
+            }
+
+            if(filteredProdi.length === 0) { 
+                showToast("Tidak ada master prodi yang cocok.", "info"); 
+                addProdiInputRow(); 
+            } else {
+                let grouped = {};
                 filteredProdi.forEach(p => {
-                    const tr = document.createElement('tr'); tr.setAttribute('data-prodi-id', p.id);
-                    tr.innerHTML = `<td><input type="text" class="form-control form-control-sm prodi-manual-val bg-light" readonly value="${p.nama_prodi} (${p.jenjang})"></td><td><input type="number" class="form-control form-control-sm prodi-dt-val text-center" placeholder="Kuota" onkeydown="handleProdiEnter(event)"></td><td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>`;
-                    tbody.appendChild(tr);
+                    const k = daftarKampus.find(dk => String(dk.id) === String(p.kampus_id));
+                    const kName = k ? k.nama : 'Unknown';
+                    if(!grouped[kName]) grouped[kName] = [];
+                    grouped[kName].push(p);
+                });
+
+                Object.keys(grouped).sort().forEach(kName => {
+                    if(jenisJalur === 'Nasional' || Object.keys(grouped).length > 1) {
+                        const trH = document.createElement('tr');
+                        trH.innerHTML = `<td colspan="3"><div class="campus-group-header">${kName}</div></td>`;
+                        tbody.appendChild(trH);
+                    }
+                    grouped[kName].forEach(p => {
+                        const tr = document.createElement('tr'); tr.setAttribute('data-prodi-id', p.id);
+                        const labelText = jenisJalur === 'Nasional' ? `${p.nama_prodi} (${p.jenjang}) - ${kName}` : `${p.nama_prodi} (${p.jenjang})`;
+                        tr.innerHTML = `<td><input type="text" class="form-control form-control-sm prodi-manual-val bg-light" readonly value="${labelText}"></td><td><input type="number" class="form-control form-control-sm prodi-dt-val text-center" placeholder="Kuota" onkeydown="handleProdiEnter(event)"></td><td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>`;
+                        tbody.appendChild(tr);
+                    });
                 });
                 showToast(`Berhasil menarik ${filteredProdi.length} jurusan!`, "success");
+            }
+        }
+
+        function copyProdiToClipboard() {
+            let text = "";
+            document.querySelectorAll('#prodiInputTbody tr').forEach(tr => {
+                const nameInput = tr.querySelector('.prodi-manual-val');
+                const dtInput = tr.querySelector('.prodi-dt-val');
+                if(nameInput && dtInput) {
+                    text += `${nameInput.value}\t${dtInput.value}\n`;
+                }
+            });
+            if(text) {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed"; 
+                textArea.style.left = "-999999px"; 
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast("Data dicopy ke clipboard!", "success");
+                } catch (err) {
+                    console.error("Gagal menyalin: ", err);
+                    showToast("Gagal melakukan copy otomatis.", "error");
+                }
+                textArea.remove();
+            } else {
+                showToast("Tabel kosong.", "warning");
             }
         }
 
@@ -1237,6 +1449,9 @@
                         const cols = row.split('\t'); 
                         if(currentIdx >= tbody.children.length) addProdiInputRow();
                         const tr = tbody.children[currentIdx];
+                        // skip header grouping rows
+                        if(!tr.querySelector('.prodi-manual-val')) { currentIdx++; return; } 
+                        
                         const inputProdi = tr.querySelector('.prodi-manual-val'); const inputDT = tr.querySelector('.prodi-dt-val');
                         
                         if (isPastingIntoDT) { if(inputDT && cols[0]) inputDT.value = cols[0].trim(); } 
@@ -1261,7 +1476,9 @@
             document.querySelectorAll('.materi-cb').forEach(cb => cb.checked = false);
             if(document.getElementById('materiSelectText')) document.getElementById('materiSelectText').innerText = 'Pilih Silabus Materi...';
             
-            addProdiInputRow(); handleUnivSelectChange(); switchView('add-katalog');
+            handleJenisJalurChange(); 
+            addProdiInputRow(); 
+            switchView('add-katalog');
         }
 
         function openEditKatalog(dataIndex) {
@@ -1275,32 +1492,33 @@
             if(document.getElementById('attachmentContainer')) document.getElementById('attachmentContainer').innerHTML = '';
             document.querySelectorAll('.materi-cb').forEach(cb => cb.checked = false);
             
-            const selUniv = document.getElementById('inpKatUnivSelect');
-            let univFound = false;
-            if (selUniv) {
-                for(let i=0; i<selUniv.options.length; i++) {
-                    if(selUniv.options[i].value === item.kampus_id) { selUniv.selectedIndex = i; univFound = true; break; }
-                }
-                if(!univFound && item.universitas && item.universitas !== 'Jalur Nasional') {
-                    selUniv.value = "NEW"; 
-                    if(document.getElementById('inpKatUnivNew')) document.getElementById('inpKatUnivNew').value = item.universitas;
-                }
-            }
-            handleUnivSelectChange();
+            if(document.getElementById('inpKatJalur')) document.getElementById('inpKatJalur').value = item.jenis_jalur || 'Mandiri';
+            handleJenisJalurChange(); // sets up UI based on types
             
-            if(document.getElementById('inpKatUnivCode')) document.getElementById('inpKatUnivCode').value = item.univ_code || '';
+            if(item.jenis_jalur !== 'Nasional') {
+                const selUniv = document.getElementById('inpKatUnivSelect');
+                let univFound = false;
+                if (selUniv) {
+                    for(let i=0; i<selUniv.options.length; i++) {
+                        if(selUniv.options[i].value === item.kampus_id) { selUniv.selectedIndex = i; univFound = true; break; }
+                    }
+                }
+                handleUnivSelectChange();
+            }
+
+            // Custom logo for Nasional
             if(document.getElementById('inpKatLogoLink')) document.getElementById('inpKatLogoLink').value = item.logo_link || '';
             if(document.getElementById('previewKatLogo')) document.getElementById('previewKatLogo').src = item.logo_link || 'https://via.placeholder.com/45';
             
             if(document.getElementById('inpKatNama')) document.getElementById('inpKatNama').value = item.nama_jalur || '';
-            if(document.getElementById('inpKatJalur')) document.getElementById('inpKatJalur').value = item.jenis_jalur || 'Mandiri';
             if(document.getElementById('inpKatTipe')) document.getElementById('inpKatTipe').value = item.tipe_ujian || 'Tes Tulis';
             if(document.getElementById('inpKatSkema')) document.getElementById('inpKatSkema').value = item.skema || 'Tes Luring';
             
             document.querySelectorAll('.prog-cb').forEach(cb => cb.checked = false);
             if(item.program && Array.isArray(item.program)) {
                 item.program.forEach(p => {
-                    const cb = Array.from(document.querySelectorAll('.prog-cb')).find(c => c.value === p);
+                    const normP = p.toLowerCase().trim();
+                    const cb = Array.from(document.querySelectorAll('.prog-cb')).find(c => c.value.toLowerCase() === normP);
                     if(cb) cb.checked = true;
                 });
             }
@@ -1315,7 +1533,9 @@
             if(document.getElementById('materiSelectText')) document.getElementById('materiSelectText').innerText = len > 0 ? `${len} Materi Dipilih` : 'Pilih Silabus Materi...';
             
             if(item.attachment && Array.isArray(item.attachment)) {
-                item.attachment.forEach(att => addAttachmentRow(att.label, att.url));
+                item.attachment.forEach(att => {
+                    if(att.label !== 'custom_logo') addAttachmentRow(att.label, att.url);
+                });
             }
             
             if(document.getElementById('inpKatKet')) document.getElementById('inpKatKet').value = item.keterangan || '';
@@ -1328,7 +1548,9 @@
                 Object.keys(item.kuota_prodi).forEach(pid => {
                     const pMaster = masterProdi.find(x => x.id === pid);
                     if(pMaster) {
-                        addProdiInputRow(pid, `${pMaster.nama_prodi} (${pMaster.jenjang})`, item.kuota_prodi[pid], true);
+                        const kName = daftarKampus.find(k => k.id === pMaster.kampus_id)?.nama || '';
+                        const lbl = item.jenis_jalur === 'Nasional' ? `${pMaster.nama_prodi} (${pMaster.jenjang}) - ${kName}` : `${pMaster.nama_prodi} (${pMaster.jenjang})`;
+                        addProdiInputRow(pid, lbl, item.kuota_prodi[pid], true);
                     }
                 });
             }
@@ -1352,45 +1574,50 @@
         }
 
         async function submitKatalogForm() {
-            const selUnivVal = getValOrNull('inpKatUnivSelect'); const nama_jalur = getValOrNull('inpKatNama');
-            if(!selUnivVal || !nama_jalur) return showToast("Universitas dan Nama Jalur wajib diisi!", "warning");
+            const jenis_jalur = getValOrNull('inpKatJalur');
+            const nama_jalur = getValOrNull('inpKatNama');
+            if(!nama_jalur) return showToast("Nama Jalur wajib diisi!", "warning");
+
+            let kampus_id = null;
+            if(jenis_jalur !== 'Nasional') {
+                kampus_id = getValOrNull('inpKatUnivSelect');
+                if(!kampus_id) return showToast("Universitas wajib diisi untuk jalur Mandiri/IUP!", "warning");
+            }
 
             document.getElementById('loadingOverlay').style.display = 'flex';
             updateLoading("Menyimpan ke Database...");
 
             try {
-                let kampus_id = selUnivVal;
-                if (selUnivVal === 'NEW') {
-                    const { data: newK } = await supabaseClient.from('kampus').insert([{ nama: getValOrNull('inpKatUnivNew'), univ_code: getValOrNull('inpKatUnivCode'), logo_link: getValOrNull('inpKatLogoLink') }]).select();
-                    if(newK && newK.length > 0) kampus_id = newK[0].id;
-                }
-
                 let attachmentArr = [];
                 document.querySelectorAll('.attachment-row').forEach(row => {
                     const lbl = row.querySelector('.att-label').value.trim(); const url = row.querySelector('.att-url').value.trim();
                     if(lbl && url) attachmentArr.push({ label: lbl, url: url, tipe: 'link' });
                 });
+                
+                // Inject custom logo for nasional if exist
+                if(jenis_jalur === 'Nasional' && getValOrNull('inpKatLogoLink')) {
+                    attachmentArr.push({ custom_logo: getValOrNull('inpKatLogoLink') });
+                }
 
                 const materiChecked = Array.from(document.querySelectorAll('.materi-cb:checked')).map(x => x.value);
-                const programChecked = Array.from(document.querySelectorAll('.prog-cb:checked')).map(cb => cb.value);
+                const programChecked = Array.from(document.querySelectorAll('.prog-cb:checked')).map(cb => cb.value.toLowerCase());
 
                 let kuotaObj = {};
                 for (let tr of document.querySelectorAll('#prodiInputTbody tr')) {
-                    const nameInput = tr.querySelector('.prodi-manual-val').value.trim();
-                    const kuotaInput = tr.querySelector('.prodi-dt-val').value.trim();
+                    const nameInput = tr.querySelector('.prodi-manual-val')?.value.trim();
+                    const kuotaInput = tr.querySelector('.prodi-dt-val')?.value.trim();
+                    if(!nameInput) continue;
                     let prodiId = tr.getAttribute('data-prodi-id');
                     
-                    if(nameInput) {
-                        if(!prodiId && kampus_id) {
-                            const {data: newP} = await supabaseClient.from('prodi').insert({kampus_id: kampus_id, nama_prodi: nameInput, jenjang: 'Lainnya'}).select('id').single();
-                            if(newP) prodiId = newP.id;
-                        }
-                        if(prodiId) kuotaObj[prodiId] = parseInt(kuotaInput) || 0;
+                    if(!prodiId && kampus_id) { // manual new prodi
+                        const {data: newP} = await supabaseClient.from('prodi').insert({kampus_id: kampus_id, nama_prodi: nameInput, jenjang: 'Lainnya'}).select('id').single();
+                        if(newP) prodiId = newP.id;
                     }
+                    if(prodiId) kuotaObj[prodiId] = parseInt(kuotaInput) || 0;
                 }
 
                 const payload = {
-                    kampus_id: kampus_id, nama_jalur: nama_jalur, jenis_jalur: getValOrNull('inpKatJalur'), program: programChecked,
+                    kampus_id: kampus_id, nama_jalur: nama_jalur, jenis_jalur: jenis_jalur, program: programChecked,
                     tipe_ujian: getValOrNull('inpKatTipe'), skema: getValOrNull('inpKatSkema'), materi_ids: materiChecked, attachment: attachmentArr,
                     keterangan: getValOrNull('inpKatKet'), syarat: getValOrNull('inpKatSyarat'), biaya: parseInt(getValOrNull('inpKatBiaya')) || 0, biaya_maxx: parseInt(getValOrNull('inpKatBiayaMax')) || 0,
                     prodi_select: parseInt(getValOrNull('inpKatProdiSel')) || 2, is_dynamic: false, kuota_prodi: kuotaObj,
@@ -1419,7 +1646,7 @@
             try {
                 const item = dataKatalog[dataIndex]; if(!item) return;
 
-                editStudentId = isEdit ? stuId : null; editItemIndex = isEdit ? stuItemIdx : -1; currentDetailProdiSelection = [];
+                editStudentId = isEdit ? stuId : null; editItemIndex = isEdit ? stuItemIdx : -1; currentDetailProdiSelection = []; currentActiveFolder = null;
                 if(isEdit) { const s = students.find(x => x.id === stuId); if(s && s.items[stuItemIdx]) currentDetailProdiSelection = [...s.items[stuItemIdx].prodiTerpilih]; }
 
                 let headerControls = `<button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="goBack()"><i class="fas fa-arrow-left me-1"></i> Kembali</button>`;
@@ -1438,14 +1665,16 @@
                 let attachHtml = '';
                 if(item.attachment && Array.isArray(item.attachment) && item.attachment.length > 0) {
                     attachHtml = '<h6 class="fw-bold text-primary mt-4 border-bottom pb-2">Dokumen Lampiran</h6><div class="d-flex flex-wrap gap-2 mt-2">';
-                    item.attachment.forEach(att => { attachHtml += `<a href="${att.url||'#'}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fas fa-file-alt me-1"></i>${att.label||'Link'}</a>`; });
+                    item.attachment.forEach(att => { 
+                        if(att.label !== 'custom_logo') attachHtml += `<a href="${att.url||'#'}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fas fa-file-alt me-1"></i>${att.label||'Link'}</a>`; 
+                    });
                     attachHtml += '</div>';
                 }
 
                 let biayaNum = Number(item.biaya) || 0;
                 let timelineHTML = `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Masa Pendaftaran</h6><small class="text-muted">${formatDate(item.pendaftaran_start)} - ${formatDate(item.pendaftaran_end)}</small></div>`;
-                if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian Tahap 1</h6><small class="text-muted">${formatDate(item.ujian1_start)} ${item.ujian1_end && item.ujian1_end !== item.ujian1_start ? 's/d ' + formatDate(item.ujian1_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
-                if(item.pengumuman1) timelineHTML += `<div class="list-timeline-item ${!item.ujian2_start ? 'border-success' : ''}"><h6 class="fw-bold mb-0 ${!item.ujian2_start ? 'text-success' : ''}">Pengumuman Tahap 1</h6><small class="text-muted">${formatDate(item.pengumuman1)}</small><p class="small mb-0 mt-1">${item.pengumuman1_keterangan || ''}</p></div>`;
+                if(item.ujian1_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">${item.ujian2_start ? 'Ujian Tahap 1' : 'Ujian'}</h6><small class="text-muted">${formatDate(item.ujian1_start)} ${item.ujian1_end && item.ujian1_end !== item.ujian1_start ? 's/d ' + formatDate(item.ujian1_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian1_keterangan || ''}</p></div>`;
+                if(item.pengumuman1) timelineHTML += `<div class="list-timeline-item ${!item.ujian2_start ? 'border-success' : ''}"><h6 class="fw-bold mb-0 ${!item.ujian2_start ? 'text-success' : ''}">${item.ujian2_start ? 'Pengumuman Tahap 1' : 'Pengumuman Hasil'}</h6><small class="text-muted">${formatDate(item.pengumuman1)}</small><p class="small mb-0 mt-1">${item.pengumuman1_keterangan || ''}</p></div>`;
                 if(item.ujian2_start) timelineHTML += `<div class="list-timeline-item"><h6 class="fw-bold mb-0">Ujian Tahap 2</h6><small class="text-muted">${formatDate(item.ujian2_start)} ${item.ujian2_end && item.ujian2_end !== item.ujian2_start ? 's/d ' + formatDate(item.ujian2_end) : ''}</small><p class="small mb-0 mt-1">${item.ujian2_keterangan || ''}</p></div>`;
                 if(item.pengumuman2) timelineHTML += `<div class="list-timeline-item border-success"><h6 class="fw-bold mb-0 text-success">Pengumuman Hasil Akhir</h6><small class="text-muted">${formatDate(item.pengumuman2)}</small><p class="small mb-0 mt-1">${item.pengumuman2_keterangan || ''}</p></div>`;
 
@@ -1477,46 +1706,119 @@
             } catch (e) { console.error("Error in openDetail:", e); }
         }
 
-        function renderProdiSelectionArea(item, dataIndex) {
+        function renderProdiSelectionArea(item, dataIndex, activeCampusName = undefined) {
+            if(activeCampusName !== undefined) currentActiveFolder = activeCampusName;
+            
             const container = document.getElementById('prodiSelectionContainer'); if(!container) return;
             let availableProdis = [];
             if(item.kuota_prodi && typeof item.kuota_prodi === 'object') {
                 Object.keys(item.kuota_prodi).forEach(pid => {
                     const pMaster = masterProdi.find(x => x.id === pid);
-                    if(pMaster) availableProdis.push({ id: pid, nama: `${pMaster.nama_prodi} (${pMaster.jenjang})`, kuota: item.kuota_prodi[pid] });
+                    if(pMaster) {
+                        const kMaster = daftarKampus.find(k => k.id === pMaster.kampus_id);
+                        const kName = kMaster ? kMaster.nama : 'Unknown';
+                        const kLogo = kMaster ? kMaster.logo_link : 'https://via.placeholder.com/30';
+                        availableProdis.push({ 
+                            id: pid, 
+                            nama: `${pMaster.nama_prodi} (${pMaster.jenjang})`, 
+                            kuota: item.kuota_prodi[pid],
+                            kampus: kName,
+                            logo: kLogo
+                        });
+                    }
                 });
             }
 
             let html = `<div class="alert alert-info border-0 py-2"><i class="fas fa-info-circle me-2"></i>Maksimal memilih ${item.prodi_select || 2} Prodi.</div>`;
-            if(availableProdis.length > 0) {
-                html += `<div class="table-responsive border rounded"><table class="table table-hover mb-0"><tbody>`;
-                availableProdis.forEach((pObj, i) => {
-                    const isChecked = currentDetailProdiSelection.includes(pObj.nama);
-                    const orderIndex = isChecked ? currentDetailProdiSelection.indexOf(pObj.nama) + 1 : '';
-                    const badgeHtml = isChecked ? `<span class="badge bg-primary rounded-circle ms-2 order-badge" id="badge_${dataIndex}_${i}">${orderIndex}</span>` : `<span class="badge bg-primary rounded-circle ms-2 order-badge" id="badge_${dataIndex}_${i}" style="display:none;"></span>`;
-                    html += `<tr onclick="toggleProdiStatic('${pObj.nama}', ${item.prodi_select||2}, ${dataIndex}, ${i})" style="cursor:pointer;"><td style="width:40px"><input type="checkbox" class="form-check-input prodi-checkbox" value="${pObj.nama}" id="cb_${dataIndex}_${i}" ${isChecked?'checked':''} onclick="event.stopPropagation(); toggleProdiStatic('${pObj.nama}', ${item.prodi_select||2}, ${dataIndex}, ${i})"></td><td><span class="fw-semibold">${pObj.nama}</span> ${badgeHtml}</td><td class="text-end text-muted small">Kuota: ${pObj.kuota}</td></tr>`;
-                });
-                html += `</tbody></table></div>`;
+            
+            if(item.jenis_jalur === 'Nasional') {
+                if(currentActiveFolder === null) {
+                    let grouped = {};
+                    availableProdis.forEach(p => {
+                        if(!grouped[p.kampus]) grouped[p.kampus] = { logo: p.logo, count: 0 };
+                        grouped[p.kampus].count++;
+                    });
+                    
+                    html += `<div class="row g-2 custom-scroll" style="max-height:350px; overflow-y:auto;">`;
+                    Object.keys(grouped).sort().forEach(kName => {
+                        html += `
+                            <div class="col-12 col-sm-6">
+                                <div class="card bg-light border-0 shadow-sm h-100" style="cursor:pointer; transition: 0.2s;" onclick="renderProdiSelectionArea(dataKatalog[${dataIndex}], ${dataIndex}, '${kName}')" onmouseover="this.classList.add('shadow')" onmouseout="this.classList.remove('shadow')">
+                                    <div class="card-body p-3 d-flex align-items-center">
+                                        <img src="${grouped[kName].logo}" style="width:35px;height:35px;object-fit:contain;" class="me-3 bg-white p-1 rounded">
+                                        <div>
+                                            <span class="fw-bold text-dark d-block" style="font-size:0.85rem; line-height: 1.2;">${kName}</span>
+                                            <small class="text-muted" style="font-size:0.7rem">${grouped[kName].count} Prodi</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                    html += `</div>`;
+                    
+                    if (currentDetailProdiSelection.length > 0) {
+                        html += `<div class="mt-3 pt-3 border-top"><h6 class="fw-bold text-primary small mb-2">Pilihan Anda:</h6>`;
+                        currentDetailProdiSelection.forEach((sel, i) => {
+                            html += `<div class="d-flex justify-content-between align-items-center bg-white border rounded p-2 mb-2"><span class="small fw-semibold"><span class="badge bg-warning text-dark me-2">${i+1}</span>${sel}</span><button class="btn btn-sm text-danger" onclick="toggleProdiStatic('${sel}', ${item.prodi_select||2}, ${dataIndex}, -1)"><i class="fas fa-times"></i></button></div>`;
+                        });
+                        html += `</div>`;
+                    }
+                    
+                } else {
+                    const prodisInCampus = availableProdis.filter(p => p.kampus === currentActiveFolder);
+                    html += `
+                        <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                            <button class="btn btn-sm btn-light border rounded-circle me-3 shadow-sm" onclick="renderProdiSelectionArea(dataKatalog[${dataIndex}], ${dataIndex}, null)"><i class="fas fa-arrow-left"></i></button>
+                            <img src="${prodisInCampus[0].logo}" style="width:30px;height:30px;object-fit:contain;" class="me-2 rounded bg-white p-1">
+                            <span class="fw-bold text-primary">${currentActiveFolder}</span>
+                        </div>
+                        <div class="table-responsive border rounded custom-scroll" style="max-height: 350px;">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light" style="position: sticky; top: 0; z-index: 1;"><tr><th style="width:40px">Pilih</th><th>Program Studi</th><th class="text-end">Kuota</th></tr></thead>
+                                <tbody>`;
+                    
+                    prodisInCampus.forEach((pObj, i) => {
+                        const lblToSave = `${pObj.nama} - ${currentActiveFolder}`;
+                        const isChecked = currentDetailProdiSelection.includes(lblToSave);
+                        const orderIndex = isChecked ? currentDetailProdiSelection.indexOf(lblToSave) + 1 : '';
+                        const badgeHtml = isChecked ? `<span class="badge bg-primary rounded-circle ms-2 order-badge" id="badge_${dataIndex}_${pObj.id}">${orderIndex}</span>` : `<span class="badge bg-primary rounded-circle ms-2 order-badge" id="badge_${dataIndex}_${pObj.id}" style="display:none;"></span>`;
+                        const kuotaText = (pObj.kuota && parseInt(pObj.kuota) > 0) ? pObj.kuota : '-';
+
+                        html += `<tr onclick="toggleProdiStatic('${lblToSave}', ${item.prodi_select||2}, ${dataIndex}, '${pObj.id}')" style="cursor:pointer;"><td style="width:40px"><input type="checkbox" class="form-check-input prodi-checkbox" value="${lblToSave}" id="cb_${dataIndex}_${pObj.id}" ${isChecked?'checked':''} onclick="event.stopPropagation(); toggleProdiStatic('${lblToSave}', ${item.prodi_select||2}, ${dataIndex}, '${pObj.id}')"></td><td><span class="fw-semibold small">${pObj.nama}</span> ${badgeHtml}</td><td class="text-end text-muted small">${kuotaText}</td></tr>`;
+                    });
+                    html += `</tbody></table></div>`;
+                }
+
             } else {
-                html += `<input type="text" class="form-control" id="prodiManualFallback" placeholder="Ketik nama prodi manual di sini (Contoh: S1 Hukum)">`;
+                if(availableProdis.length > 0) {
+                    html += `<div class="table-responsive border rounded custom-scroll" style="max-height: 400px;"><table class="table table-hover mb-0">
+                        <thead class="table-light" style="position: sticky; top: 0; z-index: 1;"><tr><th style="width:40px">Pilih</th><th>Program Studi</th><th class="text-end">Kuota</th></tr></thead>
+                        <tbody>`;
+                    availableProdis.forEach((pObj, i) => {
+                        const isChecked = currentDetailProdiSelection.includes(pObj.nama);
+                        const orderIndex = isChecked ? currentDetailProdiSelection.indexOf(pObj.nama) + 1 : '';
+                        const badgeHtml = isChecked ? `<span class="badge bg-primary rounded-circle ms-2 order-badge" id="badge_${dataIndex}_${pObj.id}">${orderIndex}</span>` : `<span class="badge bg-primary rounded-circle ms-2 order-badge" id="badge_${dataIndex}_${pObj.id}" style="display:none;"></span>`;
+                        const kuotaText = (pObj.kuota && parseInt(pObj.kuota) > 0) ? pObj.kuota : '-';
+                        
+                        html += `<tr onclick="toggleProdiStatic('${pObj.nama}', ${item.prodi_select||2}, ${dataIndex}, '${pObj.id}')" style="cursor:pointer;"><td style="width:40px"><input type="checkbox" class="form-check-input prodi-checkbox" value="${pObj.nama}" id="cb_${dataIndex}_${pObj.id}" ${isChecked?'checked':''} onclick="event.stopPropagation(); toggleProdiStatic('${pObj.nama}', ${item.prodi_select||2}, ${dataIndex}, '${pObj.id}')"></td><td><span class="fw-semibold small">${pObj.nama}</span> ${badgeHtml}</td><td class="text-end text-muted small">${kuotaText}</td></tr>`;
+                    });
+                    html += `</tbody></table></div>`;
+                } else {
+                    html += `<input type="text" class="form-control" id="prodiManualFallback" placeholder="Ketik nama prodi manual di sini (Contoh: S1 Hukum)">`;
+                }
             }
             container.innerHTML = html;
         }
 
-        function toggleProdiStatic(pr, max, dIdx, i) {
+        function toggleProdiStatic(pr, max, dIdx, cbId) {
             const idx = currentDetailProdiSelection.indexOf(pr);
             if(idx > -1) { currentDetailProdiSelection.splice(idx, 1); } 
             else {
                 if(currentDetailProdiSelection.length >= max) return showToast(`Maksimal ${max} pilihan.`, "warning");
                 currentDetailProdiSelection.push(pr);
             }
-            
-            document.querySelectorAll('.prodi-checkbox').forEach((checkbox) => {
-                const bId = checkbox.id.replace('cb_', 'badge_'); const b = document.getElementById(bId);
-                const pos = currentDetailProdiSelection.indexOf(checkbox.value);
-                if(checkbox.value === pr) checkbox.checked = (pos > -1);
-                if(b) { if(pos > -1) { b.innerText = pos + 1; b.style.display = 'inline-block'; } else { b.style.display = 'none'; } }
-            });
+            // Re-render whole area to update badges and UI
+            renderProdiSelectionArea(dataKatalog[dIdx], dIdx);
         }
 
         async function checkoutPath(dataIndex) {
@@ -1618,7 +1920,7 @@
                 await supabaseClient.from('profil_pengguna').insert([{ id: newUserId, email: email, nama_lengkap: nama, role: 'siswa' }]);
                 await supabaseClient.from('siswa').insert([{ id: newUserId, panggilan: panggilan, kelas: kelas, sekolah: sekolah, akun_to: akunTO }]);
                 
-                Swal.fire({ title: 'Akun Berhasil Dibuat!', html: 'Data siswa tersimpan.<br><br><b>Perhatian:</b> Jika siswa gagal login, pastikan Anda telah menonaktifkan fitur <b>"Confirm Email"</b> di menu <i>Authentication > Providers > Email</i>.', icon: 'success' });
+                Swal.fire({ title: 'Akun Berhasil Dibuat!', html: 'Data siswa tersimpan.<br><br><b>Perhatian:</b> Jika siswa gagal login, pastikan Anda telah menonaktifkan fitur <b>"Confirm Email"</b> di menu <i>Authentication > Providers > Email</i> pada Dashboard Supabase Anda.', icon: 'success' });
                 bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide(); await initData();
             } catch (err) {
                 console.error(err); Swal.fire('Gagal Membuat Akun', err.message, 'error'); document.getElementById('loadingOverlay').style.display = 'none';
@@ -1626,11 +1928,11 @@
         }
 
         function resetPassword(id) {
-            Swal.fire({ title: 'Informasi Reset Password', html: 'Untuk mereset password siswa menjadi <b>12345678</b>, silakan buka <b>Dashboard Supabase > Authentication > Users</b>, cari email siswa tersebut, klik ikon 3 titik, lalu pilih <b>Update Password</b>.', icon: 'info' });
+            Swal.fire({ title: 'Informasi Reset Password', html: 'Sistem Supabase mengamankan password di tabel enkripsi khusus.<br><br>Untuk mereset password siswa menjadi <b>12345678</b>, silakan buka <b>Dashboard Supabase > Authentication > Users</b>, cari email siswa tersebut, klik ikon 3 titik, lalu pilih <b>Update Password</b>.', icon: 'info' });
         }
 
         function deleteStudent(id) {
-            Swal.fire({ title: 'Hapus Data Siswa?', text: "Data siswa ini beserta riwayatnya akan dihapus permanen.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Ya, Hapus!' })
+            Swal.fire({ title: 'Hapus Data Siswa?', text: "Data siswa ini beserta seluruh riwayat pendaftarannya akan dihapus permanen.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Ya, Hapus!' })
             .then(async (result) => {
                 if (result.isConfirmed) {
                     document.getElementById('loadingOverlay').style.display = 'flex';
@@ -1646,9 +1948,14 @@
                 const s = students.find(x => x.id === id);
                 if(!s) return;
 
-                document.getElementById('sdName').innerText = s.nama; 
-                document.getElementById('sdClassSchool').innerText = `${s.kelas || '-'} | ${s.sekolah || '-'}`;
-                document.getElementById('sdContactInfo').innerHTML = `<div><i class="fas fa-envelope me-2"></i>${s.email}</div><div><i class="fas fa-id-card me-2"></i>Akun TO: <span class="fw-semibold">${s.akunTO || '-'}</span></div>`;
+                const sdNameEl = document.getElementById('sdName');
+                if (sdNameEl) sdNameEl.innerText = s.nama; 
+                
+                const sdClassSchoolEl = document.getElementById('sdClassSchool');
+                if (sdClassSchoolEl) sdClassSchoolEl.innerText = `${s.kelas || '-'} | ${s.sekolah || '-'}`;
+                
+                const sdContactInfoEl = document.getElementById('sdContactInfo');
+                if (sdContactInfoEl) sdContactInfoEl.innerHTML = `<div><i class="fas fa-envelope me-2"></i>${s.email}</div><div><i class="fas fa-id-card me-2"></i>Akun TO: <span class="fw-semibold">${s.akunTO || '-'}</span></div>`;
                 
                 renderStudentItems(); 
                 renderStudentTimeline(); 
