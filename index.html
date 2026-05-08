@@ -250,10 +250,10 @@
                     </div>
                 </div>
 
-                <ul class="nav nav-pills nav-fill mb-4 bg-white p-1 rounded-pill shadow-sm">
-                    <li class="nav-item"><button class="nav-link active rounded-pill py-2 fw-bold" data-bs-toggle="pill" data-bs-target="#sd-tab-daftar" type="button"><i class="fas fa-list-ul me-1"></i> Pilihan Jalur</button></li>
-                    <li class="nav-item"><button class="nav-link rounded-pill py-2 fw-bold" data-bs-toggle="pill" data-bs-target="#sd-tab-timeline" type="button" onclick="renderStudentTimeline(); renderStudentCalendar();"><i class="fas fa-calendar-alt me-1"></i> Timeline</button></li>
-                    <li class="nav-item"><button class="nav-link rounded-pill py-2 fw-bold text-warning" data-bs-toggle="pill" data-bs-target="#pd-tab-materi" type="button" onclick="renderRekapMateri()"><i class="fas fa-book-open me-1"></i> Rekap Materi</button></li>
+                <ul class="nav nav-pills flex-column flex-sm-row nav-fill mb-4 bg-white p-1 rounded-4 shadow-sm gap-1">
+                    <li class="nav-item"><button class="nav-link active rounded-pill py-2 fw-bold w-100" data-bs-toggle="pill" data-bs-target="#sd-tab-daftar" type="button"><i class="fas fa-list-ul me-1"></i> Pilihan Jalur</button></li>
+                    <li class="nav-item"><button class="nav-link rounded-pill py-2 fw-bold w-100" data-bs-toggle="pill" data-bs-target="#sd-tab-timeline" type="button" onclick="renderStudentTimeline(); renderStudentCalendar();"><i class="fas fa-calendar-alt me-1"></i> Timeline</button></li>
+                    <li class="nav-item"><button class="nav-link rounded-pill py-2 fw-bold w-100" data-bs-toggle="pill" data-bs-target="#pd-tab-materi" type="button" onclick="renderRekapMateri()"><i class="fas fa-book-open me-1"></i> Rekap Materi</button></li>
                 </ul>
 
                 <div class="tab-content">
@@ -368,6 +368,7 @@
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-body p-4">
                         <form id="formAddKatalog">
+                            <!-- Basic Info -->
                             <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Informasi Umum & Universitas</h6>
                             <div class="row g-3 mb-3 align-items-end">
                                 <!-- Jenis Jalur Ditaruh Paling Atas agar memicu logika UI -->
@@ -669,14 +670,14 @@
                     currentUserSession = session;
                     await loadUserProfile(session.user.id);
                 } else {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                    document.getElementById('login-view').style.display = 'flex';
-                    document.getElementById('app-shell').style.display = 'none';
+                    const lo = document.getElementById('loadingOverlay'); if(lo) lo.style.display = 'none';
+                    const lv = document.getElementById('login-view'); if(lv) lv.style.display = 'flex';
+                    const as = document.getElementById('app-shell'); if(as) as.style.display = 'none';
                 }
             } catch (err) {
                 console.error("Session Error:", err);
-                document.getElementById('loadingOverlay').style.display = 'none';
-                document.getElementById('login-view').style.display = 'flex';
+                const lo = document.getElementById('loadingOverlay'); if(lo) lo.style.display = 'none';
+                const lv = document.getElementById('login-view'); if(lv) lv.style.display = 'flex';
             }
         }
 
@@ -691,8 +692,8 @@
                 
                 if (error) throw error;
                 
-                document.getElementById('login-view').style.display = 'none';
-                document.getElementById('loadingOverlay').style.display = 'flex';
+                const lv = document.getElementById('login-view'); if(lv) lv.style.display = 'none';
+                const lo = document.getElementById('loadingOverlay'); if(lo) lo.style.display = 'flex';
                 updateLoading("Menyiapkan Dashboard...");
                 await checkSession();
             } catch (err) {
@@ -729,18 +730,18 @@
 
         function setupUIForRole() {
             if(!currentUserRole) return;
-            document.getElementById('login-view').style.display = 'none';
-            document.getElementById('app-shell').style.display = 'block';
+            const lv = document.getElementById('login-view'); if(lv) lv.style.display = 'none';
+            const as = document.getElementById('app-shell'); if(as) as.style.display = 'block';
 
             const bottomNav = document.getElementById('mainBottomNav');
             
             if (currentUserRole === 'wali_kelas') {
-                document.getElementById('navBrandText').innerHTML = 'PTN<span class="text-dark">Wali</span>';
-                document.getElementById('homeWelcomeText').innerText = "Dashboard Wali Kelas";
-                document.getElementById('homeAnalyticsSection').style.display = 'block';
-                document.getElementById('btnAddKatalog').style.display = 'inline-block';
+                const nbt = document.getElementById('navBrandText'); if(nbt) nbt.innerHTML = 'PTN<span class="text-dark">Wali</span>';
+                const hwt = document.getElementById('homeWelcomeText'); if(hwt) hwt.innerText = "Dashboard Wali Kelas";
+                const has = document.getElementById('homeAnalyticsSection'); if(has) has.style.display = 'block';
+                const bak = document.getElementById('btnAddKatalog'); if(bak) bak.style.display = 'inline-block';
                 
-                bottomNav.innerHTML = `
+                if(bottomNav) bottomNav.innerHTML = `
                     <a href="#" class="bottom-nav-item active" id="nav-home" onclick="switchView('home'); return false;"><i class="fas fa-home"></i><span>Home</span></a>
                     <a href="#" class="bottom-nav-item" id="nav-univ" onclick="switchView('univ'); return false;"><i class="fas fa-university"></i><span>Univ</span></a>
                     <a href="#" class="bottom-nav-item" id="nav-siswa" onclick="switchView('siswa'); return false;"><i class="fas fa-users"></i><span>Siswa</span></a>
@@ -748,12 +749,13 @@
                     <a href="#" class="bottom-nav-item" id="nav-timeline" onclick="switchView('timeline'); return false;"><i class="fas fa-calendar-day"></i><span>Timeline</span></a>
                 `;
             } else if (currentUserRole === 'siswa') {
-                document.getElementById('navBrandText').innerHTML = 'PTN<span class="text-dark">Planner</span>';
-                document.getElementById('homeWelcomeText').innerText = `Halo, ${(currentUserProfile.nama_lengkap||'').split(' ')[0]}!`;
-                document.getElementById('homeAnalyticsSection').style.display = 'none';
-                document.getElementById('btnAddKatalog').style.display = 'none';
+                const nbt = document.getElementById('navBrandText'); if(nbt) nbt.innerHTML = 'PTN<span class="text-dark">Planner</span>';
+                const sapaanPanggilan = (currentUserSiswaData && currentUserSiswaData.panggilan) ? currentUserSiswaData.panggilan : (currentUserProfile.nama_lengkap||'').split(' ')[0];
+                const hwt = document.getElementById('homeWelcomeText'); if(hwt) hwt.innerText = `Halo, ${sapaanPanggilan}!`;
+                const has = document.getElementById('homeAnalyticsSection'); if(has) has.style.display = 'none';
+                const bak = document.getElementById('btnAddKatalog'); if(bak) bak.style.display = 'none';
                 
-                bottomNav.innerHTML = `
+                if(bottomNav) bottomNav.innerHTML = `
                     <a href="#" class="bottom-nav-item active" id="nav-home" onclick="switchView('home'); return false;"><i class="fas fa-home"></i><span>Home</span></a>
                     <a href="#" class="bottom-nav-item" id="nav-catalog" onclick="switchView('catalog'); return false;"><i class="fas fa-search"></i><span>Katalog</span></a>
                     <a href="#" class="bottom-nav-item" id="nav-siswa-detail" onclick="openMyProfile(); return false;"><i class="fas fa-user-circle"></i><span>ProfilKu</span></a>
@@ -906,13 +908,13 @@
                 console.error("API Error in initData:", error); 
                 Swal.fire("Peringatan", "Gagal memuat beberapa data dari server.", "warning");
             } finally {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                const lo = document.getElementById('loadingOverlay'); if(lo) lo.style.display = 'none';
                 setupUIForRole();
             }
         }
 
         async function forceSync() {
-            document.getElementById('loadingOverlay').style.display = 'flex';
+            const lo = document.getElementById('loadingOverlay'); if(lo) lo.style.display = 'flex';
             updateLoading("Sinkronisasi Paksa...");
             await initData();
             showToast("Sinkronisasi berhasil!");
@@ -927,7 +929,7 @@
             if(el) el.innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'}) + ' | ' + now.toLocaleTimeString('id-ID');
         }, 1000);
 
-        const openAgendaStudentsModal = (type, jalurNama, dateISO, safeStudentsStr) => {
+        function openAgendaStudentsModal(type, jalurNama, dateISO, safeStudentsStr) {
             const studentsArr = JSON.parse(decodeURIComponent(safeStudentsStr));
             document.getElementById('asmTitle').innerText = `${type} - ${jalurNama}`;
             document.getElementById('asmDate').innerText = formatDate(dateISO);
@@ -942,7 +944,7 @@
             });
             document.getElementById('asmList').innerHTML = html;
             new bootstrap.Modal(document.getElementById('agendaStudentsModal')).show();
-        };
+        }
 
         function renderHome() {
             try {
@@ -956,7 +958,6 @@
                     if (myProfile && myProfile.items) myProfile.items.forEach(it => { allStudentJalurs.push({...it.jalur, _siswa: myProfile}); });
                 }
                 
-                // AGENDA TERDEKAT
                 let evtsForAgenda = [];
                 let baseJalursForAgenda = currentUserRole === 'wali_kelas' ? dataKatalog : (myProfile ? (myProfile.items||[]).map(it=>it.jalur) : []);
 
@@ -974,12 +975,14 @@
 
                 const cdBox = document.getElementById('homeCountdown'); const titleBox = document.getElementById('homeNextAgendaTitle');
                 if(nextEvent) {
-                    titleBox.innerHTML = `${nextEvent.j.nama_jalur || 'Event'} - ${nextEvent.type}`;
+                    if(titleBox) titleBox.innerHTML = `${nextEvent.j.nama_jalur || 'Event'} - ${nextEvent.type}`;
                     const diffDays = Math.ceil(Math.abs(nextEvent.date - now) / (1000 * 60 * 60 * 24));
-                    cdBox.innerHTML = `<div class="bg-white text-primary rounded-3 p-2" style="min-width: 60px;"><h3 class="fw-bold mb-0">${diffDays}</h3><small>Hari</small></div><div class="align-self-center text-white text-start lh-1"><small class="d-block opacity-75">Menuju tanggal</small><span class="fw-bold">${formatDate(nextEvent.date)}</span></div>`;
-                } else { titleBox.innerHTML = "Belum ada agenda terdekat"; cdBox.innerHTML = `-`; }
+                    if(cdBox) cdBox.innerHTML = `<div class="bg-white text-primary rounded-3 p-2" style="min-width: 60px;"><h3 class="fw-bold mb-0">${diffDays}</h3><small>Hari</small></div><div class="align-self-center text-white text-start lh-1"><small class="d-block opacity-75">Menuju tanggal</small><span class="fw-bold">${formatDate(nextEvent.date)}</span></div>`;
+                } else { 
+                    if(titleBox) titleBox.innerHTML = "Belum ada agenda terdekat"; 
+                    if(cdBox) cdBox.innerHTML = `-`; 
+                }
 
-                // PENDAFTARAN BUKA
                 let pendaftaranPaths = dataKatalog.filter(d => {
                     if(!d.pendaftaran_start || !d.pendaftaran_end) return false;
                     const pStart = new Date(d.pendaftaran_start); pStart.setHours(0,0,0,0);
@@ -1009,9 +1012,8 @@
                             </div>
                         </div>`;
                 });
-                document.getElementById('homeOpenRegistrations').innerHTML = openHtml;
+                const hor = document.getElementById('homeOpenRegistrations'); if(hor) hor.innerHTML = openHtml;
 
-                // UJIAN AKAN DATANG
                 let upcomingExams = dataKatalog.filter(d => {
                     if(!d.ujian1_start) return false;
                     const uEnd = new Date(d.ujian1_end || d.ujian1_start); uEnd.setHours(23,59,59,999);
@@ -1041,9 +1043,8 @@
                             </div>
                         </div>`;
                 });
-                document.getElementById('homeUpcomingExams').innerHTML = examHtml;
+                const hue = document.getElementById('homeUpcomingExams'); if(hue) hue.innerHTML = examHtml;
 
-                // TIMELINE AGENDA KESELURUHAN (Student/Admin View logic applied to timeline cards)
                 let allEvents = [];
                 allStudentJalurs.forEach(j => {
                     const hasTahap2 = !!j.ujian2_start || !!j.pengumuman2;
@@ -1084,7 +1085,7 @@
                             </div>
                         </div>`;
                 });
-                document.getElementById('homeStudentTimeline').innerHTML = tlHtml || '<p class="text-muted small">Tidak ada agenda tertaut.</p>';
+                const hst = document.getElementById('homeStudentTimeline'); if(hst) hst.innerHTML = tlHtml || '<p class="text-muted small">Tidak ada agenda tertaut.</p>';
 
                 if(currentUserRole === 'wali_kelas') renderAnalytics(allStudentJalurs);
             } catch(e) { console.error("Error in renderHome:", e); }
@@ -1093,6 +1094,7 @@
         function renderAnalytics(allJalurs) {
             try {
                 const container = document.getElementById('analyticAccordion');
+                if(!container) return;
                 if(!allJalurs || allJalurs.length === 0) return container.innerHTML = '<div class="p-4 text-center text-muted">Belum ada data pendaftaran siswa.</div>';
 
                 let analytics = {}; let maxTotalUniv = 0;
@@ -1141,7 +1143,7 @@
         // ==========================================
         function renderUnivList() {
             const query = (document.getElementById('searchUniv')?.value || '').toLowerCase();
-            const container = document.getElementById('univGridContainer'); container.innerHTML = '';
+            const container = document.getElementById('univGridContainer'); if(!container) return; container.innerHTML = '';
             let univs = []; let seen = new Set();
             dataKatalog.forEach(d => { if(d.univ_code && !seen.has(d.univ_code)) { seen.add(d.univ_code); univs.push({code: d.univ_code, nama: d.universitas||'', akronim: d.akronim||'', logo: d.logo_link}); } });
 
@@ -1199,7 +1201,7 @@
 
         function renderCatalogUI() {
             try {
-                const container = document.getElementById('katalogContainer'); container.innerHTML = ''; const now = new Date();
+                const container = document.getElementById('katalogContainer'); if(!container) return; container.innerHTML = ''; const now = new Date();
                 let catalogWithStatus = dataKatalog.map(item => ({ ...item, ...getJalurStatus(item, now) }));
 
                 if(currentCatalogFilter.univCode) catalogWithStatus = catalogWithStatus.filter(d => d.univ_code === currentCatalogFilter.univCode);
@@ -1249,7 +1251,7 @@
         // 8. ADD/EDIT KATALOG LOGIC (UI ENTRY)
         // ==========================================
         function handleJenisJalurChange() {
-            const val = document.getElementById('inpKatJalur').value;
+            const val = document.getElementById('inpKatJalur')?.value;
             const wrapSingle = document.getElementById('wrapperUnivSingle');
             const wrapMulti = document.getElementById('wrapperUnivMulti');
             const wrapCode = document.getElementById('wrapperUnivCode');
@@ -1260,15 +1262,16 @@
             document.querySelectorAll('.prog-cb').forEach(cb => { cb.parentElement.style.display = 'block'; });
 
             if(val === 'Nasional') {
-                wrapSingle.style.display = 'none'; wrapCode.style.display = 'none'; wrapMulti.style.display = 'block';
-                document.getElementById('inpKatUnivSelect').value = ''; document.getElementById('inpKatUnivCode').value = '';
-                cbIup.style.display = 'block';
+                if(wrapSingle) wrapSingle.style.display = 'none'; if(wrapCode) wrapCode.style.display = 'none'; if(wrapMulti) wrapMulti.style.display = 'block';
+                const s1 = document.getElementById('inpKatUnivSelect'); if(s1) s1.value = ''; 
+                const c1 = document.getElementById('inpKatUnivCode'); if(c1) c1.value = '';
+                if(cbIup) cbIup.style.display = 'block';
                 
-                wrapLogo.className = "col-md-2 text-center mt-3"; wrapNama.className = "col-md-4 mt-3";
+                if(wrapLogo) wrapLogo.className = "col-md-2 text-center mt-3"; if(wrapNama) wrapNama.className = "col-md-4 mt-3";
                 renderMultiSelectUniv();
             } else if (val === 'IUP/KKI') {
-                wrapSingle.style.display = 'block'; wrapCode.style.display = 'block'; wrapMulti.style.display = 'none';
-                wrapLogo.className = "col-md-2 text-center"; wrapNama.className = "col-md-6 mt-3";
+                if(wrapSingle) wrapSingle.style.display = 'block'; if(wrapCode) wrapCode.style.display = 'block'; if(wrapMulti) wrapMulti.style.display = 'none';
+                if(wrapLogo) wrapLogo.className = "col-md-2 text-center"; if(wrapNama) wrapNama.className = "col-md-6 mt-3";
 
                 document.querySelectorAll('.prog-cb').forEach(cb => {
                     if(cb.value === 'iup') { cb.checked = true; cb.parentElement.style.display = 'block'; }
@@ -1276,9 +1279,9 @@
                 });
                 renderUnivDropdownOptions(true); 
             } else { 
-                wrapSingle.style.display = 'block'; wrapCode.style.display = 'block'; wrapMulti.style.display = 'none';
-                cbIup.style.display = 'none'; if(document.getElementById('prog_iup')) document.getElementById('prog_iup').checked = false;
-                wrapLogo.className = "col-md-2 text-center"; wrapNama.className = "col-md-6 mt-3";
+                if(wrapSingle) wrapSingle.style.display = 'block'; if(wrapCode) wrapCode.style.display = 'block'; if(wrapMulti) wrapMulti.style.display = 'none';
+                if(cbIup) cbIup.style.display = 'none'; const pi = document.getElementById('prog_iup'); if(pi) pi.checked = false;
+                if(wrapLogo) wrapLogo.className = "col-md-2 text-center"; if(wrapNama) wrapNama.className = "col-md-6 mt-3";
                 renderUnivDropdownOptions(false);
             }
         }
@@ -1293,7 +1296,8 @@
             document.querySelectorAll('.univ-multi-cb').forEach(cb => {
                 cb.addEventListener('change', () => {
                     const len = document.querySelectorAll('.univ-multi-cb:checked').length;
-                    document.getElementById('univMultiSelectText').innerText = len > 0 ? `${len} Kampus Dipilih` : 'Pilih Universitas...';
+                    const st = document.getElementById('univMultiSelectText');
+                    if(st) st.innerText = len > 0 ? `${len} Kampus Dipilih` : 'Pilih Universitas...';
                 });
             });
         }
@@ -1342,8 +1346,8 @@
                 showCancelButton: true, inputPlaceholder: 'Link logo jalur...'
             });
             if(url) {
-                document.getElementById('previewKatLogo').src = url;
-                document.getElementById('inpKatLogoLink').value = url;
+                const p = document.getElementById('previewKatLogo'); if(p) p.src = url;
+                const i = document.getElementById('inpKatLogoLink'); if(i) i.value = url;
             }
         }
 
@@ -1354,7 +1358,8 @@
             menu.innerHTML = html || '<li class="p-2 text-muted small">Tidak ada data master materi.</li>';
             document.querySelectorAll('.materi-cb').forEach(cb => { cb.addEventListener('change', () => {
                 const len = document.querySelectorAll('.materi-cb:checked').length;
-                document.getElementById('materiSelectText').innerText = len > 0 ? `${len} Materi Dipilih` : 'Pilih Silabus Materi...';
+                const mst = document.getElementById('materiSelectText');
+                if(mst) mst.innerText = len > 0 ? `${len} Materi Dipilih` : 'Pilih Silabus Materi...';
             }); });
         }
 
@@ -1366,7 +1371,8 @@
         }
 
         function generateProdiTable() {
-            const jenisJalur = document.getElementById('inpKatJalur').value;
+            const jEl = document.getElementById('inpKatJalur'); if(!jEl) return;
+            const jenisJalur = jEl.value;
             let targetKampusIds = [];
 
             if(jenisJalur === 'Nasional') {
@@ -1381,11 +1387,11 @@
             const checkedPrograms = Array.from(document.querySelectorAll('.prog-cb:checked')).map(cb => cb.value.toLowerCase());
             if(checkedPrograms.length === 0) return showToast("Pilih minimal 1 Program/Jenjang.", "warning");
 
-            const isPsdkuChecked = document.getElementById('prog_psdku').checked;
+            const psdkuEl = document.getElementById('prog_psdku');
+            const isPsdkuChecked = psdkuEl ? psdkuEl.checked : false;
 
             const tbody = document.getElementById('prodiInputTbody'); if(!tbody) return; tbody.innerHTML = '';
             
-            // Filter Master Prodi dengan Standarisasi Nama Jenjang
             let filteredProdi = masterProdi.filter(p => {
                 const matchKampus = targetKampusIds.includes(String(p.kampus_id));
                 const pJenjang = (p.jenjang || '').toLowerCase().trim();
@@ -1401,7 +1407,6 @@
             });
 
             if(!isPsdkuChecked) {
-                // Buang yang PSDKU nya bernilai true
                 filteredProdi = filteredProdi.filter(p => p.is_psdku !== true && String(p.is_psdku).toLowerCase() !== 'true');
             }
 
@@ -1409,7 +1414,6 @@
                 showToast("Tidak ada master prodi yang cocok.", "info"); 
                 addProdiInputRow(); 
             } else {
-                // Grouping untuk Visual Table
                 let grouped = {};
                 filteredProdi.forEach(p => {
                     const k = daftarKampus.find(dk => String(dk.id) === String(p.kampus_id));
@@ -1476,7 +1480,8 @@
         function handleProdiEnter(e) {
             if(e.key === 'Enter') {
                 e.preventDefault(); addProdiInputRow();
-                const tbody = document.getElementById('prodiInputTbody'); const newRow = tbody.lastElementChild;
+                const tbody = document.getElementById('prodiInputTbody'); if(!tbody) return;
+                const newRow = tbody.lastElementChild;
                 if(newRow) newRow.querySelector('.prodi-manual-val').focus();
             }
         }
@@ -1518,13 +1523,13 @@
         function openAddKatalog() {
             editingKatalogIndex = null;
             document.getElementById('formAddKatalog')?.reset();
-            if(document.getElementById('formKatalogTitle')) document.getElementById('formKatalogTitle').innerText = "Tambah Jalur Baru";
-            if(document.getElementById('btnSubmitKatalogText')) document.getElementById('btnSubmitKatalogText').innerText = "Simpan Jalur Baru";
-            if(document.getElementById('btnDeleteKatalog')) document.getElementById('btnDeleteKatalog').style.display = 'none';
-            if(document.getElementById('prodiInputTbody')) document.getElementById('prodiInputTbody').innerHTML = '';
-            if(document.getElementById('attachmentContainer')) document.getElementById('attachmentContainer').innerHTML = '';
+            const fTitle = document.getElementById('formKatalogTitle'); if(fTitle) fTitle.innerText = "Tambah Jalur Baru";
+            const btnSub = document.getElementById('btnSubmitKatalogText'); if(btnSub) btnSub.innerText = "Simpan Jalur Baru";
+            const btnDel = document.getElementById('btnDeleteKatalog'); if(btnDel) btnDel.style.display = 'none';
+            const pBod = document.getElementById('prodiInputTbody'); if(pBod) pBod.innerHTML = '';
+            const aCon = document.getElementById('attachmentContainer'); if(aCon) aCon.innerHTML = '';
             document.querySelectorAll('.materi-cb').forEach(cb => cb.checked = false);
-            if(document.getElementById('materiSelectText')) document.getElementById('materiSelectText').innerText = 'Pilih Silabus Materi...';
+            const mText = document.getElementById('materiSelectText'); if(mText) mText.innerText = 'Pilih Silabus Materi...';
             
             handleJenisJalurChange(); 
             addProdiInputRow(); 
@@ -1536,15 +1541,15 @@
             editingKatalogIndex = item.id;
             
             document.getElementById('formAddKatalog')?.reset();
-            if(document.getElementById('formKatalogTitle')) document.getElementById('formKatalogTitle').innerText = "Edit Jalur";
-            if(document.getElementById('btnSubmitKatalogText')) document.getElementById('btnSubmitKatalogText').innerText = "Simpan Perubahan Jalur";
-            if(document.getElementById('btnDeleteKatalog')) document.getElementById('btnDeleteKatalog').style.display = 'block';
-            if(document.getElementById('prodiInputTbody')) document.getElementById('prodiInputTbody').innerHTML = '';
-            if(document.getElementById('attachmentContainer')) document.getElementById('attachmentContainer').innerHTML = '';
+            const fTitle = document.getElementById('formKatalogTitle'); if(fTitle) fTitle.innerText = "Edit Jalur";
+            const btnSub = document.getElementById('btnSubmitKatalogText'); if(btnSub) btnSub.innerText = "Simpan Perubahan Jalur";
+            const btnDel = document.getElementById('btnDeleteKatalog'); if(btnDel) btnDel.style.display = 'block';
+            const pBod = document.getElementById('prodiInputTbody'); if(pBod) pBod.innerHTML = '';
+            const aCon = document.getElementById('attachmentContainer'); if(aCon) aCon.innerHTML = '';
             document.querySelectorAll('.materi-cb').forEach(cb => cb.checked = false);
-            if(document.getElementById('materiSelectText')) document.getElementById('materiSelectText').innerText = 'Pilih Silabus Materi...';
+            const mText = document.getElementById('materiSelectText'); if(mText) mText.innerText = 'Pilih Silabus Materi...';
             
-            if(document.getElementById('inpKatJalur')) document.getElementById('inpKatJalur').value = item.jenis_jalur || 'Mandiri';
+            const ij = document.getElementById('inpKatJalur'); if(ij) ij.value = item.jenis_jalur || 'Mandiri';
             handleJenisJalurChange(); // sets up UI based on types
             
             if(item.jenis_jalur !== 'Nasional') {
@@ -1559,12 +1564,12 @@
             }
 
             // Custom logo for Nasional
-            if(document.getElementById('inpKatLogoLink')) document.getElementById('inpKatLogoLink').value = item.logo_link || '';
-            if(document.getElementById('previewKatLogo')) document.getElementById('previewKatLogo').src = item.logo_link || 'https://www.freeiconspng.com/uploads/university-icon-0.png';
+            const ikl = document.getElementById('inpKatLogoLink'); if(ikl) ikl.value = item.logo_link || '';
+            const pkl = document.getElementById('previewKatLogo'); if(pkl) pkl.src = item.logo_link || 'https://www.freeiconspng.com/uploads/university-icon-0.png';
             
-            if(document.getElementById('inpKatNama')) document.getElementById('inpKatNama').value = item.nama_jalur || '';
-            if(document.getElementById('inpKatTipe')) document.getElementById('inpKatTipe').value = item.tipe_ujian || 'Tes Tulis';
-            if(document.getElementById('inpKatSkema')) document.getElementById('inpKatSkema').value = item.skema || 'Tes Luring';
+            const ikn = document.getElementById('inpKatNama'); if(ikn) ikn.value = item.nama_jalur || '';
+            const ikt = document.getElementById('inpKatTipe'); if(ikt) ikt.value = item.tipe_ujian || 'Tes Tulis';
+            const iks = document.getElementById('inpKatSkema'); if(iks) iks.value = item.skema || 'Tes Luring';
             
             document.querySelectorAll('.prog-cb').forEach(cb => cb.checked = false);
             if(item.program && Array.isArray(item.program)) {
@@ -1587,7 +1592,7 @@
                 });
             }
             const len = document.querySelectorAll('.materi-cb:checked').length;
-            if(document.getElementById('materiSelectText')) document.getElementById('materiSelectText').innerText = len > 0 ? `${len} Materi Dipilih` : 'Pilih Silabus Materi...';
+            const mst2 = document.getElementById('materiSelectText'); if(mst2) mst2.innerText = len > 0 ? `${len} Materi Dipilih` : 'Pilih Silabus Materi...';
             
             if(item.attachment && Array.isArray(item.attachment)) {
                 item.attachment.forEach(att => {
@@ -1595,11 +1600,11 @@
                 });
             }
             
-            if(document.getElementById('inpKatKet')) document.getElementById('inpKatKet').value = item.keterangan || '';
-            if(document.getElementById('inpKatSyarat')) document.getElementById('inpKatSyarat').value = item.syarat || '';
-            if(document.getElementById('inpKatBiaya')) document.getElementById('inpKatBiaya').value = item.biaya || 0;
-            if(document.getElementById('inpKatBiayaMax')) document.getElementById('inpKatBiayaMax').value = item.biaya_maxx || 0;
-            if(document.getElementById('inpKatProdiSel')) document.getElementById('inpKatProdiSel').value = item.prodi_select || 2;
+            const ikk = document.getElementById('inpKatKet'); if(ikk) ikk.value = item.keterangan || '';
+            const iksy = document.getElementById('inpKatSyarat'); if(iksy) iksy.value = item.syarat || '';
+            const ikb = document.getElementById('inpKatBiaya'); if(ikb) ikb.value = item.biaya || 0;
+            const ikbm = document.getElementById('inpKatBiayaMax'); if(ikbm) ikbm.value = item.biaya_maxx || 0;
+            const ikps = document.getElementById('inpKatProdiSel'); if(ikps) ikps.value = item.prodi_select || 2;
             
             if(item.kuota_prodi && typeof item.kuota_prodi === 'object') {
                 Object.keys(item.kuota_prodi).forEach(pid => {
@@ -1614,18 +1619,18 @@
             const tbody = document.getElementById('prodiInputTbody');
             if(tbody && tbody.children.length === 0) addProdiInputRow();
 
-            if(document.getElementById('inpKatDaftarStart')) document.getElementById('inpKatDaftarStart').value = formatDateForInput(item.pendaftaran_start);
-            if(document.getElementById('inpKatDaftarEnd')) document.getElementById('inpKatDaftarEnd').value = formatDateForInput(item.pendaftaran_end);
-            if(document.getElementById('inpKatUjian1Start')) document.getElementById('inpKatUjian1Start').value = formatDateForInput(item.ujian1_start);
-            if(document.getElementById('inpKatUjian1End')) document.getElementById('inpKatUjian1End').value = formatDateForInput(item.ujian1_end);
-            if(document.getElementById('inpKatUjian1Ket')) document.getElementById('inpKatUjian1Ket').value = item.ujian1_keterangan || '';
-            if(document.getElementById('inpKatPengumuman1')) document.getElementById('inpKatPengumuman1').value = formatDateForInput(item.pengumuman1);
-            if(document.getElementById('inpKatPengumuman1Ket')) document.getElementById('inpKatPengumuman1Ket').value = item.pengumuman1_keterangan || '';
-            if(document.getElementById('inpKatUjian2Start')) document.getElementById('inpKatUjian2Start').value = formatDateForInput(item.ujian2_start);
-            if(document.getElementById('inpKatUjian2End')) document.getElementById('inpKatUjian2End').value = formatDateForInput(item.ujian2_end);
-            if(document.getElementById('inpKatUjian2Ket')) document.getElementById('inpKatUjian2Ket').value = item.ujian2_keterangan || '';
-            if(document.getElementById('inpKatPengumuman2')) document.getElementById('inpKatPengumuman2').value = formatDateForInput(item.pengumuman2);
-            if(document.getElementById('inpKatPengumuman2Ket')) document.getElementById('inpKatPengumuman2Ket').value = item.pengumuman2_keterangan || '';
+            const iKDS = document.getElementById('inpKatDaftarStart'); if(iKDS) iKDS.value = formatDateForInput(item.pendaftaran_start);
+            const iKDE = document.getElementById('inpKatDaftarEnd'); if(iKDE) iKDE.value = formatDateForInput(item.pendaftaran_end);
+            const iKU1S = document.getElementById('inpKatUjian1Start'); if(iKU1S) iKU1S.value = formatDateForInput(item.ujian1_start);
+            const iKU1E = document.getElementById('inpKatUjian1End'); if(iKU1E) iKU1E.value = formatDateForInput(item.ujian1_end);
+            const iKU1K = document.getElementById('inpKatUjian1Ket'); if(iKU1K) iKU1K.value = item.ujian1_keterangan || '';
+            const iKP1 = document.getElementById('inpKatPengumuman1'); if(iKP1) iKP1.value = formatDateForInput(item.pengumuman1);
+            const iKP1K = document.getElementById('inpKatPengumuman1Ket'); if(iKP1K) iKP1K.value = item.pengumuman1_keterangan || '';
+            const iKU2S = document.getElementById('inpKatUjian2Start'); if(iKU2S) iKU2S.value = formatDateForInput(item.ujian2_start);
+            const iKU2E = document.getElementById('inpKatUjian2End'); if(iKU2E) iKU2E.value = formatDateForInput(item.ujian2_end);
+            const iKU2K = document.getElementById('inpKatUjian2Ket'); if(iKU2K) iKU2K.value = item.ujian2_keterangan || '';
+            const iKP2 = document.getElementById('inpKatPengumuman2'); if(iKP2) iKP2.value = formatDateForInput(item.pengumuman2);
+            const iKP2K = document.getElementById('inpKatPengumuman2Ket'); if(iKP2K) iKP2K.value = item.pengumuman2_keterangan || '';
 
             switchView('add-katalog');
         }
@@ -1735,7 +1740,7 @@
 
                 let headerControls = `<button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="goBack()"><i class="fas fa-arrow-left me-1"></i> Kembali</button>`;
                 if (currentUserRole === 'wali_kelas' && !isEdit) headerControls += `<button class="btn btn-sm btn-light text-primary border shadow-sm" onclick="openEditKatalog(${dataIndex})"><i class="fas fa-pencil-alt me-1"></i> Edit Data</button>`;
-                document.getElementById('detailHeaderControls').innerHTML = headerControls;
+                const dhc = document.getElementById('detailHeaderControls'); if(dhc) dhc.innerHTML = headerControls;
 
                 let actionSection = '';
                 if(isEdit) {
@@ -1766,7 +1771,8 @@
 
                 const syaratHtml = item.syarat ? item.syarat.replace(/\n/g, '<br>') : '-';
 
-                document.getElementById('detailContent').innerHTML = `
+                const dc = document.getElementById('detailContent');
+                if(dc) dc.innerHTML = `
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-4">
                             <div class="d-flex align-items-center mb-4"><img src="${item.logo_link || 'https://www.freeiconspng.com/uploads/university-icon-0.png'}" class="card-logo me-3" style="width:60px;height:60px"><div><h4 class="fw-bold mb-0">${item.nama_jalur||'Jalur'}</h4><p class="text-muted mb-0">${item.universitas||'Nasional'}</p></div></div>
@@ -1893,7 +1899,7 @@
                     html += `<input type="text" class="form-control" id="prodiManualFallback" placeholder="Ketik nama prodi manual di sini (Contoh: S1 Hukum)">`;
                 }
             }
-            container.innerHTML = html;
+            if(container) container.innerHTML = html;
         }
 
         function toggleProdiStatic(pr, max, dIdx, cbId) {
@@ -1912,33 +1918,43 @@
                 const item = dataKatalog[dataIndex];
                 const fallback = document.getElementById('prodiManualFallback');
                 if(fallback && fallback.value && !currentDetailProdiSelection.includes(fallback.value)) currentDetailProdiSelection.push(fallback.value);
-                if(currentDetailProdiSelection.length === 0) return showToast("Pilih minimal 1 prodi.", "warning");
                 
-                const sel = document.getElementById('selectStudentCheckout');
-                if(!sel || !sel.value) return showToast("Silakan pilih siswa.", "warning");
-                const sId = sel.value;
+                const cleanSelection = currentDetailProdiSelection.filter(x => x && x !== "");
+                if(cleanSelection.length === 0) return showToast("Pilih minimal 1 prodi.", "warning");
 
                 document.getElementById('loadingOverlay').style.display = 'flex';
                 
-                const { data: exist } = await supabaseClient.from('pendaftaran_siswa').select('id').eq('siswa_id', sId).eq('jalur_id', item.id);
-                if(exist && exist.length > 0 && editStudentId === null) { document.getElementById('loadingOverlay').style.display = 'none'; return showToast("Siswa ini sudah didaftarkan.", "warning"); }
-
                 if(editStudentId !== null) {
                     const s = students.find(x => x.id === editStudentId);
-                    if(s && s.items[editItemIndex]) await supabaseClient.from('pendaftaran_siswa').update({ prodi_terpilih: currentDetailProdiSelection }).eq('id', s.items[editItemIndex].id_pendaftaran);
-                    showToast(`Perubahan berhasil disimpan!`, "success"); goBack(); await initData();
+                    if(s && s.items[editItemIndex]) {
+                        await supabaseClient.from('pendaftaran_siswa').update({ prodi_terpilih: cleanSelection }).eq('id', s.items[editItemIndex].id_pendaftaran);
+                    }
+                    showToast(`Perubahan berhasil disimpan!`, "success"); 
+                    goBack(); 
+                    await initData();
                 } else {
                     const sel = document.getElementById('selectStudentCheckout');
-                    if(!sel || !sel.value) { document.getElementById('loadingOverlay').style.display = 'none'; return showToast("Silakan pilih siswa.", "warning"); }
+                    if(!sel || !sel.value) { 
+                        document.getElementById('loadingOverlay').style.display = 'none'; 
+                        return showToast("Silakan pilih siswa.", "warning"); 
+                    }
                     const sId = sel.value;
                     
                     const { data: exist } = await supabaseClient.from('pendaftaran_siswa').select('id').eq('siswa_id', sId).eq('jalur_id', item.id);
-                    if(exist && exist.length > 0) { document.getElementById('loadingOverlay').style.display = 'none'; return showToast("Siswa ini sudah didaftarkan.", "warning"); }
+                    if(exist && exist.length > 0) { 
+                        document.getElementById('loadingOverlay').style.display = 'none'; 
+                        return showToast("Siswa ini sudah didaftarkan pada jalur tersebut.", "warning"); 
+                    }
 
-                    await supabaseClient.from('pendaftaran_siswa').insert([{ siswa_id: sId, jalur_id: item.id, prodi_terpilih: currentDetailProdiSelection }]);
-                    showToast(`Berhasil disimpan!`, "success"); goBack(); await initData();
+                    await supabaseClient.from('pendaftaran_siswa').insert([{ siswa_id: sId, jalur_id: item.id, prodi_terpilih: cleanSelection }]);
+                    showToast(`Berhasil disimpan!`, "success"); 
+                    goBack(); 
+                    await initData();
                 }
-            } catch(e) { console.error(e); document.getElementById('loadingOverlay').style.display = 'none'; }
+            } catch(e) { 
+                console.error(e); 
+                document.getElementById('loadingOverlay').style.display = 'none'; 
+            }
         }
 
         async function checkoutPathSiswa(katalogId) {
@@ -2068,7 +2084,8 @@
         function renderStudentItems() {
             const s = students.find(x => x.id === currentStudentId); const container = document.getElementById('sdItemsContainer');
             if(!s || (s.items||[]).length === 0) {
-                container.innerHTML = `<div class="text-center py-5 text-muted"><p>Belum ada jalur yang disimpan ke Daftar Jalur Siswa.</p></div>`; document.getElementById('sdTotalBiaya').innerText = "Rp 0";
+                if(container) container.innerHTML = `<div class="text-center py-5 text-muted"><p>Belum ada jalur yang disimpan ke Daftar Jalur Siswa.</p></div>`; 
+                const stb = document.getElementById('sdTotalBiaya'); if(stb) stb.innerText = "Rp 0";
             } else {
                 let html = ''; let total = 0;
                 s.items.forEach((p, idx) => {
@@ -2079,16 +2096,23 @@
                     html += `
                         <div class="card mb-3 rounded-4 shadow-sm border-0 bg-white">
                             <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div class="d-flex align-items-center"><img src="${p.jalur.logo_link || 'https://www.freeiconspng.com/uploads/university-icon-0.png'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded"><h6 class="fw-bold mb-0 text-primary pe-2">${p.jalur.nama_jalur||''}</h6></div>
-                                    <button class="btn btn-sm btn-light text-danger" onclick="deleteStudentItem('${s.id}', ${idx})"><i class="fas fa-trash"></i></button>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex align-items-start pe-2">
+                                        <img src="${p.jalur.logo_link || 'https://www.freeiconspng.com/uploads/university-icon-0.png'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded mt-1">
+                                        <h6 class="fw-bold mb-0 text-primary mt-1" style="line-height: 1.3;">${p.jalur.nama_jalur||''}</h6>
+                                    </div>
+                                    <div class="text-nowrap ms-auto">
+                                        <button class="btn btn-sm btn-light text-primary border shadow-sm me-1" onclick="editStudentItem('${s.id}', ${idx})" title="Edit Jurusan"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-light text-danger border shadow-sm" onclick="deleteStudentItem('${s.id}', ${idx})" title="Hapus Jalur"><i class="fas fa-trash"></i></button>
+                                    </div>
                                 </div>
                                 <div class="small mb-2">${(p.prodiTerpilih||[]).map((pr, i) => `<span class="badge bg-secondary border me-1 mb-1"><span class="text-warning">${i+1}.</span> ${pr}</span>`).join('')}</div>
                                 <div class="d-flex justify-content-between pt-2 border-top align-items-center flex-wrap gap-2"><div>${bDaftar}${bUjian}</div><span class="text-warning fw-bold small">${formatRupiah(biayaNum)}</span></div>
                             </div>
                         </div>`;
                 });
-                container.innerHTML = html; document.getElementById('sdTotalBiaya').innerText = formatRupiah(total);
+                if(container) container.innerHTML = html; 
+                const stb = document.getElementById('sdTotalBiaya'); if(stb) stb.innerText = formatRupiah(total);
             }
         }
 
@@ -2109,8 +2133,21 @@
             });
         }
 
+        function editStudentItem(sId, idx) {
+            const s = students.find(x => x.id === sId);
+            if(!s) return;
+            const item = s.items[idx];
+            const catIndex = dataKatalog.findIndex(d => d.id === item.jalur.id);
+            if(catIndex > -1) {
+                openDetail(catIndex, true, sId, idx);
+            } else {
+                showToast("Data jalur ini tidak ditemukan di katalog.", "error");
+            }
+        }
+
         function renderRekapMateri() {
             const s = students.find(x => x.id === currentStudentId); const container = document.getElementById('rekapMateriAccordion');
+            if(!container) return;
             if(!s || (s.items||[]).length === 0) return container.innerHTML = '<p class="text-muted small">Daftar Jalur Siswa kosong, tidak ada materi yang perlu disiapkan.</p>';
 
             let aggregatedMateri = {};
@@ -2138,7 +2175,7 @@
         function renderStudentTimeline() {
             const s = students.find(x => x.id === currentStudentId); if(!s) return;
             let events = getTimelineEvents((s.items||[]).map(it => it.jalur));
-            document.getElementById('sdTimelineContainer').innerHTML = generateTimelineListHTML(events);
+            const c = document.getElementById('sdTimelineContainer'); if(c) c.innerHTML = generateTimelineListHTML(events);
         }
         function changeStudentMonth(dir) { sdCurrentMonth += dir; if(sdCurrentMonth > 11) { sdCurrentMonth = 0; sdCurrentYear++; } if(sdCurrentMonth < 0) { sdCurrentMonth = 11; sdCurrentYear--; } renderStudentCalendar(); }
         function changeMonth(dir) { currentMonth += dir; if(currentMonth > 11) { currentMonth = 0; currentYear++; } if(currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar(); }
@@ -2242,10 +2279,16 @@
 
         function renderTimelineAll() {
             try {
-                document.getElementById('listTimelineAllContainer').innerHTML = generateTimelineListHTML(getTimelineEvents(dataKatalog));
+                const cc = document.getElementById('listTimelineAllContainer');
+                if(cc) cc.innerHTML = generateTimelineListHTML(getTimelineEvents(dataKatalog));
                 let sortedKatalog = [...dataKatalog].filter(d=>d.pendaftaran_start).sort((a, b) => new Date(a.pendaftaran_start) - new Date(b.pendaftaran_start));
                 
-                if (sortedKatalog.length === 0) return document.getElementById('ganttContainer').innerHTML = '<p class="text-muted small">Data belum tersedia.</p>';
+                const gc = document.getElementById('ganttContainer');
+                if (sortedKatalog.length === 0) {
+                    if(gc) gc.innerHTML = '<p class="text-muted small">Data belum tersedia.</p>';
+                    return;
+                }
+                
                 let minDate = new Date('2099-01-01'); let maxDate = new Date('2000-01-01');
                 sortedKatalog.forEach(item => {
                     const s = new Date(item.pendaftaran_start); const e = new Date(item.pengumuman2 || item.pengumuman1 || item.pendaftaran_end || s);
@@ -2269,7 +2312,7 @@
                     };
                     bodyHtml += `<tr><td class="gantt-sticky-col fw-bold small text-primary" title="${item.nama_jalur}"><div style="width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.nama_jalur}</div></td><td colspan="100" class="gantt-track-cell"><div class="gantt-track">${getSeg(item.pendaftaran_start, item.pendaftaran_end, 'daftar')}${getSeg(item.ujian1_start, item.ujian1_end, 'ujian')}${getSeg(item.pengumuman1, item.pengumuman1, 'pengumuman')}${getSeg(item.ujian2_start, item.ujian2_end, 'ujian')}${getSeg(item.pengumuman2, item.pengumuman2, 'pengumuman')}</div></td></tr>`;
                 });
-                document.getElementById('ganttContainer').innerHTML = `<div class="gantt-wrapper"><table class="gantt-table"><thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody></table></div>`;
+                if(gc) gc.innerHTML = `<div class="gantt-wrapper"><table class="gantt-table"><thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody></table></div>`;
                 renderCalendar();
             } catch(e){ console.error(e); }
         }
@@ -2277,11 +2320,11 @@
         function openCalEvent(day, isStudent = false) {
             let y = isStudent ? sdCurrentYear : currentYear; let m = isStudent ? sdCurrentMonth : currentMonth;
             const curDate = new Date(y, m, day);
-            document.getElementById('calEventDate').innerText = formatDate(curDate);
+            const ced = document.getElementById('calEventDate'); if(ced) ced.innerText = formatDate(curDate);
             
             let jalurs = isStudent ? (students.find(x => x.id === currentStudentId)?.items||[]).map(it => it.jalur) : dataKatalog;
             let html = getCalEventListHtml(jalurs, curDate);
-            document.getElementById('calEventList').innerHTML = html || '<p class="text-muted text-center small">Tidak ada agenda.</p>';
+            const cel = document.getElementById('calEventList'); if(cel) cel.innerHTML = html || '<p class="text-muted text-center small">Tidak ada agenda.</p>';
             new bootstrap.Modal(document.getElementById('calEventModal')).show();
         }
 
