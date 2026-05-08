@@ -1702,7 +1702,7 @@
                     students.forEach(s => { studentOpts += `<option value="${s.id}">${s.nama||'Siswa'} (${s.kelas||'-'})</option>`; });
                     actionSection = `<h6 class="fw-bold text-primary mb-2">Tambahkan ke Akun Siswa:</h6><select class="form-select rounded-pill mb-3" id="selectStudentCheckout">${studentOpts}</select><button class="btn btn-gradient w-100 py-3 fw-bold" onclick="checkoutPath(${dataIndex})"><i class="fas fa-bookmark me-2"></i>Simpan ke Siswa</button>`;
                 } else if (currentUserRole === 'siswa') {
-                    actionSection = `<button class="btn btn-gradient w-100 py-3 fw-bold" onclick="checkoutPathSiswa('${item.id}')"><i class="fas fa-bookmark me-2"></i>Daftar Jalur</button>`;
+                    actionSection = `<button class="btn btn-gradient w-100 py-3 fw-bold" onclick="checkoutPathSiswa('${item.id}')"><i class="fas fa-bookmark me-2"></i>Simpan Jalur</button>`;
                 }
 
                 let attachHtml = '';
