@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTNPlanner v3 - Edisi Aman & Lengkap</title>
+    <title>PTN Planner</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -109,13 +109,13 @@
     <div id="loadingOverlay">
         <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
         <h5 class="fw-bold text-primary" id="loadingText">Memeriksa Sesi...</h5>
-        <p class="text-muted small" id="loadingSubtext">Menghubungkan ke Database Supabase</p>
+        <p class="text-muted small" id="loadingSubtext">Menghubungkan ke Database</p>
     </div>
 
     <!-- ==================== SCREEN: LOGIN ==================== -->
     <div id="login-view" style="display: none;">
         <div class="login-card text-center">
-            <h2 class="fw-bold text-primary mb-1"><i class="fas fa-graduation-cap text-warning me-2"></i>PTNPlanner</h2>
+            <h2 class="fw-bold text-primary mb-1"><i class="fas fa-graduation-cap text-warning me-2"></i>PTN Planner</h2>
             <p class="text-muted small mb-4">Portal Masuk Siswa & Wali Kelas</p>
             
             <form id="loginForm" onsubmit="handleLogin(event)">
@@ -128,7 +128,7 @@
                     <input type="password" class="form-control rounded-pill px-3 py-2 shadow-none" id="loginPassword" required placeholder="********">
                 </div>
                 <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm" id="btnLogin">
-                    Masuk ke Dashboard <i class="fas fa-sign-in-alt ms-1"></i>
+                    Masuk <i class="fas fa-sign-in-alt ms-1"></i>
                 </button>
             </form>
         </div>
@@ -140,13 +140,10 @@
         <nav class="navbar navbar-light navbar-custom sticky-top py-2">
             <div class="container d-flex justify-content-between align-items-center">
                 <a class="navbar-brand fw-bold text-primary mb-0" href="#" onclick="switchView('home')">
-                    <i class="fas fa-chalkboard-teacher me-2 text-warning"></i><span id="navBrandText">PTNWaliKelas</span>
+                    <i class="fas fa-chalkboard-teacher me-2 text-warning"></i><span id="navBrandText">PTN Wali Kelas</span>
                 </a>
                 <div>
                     <span class="badge bg-light text-dark border me-2 shadow-sm" id="navUserName">Loading...</span>
-                    <button class="btn btn-light rounded-circle shadow-sm border me-1" onclick="forceSync()" title="Paksa Sinkronisasi Data">
-                        <i class="fas fa-sync-alt text-primary"></i>
-                    </button>
                     <button class="btn btn-danger rounded-circle shadow-sm border" onclick="handleLogout()" title="Keluar">
                         <i class="fas fa-power-off"></i>
                     </button>
@@ -363,7 +360,10 @@
             <section id="add-katalog-view" class="view-section">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="goBack()"><i class="fas fa-arrow-left me-1"></i> Batal</button>
-                    <h5 class="fw-bold mb-0" id="formKatalogTitle">Tambah Jalur Baru</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="fw-bold mb-0" id="formKatalogTitle">Tambah Jalur Baru</h5>
+                        <button class="btn btn-sm btn-outline-danger rounded-pill" id="btnDeleteKatalog" style="display: none;" onclick="deleteKatalog()"><i class="fas fa-trash me-1"></i> Hapus</button>
+                    </div>
                 </div>
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-body p-4">
@@ -376,7 +376,7 @@
                                     <label class="form-label small text-muted fw-bold">Jenis Jalur Masuk</label>
                                     <select class="form-select shadow-sm border-primary" id="inpKatJalur" onchange="handleJenisJalurChange()">
                                         <option value="Mandiri" selected>Mandiri</option>
-                                        <option value="Nasional">Nasional (SNBP/SNBT)</option>
+                                        <option value="Nasional">Nasional</option>
                                         <option value="IUP/KKI">IUP/KKI</option>
                                     </select>
                                 </div>
@@ -404,7 +404,7 @@
                                 </div>
                                 
                                 <div class="col-md-2 text-center" id="wrapperLogoPreview">
-                                    <img id="previewKatLogo" src="https://via.placeholder.com/45" style="width:45px;height:45px;object-fit:contain;" class="border rounded bg-white shadow-sm p-1" onclick="promptCustomLogo()" title="Klik untuk ubah URL Logo">
+                                    <img id="previewKatLogo" src="https://www.freeiconspng.com/uploads/university-icon-0.png" style="width:45px;height:45px;object-fit:contain;" class="border rounded bg-white shadow-sm p-1" onclick="promptCustomLogo()" title="Klik untuk ubah URL Logo">
                                     <input type="hidden" id="inpKatLogoLink">
                                     <small class="d-block text-muted" style="font-size:0.6rem">Klik u/ Ubah</small>
                                 </div>
@@ -485,10 +485,10 @@
                                 
                                 <div class="col-12 mt-3 p-3 bg-light rounded border">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label class="form-label small text-muted mb-0"><i class="fas fa-magic text-warning me-1"></i>Tarik otomatis daftar prodi berdasarkan parameter di atas.</label>
+                                        <!-- <label class="form-label small text-muted mb-0"><i class="fas fa-magic text-warning me-1"></i>Tarik otomatis daftar prodi berdasarkan parameter di atas.</label> -->
                                         <div>
                                             <button type="button" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm me-1" onclick="copyProdiToClipboard()" title="Copy untuk Excel"><i class="fas fa-copy"></i> Copy Data</button>
-                                            <button type="button" class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="generateProdiTable()"><i class="fas fa-sync-alt me-1"></i> Tarik Prodi Master</button>
+                                            <button type="button" class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="generateProdiTable()"><i class="fas fa-sync-alt me-1"></i> Tarik Prodi</button>
                                         </div>
                                     </div>
                                     <div class="table-responsive" style="max-height: 350px;">
@@ -500,7 +500,7 @@
                                         </table>
                                     </div>
                                     <div class="mt-2 d-flex justify-content-between align-items-center">
-                                        <small class="text-muted"><i class="fas fa-paste me-1"></i> Anda bisa mem-paste deretan angka dari Excel di kolom daya tampung! Ketik nama manual dan tekan ENTER untuk baris baru.</small>
+                                        <!-- <small class="text-muted"><i class="fas fa-paste me-1"></i> Anda bisa mem-paste deretan angka dari Excel di kolom daya tampung! Ketik nama manual dan tekan ENTER untuk baris baru.</small> -->
                                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addProdiInputRow()"><i class="fas fa-plus"></i> Tambah Baris Kosong</button>
                                     </div>
                                 </div>
@@ -646,7 +646,7 @@
         let sdCurrentMonth = new Date().getMonth(); let sdCurrentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth(); let currentYear = new Date().getFullYear();
         
-        let currentActiveFolder = null; // Menyimpan status folder kampus yang aktif di detail nasional
+        let currentActiveFolder = null; 
 
         // ==========================================
         // 3. UTILITIES
@@ -698,7 +698,7 @@
                 await checkSession();
             } catch (err) {
                 Swal.fire('Gagal', 'Email/kata sandi salah atau kendala jaringan.', 'error');
-                btn.innerHTML = `Masuk ke Dashboard <i class="fas fa-sign-in-alt ms-1"></i>`; btn.disabled = false;
+                btn.innerHTML = `Masuk <i class="fas fa-sign-in-alt ms-1"></i>`; btn.disabled = false;
             }
         }
 
@@ -807,7 +807,6 @@
                 let from = 0;
                 const pageSize = 1000;
                 
-                // Menangani Limit 1000 Supabase dengan perulangan
                 while(fetchMore) {
                     const { data: pData, error } = await supabaseClient
                         .from('prodi')
@@ -842,11 +841,11 @@
                         mapped.univ_code = item.kampus ? item.kampus.univ_code : '';
                         
                         if(!item.kampus_id && typeof item.attachment === 'string' && item.attachment.includes('custom_logo')) {
-                            try { const attObj = JSON.parse(item.attachment); mapped.logo_link = attObj.custom_logo || 'https://via.placeholder.com/60'; } catch(e){ mapped.logo_link = 'https://via.placeholder.com/60'; }
+                            try { const attObj = JSON.parse(item.attachment); mapped.logo_link = attObj.custom_logo || 'https://www.freeiconspng.com/uploads/university-icon-0.png'; } catch(e){ mapped.logo_link = 'https://www.freeiconspng.com/uploads/university-icon-0.png'; }
                         } else if (!item.kampus_id && item.attachment && item.attachment.custom_logo) {
                             mapped.logo_link = item.attachment.custom_logo;
                         } else {
-                            mapped.logo_link = item.kampus ? item.kampus.logo_link : 'https://via.placeholder.com/60';
+                            mapped.logo_link = item.kampus ? item.kampus.logo_link : 'https://www.freeiconspng.com/uploads/university-icon-0.png';
                         }
                         
                         mapped.materi_ujian_names = [];
@@ -888,8 +887,8 @@
                                     
                                     if(!kj.kampus_id && kj.attachment && kj.attachment.custom_logo) mappedJalur.logo_link = kj.attachment.custom_logo;
                                     else if(!kj.kampus_id && typeof kj.attachment === 'string' && kj.attachment.includes('custom_logo')) {
-                                        try{ mappedJalur.logo_link = JSON.parse(kj.attachment).custom_logo || 'https://via.placeholder.com/60'; }catch(e){ mappedJalur.logo_link = 'https://via.placeholder.com/60'; }
-                                    } else mappedJalur.logo_link = kj.kampus ? kj.kampus.logo_link : 'https://via.placeholder.com/60';
+                                        try{ mappedJalur.logo_link = JSON.parse(kj.attachment).custom_logo || 'https://www.freeiconspng.com/uploads/university-icon-0.png'; }catch(e){ mappedJalur.logo_link = 'https://www.freeiconspng.com/uploads/university-icon-0.png'; }
+                                    } else mappedJalur.logo_link = kj.kampus ? kj.kampus.logo_link : 'https://www.freeiconspng.com/uploads/university-icon-0.png';
 
                                     let pt = ps.prodi_terpilih;
                                     if (typeof pt === 'string') { try { pt = JSON.parse(pt); } catch(e) { pt = []; } }
@@ -901,7 +900,6 @@
                     });
                 }
 
-                // Render components that depend on master data
                 renderUnivDropdownOptions();
                 renderMateriDropdown();
                 setupPasteHandler();
@@ -1087,7 +1085,7 @@
 
                     html += `
                         <div class="accordion-item border-0 border-bottom">
-                            <h2 class="accordion-header"><button class="accordion-button collapsed px-3 py-3" type="button" data-bs-toggle="collapse" data-bs-target="#${colId}"><div class="w-100 pe-3"><div class="d-flex justify-content-between align-items-center mb-1"><div class="d-flex align-items-center"><img src="${uData.logo || 'https://via.placeholder.com/20'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded"><span class="fw-bold text-dark">${uName}</span></div><span class="fw-bold text-primary">${uData.total}</span></div><div class="analytic-bar-bg"><div class="analytic-bar-fill" style="width: ${percentage}%"></div></div></div></button></h2>
+                            <h2 class="accordion-header"><button class="accordion-button collapsed px-3 py-3" type="button" data-bs-toggle="collapse" data-bs-target="#${colId}"><div class="w-100 pe-3"><div class="d-flex justify-content-between align-items-center mb-1"><div class="d-flex align-items-center"><img src="${uData.logo || 'https://www.freeiconspng.com/uploads/university-icon-0.png'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded"><span class="fw-bold text-dark">${uName}</span></div><span class="fw-bold text-primary">${uData.total}</span></div><div class="analytic-bar-bg"><div class="analytic-bar-fill" style="width: ${percentage}%"></div></div></div></button></h2>
                             <div id="${colId}" class="accordion-collapse collapse" data-bs-parent="#analyticAccordion"><div class="accordion-body bg-light rounded-bottom px-3 py-2">${jalurAccordionHtml}</div></div>
                         </div>`;
                 });
@@ -1106,7 +1104,7 @@
 
             const filtered = univs.filter(u => u.nama.toLowerCase().includes(query) || u.akronim.toLowerCase().includes(query));
             filtered.forEach(u => {
-                container.innerHTML += `<div class="col-6"><div class="card univ-card p-3 text-center" onclick="filterCatalogByUniv('${u.code}')"><img src="${u.logo || 'https://via.placeholder.com/60'}" class="card-logo mx-auto"><h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${u.akronim || 'UNIV'}</h6><small class="text-muted" style="font-size: 0.7rem;">${u.nama}</small></div></div>`;
+                container.innerHTML += `<div class="col-6"><div class="card univ-card p-3 text-center" onclick="filterCatalogByUniv('${u.code}')"><img src="${u.logo || 'https://www.freeiconspng.com/uploads/university-icon-0.png'}" class="card-logo mx-auto"><h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${u.akronim || 'UNIV'}</h6><small class="text-muted" style="font-size: 0.7rem;">${u.nama}</small></div></div>`;
             });
         }
 
@@ -1185,7 +1183,7 @@
                             <div class="card katalog-card w-100 p-3 position-relative ${item.opacityClass}" onclick="openDetailByItemId('${item.id}')">
                                 <span class="position-absolute top-0 end-0 badge ${item.badgeClass} m-3 shadow-sm">${item.status}</span>
                                 <div class="d-flex align-items-start mb-3 mt-4">
-                                    <img src="${item.logo_link || 'https://via.placeholder.com/45'}" class="card-logo me-3 flex-shrink-0">
+                                    <img src="${item.logo_link || 'https://www.freeiconspng.com/uploads/university-icon-0.png'}" class="card-logo me-3 flex-shrink-0">
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-start mb-1">
                                             <h6 class="fw-bold mb-0 text-dark text-wrap pe-2">${item.universitas === 'Jalur Nasional' ? 'NASIONAL' : (item.universitas||'')}</h6>
@@ -1265,7 +1263,7 @@
             if (onlyIUP) {
                 const iupKampusIds = [...new Set(masterProdi.filter(p => {
                     const pj = (p.jenjang || '').toLowerCase().trim();
-                    return pj === 'iup';
+                    return pj === 'iup' || pj === 'iup/kki' || pj === 'kki' || pj.includes('internasional');
                 }).map(p => p.kampus_id))];
                 filteredKampus = daftarKampus.filter(k => iupKampusIds.includes(k.id));
             }
@@ -1288,10 +1286,10 @@
                 const opt = sel.options[sel.selectedIndex];
                 if(inpCode) inpCode.value = opt.getAttribute('data-code') || ''; 
                 if(inpLogo) inpLogo.value = opt.getAttribute('data-logo') || '';
-                if(previewLogo) previewLogo.src = opt.getAttribute('data-logo') || 'https://via.placeholder.com/45';
+                if(previewLogo) previewLogo.src = opt.getAttribute('data-logo') || 'https://www.freeiconspng.com/uploads/university-icon-0.png';
             } else {
                 if(inpCode) inpCode.value = ''; if(inpLogo) inpLogo.value = ''; 
-                if(previewLogo) previewLogo.src = 'https://via.placeholder.com/45';
+                if(previewLogo) previewLogo.src = 'https://www.freeiconspng.com/uploads/university-icon-0.png';
             }
         }
 
@@ -1349,11 +1347,18 @@
                 const matchKampus = targetKampusIds.includes(String(p.kampus_id));
                 const pJenjang = (p.jenjang || '').toLowerCase().trim();
                 
-                const matchJenjang = checkedPrograms.includes(pJenjang);
+                let normJenjang = pJenjang;
+                if(pJenjang === 's1') normJenjang = 'sarjana';
+                if(pJenjang === 'd4') normJenjang = 'sarjana terapan';
+                if(pJenjang === 'd3') normJenjang = 'diploma tiga';
+                if(pJenjang === 'iup/kki' || pJenjang === 'kki' || pJenjang === 'internasional') normJenjang = 'iup';
+                
+                const matchJenjang = checkedPrograms.includes(normJenjang);
                 return matchKampus && matchJenjang;
             });
 
             if(!isPsdkuChecked) {
+                // Buang yang PSDKU nya bernilai true
                 filteredProdi = filteredProdi.filter(p => p.is_psdku !== true && String(p.is_psdku).toLowerCase() !== 'true');
             }
 
@@ -1361,6 +1366,7 @@
                 showToast("Tidak ada master prodi yang cocok.", "info"); 
                 addProdiInputRow(); 
             } else {
+                // Grouping untuk Visual Table
                 let grouped = {};
                 filteredProdi.forEach(p => {
                     const k = daftarKampus.find(dk => String(dk.id) === String(p.kampus_id));
@@ -1471,6 +1477,7 @@
             document.getElementById('formAddKatalog')?.reset();
             if(document.getElementById('formKatalogTitle')) document.getElementById('formKatalogTitle').innerText = "Tambah Jalur Baru";
             if(document.getElementById('btnSubmitKatalogText')) document.getElementById('btnSubmitKatalogText').innerText = "Simpan Jalur Baru";
+            if(document.getElementById('btnDeleteKatalog')) document.getElementById('btnDeleteKatalog').style.display = 'none';
             if(document.getElementById('prodiInputTbody')) document.getElementById('prodiInputTbody').innerHTML = '';
             if(document.getElementById('attachmentContainer')) document.getElementById('attachmentContainer').innerHTML = '';
             document.querySelectorAll('.materi-cb').forEach(cb => cb.checked = false);
@@ -1488,9 +1495,11 @@
             document.getElementById('formAddKatalog')?.reset();
             if(document.getElementById('formKatalogTitle')) document.getElementById('formKatalogTitle').innerText = "Edit Jalur";
             if(document.getElementById('btnSubmitKatalogText')) document.getElementById('btnSubmitKatalogText').innerText = "Simpan Perubahan Jalur";
+            if(document.getElementById('btnDeleteKatalog')) document.getElementById('btnDeleteKatalog').style.display = 'block';
             if(document.getElementById('prodiInputTbody')) document.getElementById('prodiInputTbody').innerHTML = '';
             if(document.getElementById('attachmentContainer')) document.getElementById('attachmentContainer').innerHTML = '';
             document.querySelectorAll('.materi-cb').forEach(cb => cb.checked = false);
+            if(document.getElementById('materiSelectText')) document.getElementById('materiSelectText').innerText = 'Pilih Silabus Materi...';
             
             if(document.getElementById('inpKatJalur')) document.getElementById('inpKatJalur').value = item.jenis_jalur || 'Mandiri';
             handleJenisJalurChange(); // sets up UI based on types
@@ -1508,7 +1517,7 @@
 
             // Custom logo for Nasional
             if(document.getElementById('inpKatLogoLink')) document.getElementById('inpKatLogoLink').value = item.logo_link || '';
-            if(document.getElementById('previewKatLogo')) document.getElementById('previewKatLogo').src = item.logo_link || 'https://via.placeholder.com/45';
+            if(document.getElementById('previewKatLogo')) document.getElementById('previewKatLogo').src = item.logo_link || 'https://www.freeiconspng.com/uploads/university-icon-0.png';
             
             if(document.getElementById('inpKatNama')) document.getElementById('inpKatNama').value = item.nama_jalur || '';
             if(document.getElementById('inpKatTipe')) document.getElementById('inpKatTipe').value = item.tipe_ujian || 'Tes Tulis';
@@ -1517,8 +1526,13 @@
             document.querySelectorAll('.prog-cb').forEach(cb => cb.checked = false);
             if(item.program && Array.isArray(item.program)) {
                 item.program.forEach(p => {
-                    const normP = p.toLowerCase().trim();
-                    const cb = Array.from(document.querySelectorAll('.prog-cb')).find(c => c.value.toLowerCase() === normP);
+                    let normP = p.toLowerCase().trim();
+                    if(normP === 's1') normP = 'sarjana';
+                    if(normP === 'd4') normP = 'sarjana terapan';
+                    if(normP === 'd3') normP = 'diploma tiga';
+                    if(normP === 'iup/kki' || normP === 'kki') normP = 'iup';
+
+                    const cb = Array.from(document.querySelectorAll('.prog-cb')).find(c => c.value === normP);
                     if(cb) cb.checked = true;
                 });
             }
@@ -1548,7 +1562,7 @@
                 Object.keys(item.kuota_prodi).forEach(pid => {
                     const pMaster = masterProdi.find(x => x.id === pid);
                     if(pMaster) {
-                        const kName = daftarKampus.find(k => k.id === pMaster.kampus_id)?.nama || '';
+                        const kName = daftarKampus.find(k => String(k.id) === String(pMaster.kampus_id))?.nama || '';
                         const lbl = item.jenis_jalur === 'Nasional' ? `${pMaster.nama_prodi} (${pMaster.jenjang}) - ${kName}` : `${pMaster.nama_prodi} (${pMaster.jenjang})`;
                         addProdiInputRow(pid, lbl, item.kuota_prodi[pid], true);
                     }
@@ -1637,6 +1651,33 @@
             }
         }
 
+        function deleteKatalog() {
+            if(!editingKatalogIndex) return;
+            Swal.fire({
+                title: 'Hapus Jalur ini?',
+                text: "Data jalur ini beserta data pendaftaran siswa yang terkait akan dihapus secara permanen.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    try {
+                        await supabaseClient.from('katalog_jalur').delete().eq('id', editingKatalogIndex);
+                        showToast("Jalur berhasil dihapus.", "success");
+                        await initData();
+                        goBack();
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Gagal menghapus jalur.", "error");
+                        document.getElementById('loadingOverlay').style.display = 'none';
+                    }
+                }
+            });
+        }
+
         // ==========================================
         // 9. DETAIL JALUR & CHECKOUT (UI RENDER)
         // ==========================================
@@ -1654,7 +1695,9 @@
                 document.getElementById('detailHeaderControls').innerHTML = headerControls;
 
                 let actionSection = '';
-                if (currentUserRole === 'wali_kelas') {
+                if(isEdit) {
+                    actionSection = `<div class="alert alert-warning small mb-3"><i class="fas fa-info-circle me-1"></i> Mode Edit Pilihan Jurusan. Silakan sesuaikan pilihan Anda lalu klik tombol simpan.</div><button class="btn btn-warning text-dark w-100 py-3 fw-bold" onclick="checkoutPath(${dataIndex})"><i class="fas fa-save me-2"></i>Simpan Perubahan Pilihan</button>`;
+                } else if (currentUserRole === 'wali_kelas') {
                     let studentOpts = '<option value="">-- Pilih Siswa --</option>';
                     students.forEach(s => { studentOpts += `<option value="${s.id}">${s.nama||'Siswa'} (${s.kelas||'-'})</option>`; });
                     actionSection = `<h6 class="fw-bold text-primary mb-2">Tambahkan ke Akun Siswa:</h6><select class="form-select rounded-pill mb-3" id="selectStudentCheckout">${studentOpts}</select><button class="btn btn-gradient w-100 py-3 fw-bold" onclick="checkoutPath(${dataIndex})"><i class="fas fa-bookmark me-2"></i>Simpan ke Siswa</button>`;
@@ -1683,7 +1726,7 @@
                 document.getElementById('detailContent').innerHTML = `
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-4">
-                            <div class="d-flex align-items-center mb-4"><img src="${item.logo_link || 'https://via.placeholder.com/60'}" class="card-logo me-3" style="width:60px;height:60px"><div><h4 class="fw-bold mb-0">${item.nama_jalur||'Jalur'}</h4><p class="text-muted mb-0">${item.universitas||'Nasional'}</p></div></div>
+                            <div class="d-flex align-items-center mb-4"><img src="${item.logo_link || 'https://www.freeiconspng.com/uploads/university-icon-0.png'}" class="card-logo me-3" style="width:60px;height:60px"><div><h4 class="fw-bold mb-0">${item.nama_jalur||'Jalur'}</h4><p class="text-muted mb-0">${item.universitas||'Nasional'}</p></div></div>
                             <div class="row g-4">
                                 <div class="col-md-7">
                                     <h6 class="fw-bold text-primary border-bottom pb-2">Informasi Umum</h6><p>${item.keterangan || '-'}</p>
@@ -1717,7 +1760,7 @@
                     if(pMaster) {
                         const kMaster = daftarKampus.find(k => k.id === pMaster.kampus_id);
                         const kName = kMaster ? kMaster.nama : 'Unknown';
-                        const kLogo = kMaster ? kMaster.logo_link : 'https://via.placeholder.com/30';
+                        const kLogo = kMaster ? kMaster.logo_link : 'https://www.freeiconspng.com/uploads/university-icon-0.png';
                         availableProdis.push({ 
                             id: pid, 
                             nama: `${pMaster.nama_prodi} (${pMaster.jenjang})`, 
@@ -1818,33 +1861,33 @@
                 currentDetailProdiSelection.push(pr);
             }
             // Re-render whole area to update badges and UI
-            renderProdiSelectionArea(dataKatalog[dIdx], dIdx);
+            renderProdiSelectionArea(dataKatalog[dIdx], dIdx, currentActiveFolder);
         }
 
         async function checkoutPath(dataIndex) {
             try {
                 const item = dataKatalog[dataIndex];
                 const fallback = document.getElementById('prodiManualFallback');
-                if(fallback && fallback.value) currentDetailProdiSelection.push(fallback.value);
+                if(fallback && fallback.value && !currentDetailProdiSelection.includes(fallback.value)) currentDetailProdiSelection.push(fallback.value);
                 if(currentDetailProdiSelection.length === 0) return showToast("Pilih minimal 1 prodi.", "warning");
                 
-                const sel = document.getElementById('selectStudentCheckout');
-                if(!sel || !sel.value) return showToast("Silakan pilih siswa.", "warning");
-                const sId = sel.value;
-
                 document.getElementById('loadingOverlay').style.display = 'flex';
-                
-                const { data: exist } = await supabaseClient.from('pendaftaran_siswa').select('id').eq('siswa_id', sId).eq('jalur_id', item.id);
-                if(exist && exist.length > 0 && editStudentId === null) { document.getElementById('loadingOverlay').style.display = 'none'; return showToast("Siswa ini sudah didaftarkan.", "warning"); }
 
                 if(editStudentId !== null) {
                     const s = students.find(x => x.id === editStudentId);
                     if(s && s.items[editItemIndex]) await supabaseClient.from('pendaftaran_siswa').update({ prodi_terpilih: currentDetailProdiSelection }).eq('id', s.items[editItemIndex].id_pendaftaran);
+                    showToast(`Perubahan berhasil disimpan!`, "success"); goBack(); await initData();
                 } else {
+                    const sel = document.getElementById('selectStudentCheckout');
+                    if(!sel || !sel.value) { document.getElementById('loadingOverlay').style.display = 'none'; return showToast("Silakan pilih siswa.", "warning"); }
+                    const sId = sel.value;
+                    
+                    const { data: exist } = await supabaseClient.from('pendaftaran_siswa').select('id').eq('siswa_id', sId).eq('jalur_id', item.id);
+                    if(exist && exist.length > 0) { document.getElementById('loadingOverlay').style.display = 'none'; return showToast("Siswa ini sudah didaftarkan.", "warning"); }
+
                     await supabaseClient.from('pendaftaran_siswa').insert([{ siswa_id: sId, jalur_id: item.id, prodi_terpilih: currentDetailProdiSelection }]);
+                    showToast(`Berhasil disimpan!`, "success"); goBack(); await initData();
                 }
-                
-                showToast(`Berhasil disimpan!`, "success"); goBack(); await initData();
             } catch(e) { console.error(e); document.getElementById('loadingOverlay').style.display = 'none'; }
         }
 
@@ -1987,7 +2030,7 @@
                         <div class="card mb-3 rounded-4 shadow-sm border-0 bg-white">
                             <div class="card-body p-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div class="d-flex align-items-center"><img src="${p.jalur.logo_link || 'https://via.placeholder.com/30'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded"><h6 class="fw-bold mb-0 text-primary pe-2">${p.jalur.nama_jalur||''}</h6></div>
+                                    <div class="d-flex align-items-center"><img src="${p.jalur.logo_link || 'https://www.freeiconspng.com/uploads/university-icon-0.png'}" style="width:24px; height:24px; object-fit:contain;" class="me-2 rounded"><h6 class="fw-bold mb-0 text-primary pe-2">${p.jalur.nama_jalur||''}</h6></div>
                                     <button class="btn btn-sm btn-light text-danger" onclick="deleteStudentItem('${s.id}', ${idx})"><i class="fas fa-trash"></i></button>
                                 </div>
                                 <div class="small mb-2">${(p.prodiTerpilih||[]).map((pr, i) => `<span class="badge bg-secondary border me-1 mb-1"><span class="text-warning">${i+1}.</span> ${pr}</span>`).join('')}</div>
@@ -2082,6 +2125,34 @@
                         if (curDate >= s && curDate < endDayStart) html += `<div class="cal-event-bar bg-primary" title="Masa Daftar: ${j.nama_jalur}">${j.nama_jalur}</div>`;
                         else if (curDate >= endDayStart && curDate <= e) html += `<div class="cal-event-bar bg-danger" title="Tutup Daftar: ${j.nama_jalur}">${j.nama_jalur}</div>`;
                     } else { if(curDate >= s && curDate <= e) html += `<div class="cal-event-bar ${c}" title="${t}: ${j.nama_jalur}">${j.nama_jalur}</div>`; }
+                };
+                checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary', true);
+                checkRange(j.ujian1_start, j.ujian1_end, 'Ujian 1', 'bg-warning text-dark');
+                checkRange(j.pengumuman1, j.pengumuman1, 'Pengumuman 1', 'bg-success');
+                checkRange(j.ujian2_start, j.ujian2_end, 'Ujian 2', 'bg-warning text-dark');
+                checkRange(j.pengumuman2, j.pengumuman2, 'Pengumuman 2', 'bg-success');
+            });
+            return html;
+        }
+
+        function getCalEventListHtml(jalurs, curDate) {
+            let html = '';
+            jalurs.forEach(j => {
+                const checkRange = (ds, de, t, c, isPendaftaran = false) => {
+                    if(!ds) return; let s = new Date(ds); s.setHours(0,0,0,0); let e = de ? new Date(de) : new Date(s); e.setHours(23,59,59,999);
+                    let colorCode = c.match(/bg-(\w+)/) ? c.match(/bg-(\w+)/)[1] : 'primary';
+                    if (isPendaftaran) {
+                        let endDayStart = new Date(e); endDayStart.setHours(0,0,0,0);
+                        if (curDate >= s && curDate < endDayStart) {
+                            html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-primary"><span class="badge bg-primary me-2">Masa Daftar</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
+                        } else if (curDate >= endDayStart && curDate <= e) {
+                            html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-danger"><span class="badge bg-danger me-2">Tutup Daftar</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
+                        }
+                    } else {
+                        if(curDate >= s && curDate <= e) {
+                            html += `<div class="d-flex align-items-center p-2 bg-light mb-2 rounded border-start border-4 border-${colorCode}"><span class="badge ${c} me-2">${t}</span> <span class="fw-semibold small">${j.nama_jalur}</span></div>`;
+                        }
+                    }
                 };
                 checkRange(j.pendaftaran_start, j.pendaftaran_end, 'Daftar', 'bg-primary', true);
                 checkRange(j.ujian1_start, j.ujian1_end, 'Ujian 1', 'bg-warning text-dark');
