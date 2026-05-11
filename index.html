@@ -989,9 +989,9 @@
                 if(bottomNav) bottomNav.innerHTML = `
                     <a href="#" class="bottom-nav-item active" id="nav-home" onclick="switchView('home'); return false;"><i class="fas fa-home"></i><span>Home</span></a>
                     <a href="#" class="bottom-nav-item" id="nav-univ" onclick="switchView('univ'); return false;"><i class="fas fa-university"></i><span>Univ</span></a>
-                    <a href="#" class="bottom-nav-item" id="nav-siswa" onclick="switchView('siswa'); return false;"><i class="fas fa-users"></i><span>Siswa</span></a>
                     <a href="#" class="bottom-nav-item" id="nav-catalog" onclick="switchView('catalog'); return false;"><i class="fas fa-th-large"></i><span>Katalog</span></a>
                     <a href="#" class="bottom-nav-item" id="nav-timeline" onclick="switchView('timeline'); return false;"><i class="fas fa-calendar-day"></i><span>Timeline</span></a>
+                    <a href="#" class="bottom-nav-item" id="nav-siswa" onclick="switchView('siswa'); return false;"><i class="fas fa-users"></i><span>Siswa</span></a>
                 `;
             } else if (currentUserRole === 'siswa') {
                 const nbt = document.getElementById('navBrandText'); if(nbt) nbt.innerHTML = 'PTN<span class="text-dark">Planner</span>';
@@ -1005,6 +1005,7 @@
                 
                 if(bottomNav) bottomNav.innerHTML = `
                     <a href="#" class="bottom-nav-item active" id="nav-home" onclick="switchView('home'); return false;"><i class="fas fa-home"></i><span>Home</span></a>
+                    <a href="#" class="bottom-nav-item" id="nav-univ" onclick="switchView('univ'); return false;"><i class="fas fa-university"></i><span>Univ</span></a>
                     <a href="#" class="bottom-nav-item" id="nav-catalog" onclick="switchView('catalog'); return false;"><i class="fas fa-search"></i><span>Katalog</span></a>
                     <a href="#" class="bottom-nav-item" id="nav-siswa-detail" onclick="openMyProfile(); return false;"><i class="fas fa-user-circle"></i><span>ProfilKu</span></a>
                 `;
@@ -1097,13 +1098,17 @@
                         mapped.akronim = item.kampus ? item.kampus.akronim : '';
                         mapped.web = item.kampus ? item.kampus.web : '';
                         
-                        if(!item.kampus_id && typeof item.attachment === 'string' && item.attachment.includes('custom_logo')) {
-                            try { const attObj = JSON.parse(item.attachment); mapped.logo_link = attObj.custom_logo || 'https://www.freeiconspng.com/uploads/university-icon-0.png'; } catch(e){ mapped.logo_link = 'https://www.freeiconspng.com/uploads/university-icon-0.png'; }
-                        } else if (!item.kampus_id && item.attachment && item.attachment.custom_logo) {
-                            mapped.logo_link = item.attachment.custom_logo;
+                        let parsedAtt = item.attachment;
+                        if(typeof parsedAtt === 'string') { try { parsedAtt = JSON.parse(parsedAtt); } catch(e){ parsedAtt = []; } }
+                        if(!Array.isArray(parsedAtt)) parsedAtt = [];
+                        
+                        if(!item.kampus_id) {
+                            const cLogo = parsedAtt.find(a => a.custom_logo);
+                            mapped.logo_link = cLogo && cLogo.custom_logo ? cLogo.custom_logo : 'https://www.freeiconspng.com/uploads/university-icon-0.png';
                         } else {
-                            mapped.logo_link = item.kampus ? item.kampus.logo_link : 'https://www.freeiconspng.com/uploads/university-icon-0.png';
+                            mapped.logo_link = item.kampus && item.kampus.logo_link ? item.kampus.logo_link : 'https://www.freeiconspng.com/uploads/university-icon-0.png';
                         }
+                        mapped.attachment = parsedAtt;
                         
                         mapped.materi_ujian_names = [];
                         if (item.materi_ids && Array.isArray(item.materi_ids)) {
@@ -1115,9 +1120,6 @@
                         
                         if(typeof mapped.kuota_prodi === 'string') { try{ mapped.kuota_prodi = JSON.parse(mapped.kuota_prodi); } catch(e){ mapped.kuota_prodi = {}; } }
                         if(!mapped.kuota_prodi) mapped.kuota_prodi = {};
-                        
-                        if(typeof mapped.attachment === 'string') { try{ mapped.attachment = JSON.parse(mapped.attachment); } catch(e){ mapped.attachment = []; } }
-                        if(!Array.isArray(mapped.attachment)) mapped.attachment = mapped.attachment && mapped.attachment.files ? mapped.attachment.files : [];
                         
                         return mapped;
                     });
@@ -1144,10 +1146,17 @@
                                     mappedJalur.akronim = kj.kampus ? kj.kampus.akronim : '';
                                     mappedJalur.web = kj.kampus ? kj.kampus.web : '';
                                     
-                                    if(!kj.kampus_id && kj.attachment && kj.attachment.custom_logo) mappedJalur.logo_link = kj.attachment.custom_logo;
-                                    else if(!kj.kampus_id && typeof kj.attachment === 'string' && kj.attachment.includes('custom_logo')) {
-                                        try{ mappedJalur.logo_link = JSON.parse(kj.attachment).custom_logo || 'https://www.freeiconspng.com/uploads/university-icon-0.png'; }catch(e){ mappedJalur.logo_link = 'https://www.freeiconspng.com/uploads/university-icon-0.png'; }
-                                    } else mappedJalur.logo_link = kj.kampus ? kj.kampus.logo_link : 'https://www.freeiconspng.com/uploads/university-icon-0.png';
+                                    let parsedAtt = kj.attachment;
+                                    if(typeof parsedAtt === 'string') { try { parsedAtt = JSON.parse(parsedAtt); } catch(e){ parsedAtt = []; } }
+                                    if(!Array.isArray(parsedAtt)) parsedAtt = [];
+                                    
+                                    if(!kj.kampus_id) {
+                                        const cLogo = parsedAtt.find(a => a.custom_logo);
+                                        mappedJalur.logo_link = cLogo && cLogo.custom_logo ? cLogo.custom_logo : 'https://www.freeiconspng.com/uploads/university-icon-0.png';
+                                    } else {
+                                        mappedJalur.logo_link = kj.kampus && kj.kampus.logo_link ? kj.kampus.logo_link : 'https://www.freeiconspng.com/uploads/university-icon-0.png';
+                                    }
+                                    mappedJalur.attachment = parsedAtt;
 
                                     let pt = ps.prodi_terpilih;
                                     if (typeof pt === 'string') { try { pt = JSON.parse(pt); } catch(e) { pt = []; } }
